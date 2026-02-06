@@ -6,7 +6,6 @@ import { View, Text, Image } from 'react-native'
 
 export default function RecoverPassword() {
   const params = useLocalSearchParams()
-  console.log(params)
 
   return (
     <ScreenLayout backgroundColor='bg-white'>

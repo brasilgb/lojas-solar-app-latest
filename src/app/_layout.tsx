@@ -26,7 +26,6 @@ export default function AppRootLayout() {
     useEffect(() => {
         (async () => {
             const deviceId = await getDeviceId();
-            console.log(deviceId);
             await registerDevice(deviceId, 'este é o token do firebase');
         })();
     }, []);

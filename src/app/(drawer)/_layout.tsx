@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Drawer } from 'expo-router/drawer';
-import { HomeIcon, User2Icon, UserIcon } from 'lucide-react-native';
+import { HomeIcon, KeyRoundIcon, User2Icon, UserIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { BackHandler, View } from 'react-native';
 import { DrawerContent, DrawerItemList } from '@react-navigation/drawer';
@@ -32,7 +32,7 @@ function CustomDrawerContent(props: any) {
 }
 
 export default function DrawerLayout() {
-
+const { signedIn } = useAuth();
     return (
         <Drawer
             drawerContent={CustomDrawerContent}
@@ -59,12 +59,26 @@ export default function DrawerLayout() {
             <Drawer.Screen
                 name="(account)"
                 options={{
-                    drawerLabel: "Minha Conta/Alterar Senha",
+                    drawerLabel: "Minha Conta",
                     title: "Minha Conta",
                     headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <UserIcon color={color} size={size} />
                     ),
+                }}
+            />
+
+            <Drawer.Screen
+                name="alter-password"
+                options={{
+                    drawerLabel: "Alterar Senha",
+                    title: "Alterar Senha",
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <KeyRoundIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
                 }}
             />
 

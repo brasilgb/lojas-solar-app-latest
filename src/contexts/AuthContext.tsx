@@ -27,6 +27,8 @@ interface AuthContextData {
   signOut: () => Promise<void>;
   checkPassword: (credentials: any) => Promise<void>;
   recoverPasswordSubmit: (cpfcnpj: string) => Promise<void>;
+  alterPassword: (credentials: any) => Promise<void>;
+  disconnect: () => Promise<void>;
   message: string | undefined;
   positionGlobal: any;
   returnStore: any;
@@ -40,7 +42,7 @@ const AuthContext = createContext<AuthContextData>(
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | undefined>('');
+  const [message, setMessage] = useState<string | undefined>(undefined);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [positionGlobal, setPositionGlobal] = useState<any>([0, 0]);
   const [returnStore, setReturnStore] = useState<any>('');
@@ -63,12 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setPositionGlobal([latitude, longitude]);
 
       const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${latitude}&longitude=${longitude}`);
-      // console.log(response.data.resposta.data);
       const { data } = response.data.resposta;
       if (Array.isArray(data) && data.length > 0) {
         setReturnStore(data[0]);
       } else if (data?.loja) {
-        // Caso retorne um objeto único
         setReturnStore(data.loja);
       }
 
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (cpfcnpj: any) => {
     setLoading(true);
-
+    
     try {
       const response = await appservice.get(`(WS_LOGIN_APP)?cpfcnpj=${cpfcnpj}`);
 
@@ -206,12 +206,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const recoverPasswordSubmit = async (cpfcnpj: string) => {
-
+    setLoading(true)
     try {
       const response = await appservice.get(`(WS_RECUPERA_SENHA)?cpfcnpj=${cpfcnpj}`);
       const { success, message, data } = response.data?.resposta;
 
       if (!success) {
+        setLoading(false);
         setMessage(message)
         return
       }
@@ -225,12 +226,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false);
     }
   };
+
+  const alterPassword = async (alterData: any) => {
+    setLoading(true);
+
+    try {
+      const response = await appservice.get(`(WS_ALTERAR_SENHA_APP)?cpfcnpj=${alterData.cpfcnpj}&token=${alterData.token}&senha=${alterData.senha}&senhaAnterior=${alterData.senhaAnterior}`);
+      const { success, message, data } = response.data?.resposta;
+
+      if (!success) {
+        setLoading(false);
+        setMessage(message)
+        return
+      } else {
+        setMessage(undefined);
+      }
+
+      const userData = {
+        cpfcnpj: alterData.cpfcnpj,
+        nomeCliente: user?.nomeCliente,
+        codigoCliente: user?.codigoCliente,
+        token: data?.token,
+      } as any;
+
+      setUser(userData);
+      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+      Alert.alert('Atenção', message, [
+        {
+          text: 'Ok', onPress: () => router.replace({
+            pathname: '/(drawer)',
+          })
+        },
+      ]);
+
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const disconnect = async () => {
     setUser(null);
     await SecureStore.deleteItemAsync(USER_KEY);
+    router.replace({
+      pathname: '/(drawer)',
+    });
   }
 
   const signOut = async () => {
@@ -258,7 +303,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         checkPassword,
         recoverPasswordSubmit,
+        alterPassword,
         signOut,
+        disconnect,
         message,
         positionGlobal,
         returnStore,

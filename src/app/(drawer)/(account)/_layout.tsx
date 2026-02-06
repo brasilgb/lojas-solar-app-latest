@@ -14,13 +14,6 @@ export default function AccountLayout() {
             />
 
             <Stack.Screen
-                name="alter-password"
-                options={{
-                    header: () => <DrawerHeader typel={'stack'} typer={''} />
-                }}
-            />
-
-            <Stack.Screen
                 name="data-exclude"
                 options={{
                     header: () => <DrawerHeader typel={'stack'} typer={''} />
