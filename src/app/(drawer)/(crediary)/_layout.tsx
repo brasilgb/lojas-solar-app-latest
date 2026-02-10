@@ -5,23 +5,23 @@ import DrawerHeader from '@/components/layouts/DrawerHeader'
 export default function AccountLayout() {
 
     return (
-        <Stack initialRouteName='account'>
+        <Stack initialRouteName='crediary'>
             <Stack.Screen
-                name="account"
+                name="crediary"
                 options={{
-                    header: () => <DrawerHeader typel={'drawer'} typer={'exclude'} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
                 }}
             />
 
             <Stack.Screen
-                name="data-exclude"
+                name="load-images"
                 options={{
                     header: () => <DrawerHeader typel={'stack'} typer={''} />
                 }}
             />
 
             <Stack.Screen
-                name="data-analise"
+                name="images-sent"
                 options={{
                     header: () => <DrawerHeader typel={'stack'} typer={''} />
                 }}

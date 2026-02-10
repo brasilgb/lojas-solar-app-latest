@@ -5,7 +5,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { User2Icon, UserMinus2Icon } from 'lucide-react-native';
 import { Button } from '@/components/Button';
 
-export default function DataAnalise() {
+export default function ImagesSent() {
   const params = useLocalSearchParams();
 
   return (

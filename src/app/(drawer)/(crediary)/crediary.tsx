@@ -1,7 +1,7 @@
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { User2Icon } from 'lucide-react-native'
+import { HandshakeIcon, User2Icon } from 'lucide-react-native'
 import { useAuth } from '@/contexts/AuthContext';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { accountSchema, AccountSchema } from '@/schemas/account';
@@ -11,16 +11,17 @@ import { Input } from '@/components/Input';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
 import { Link, router } from 'expo-router';
 import { Button } from '@/components/Button';
+import { crediarySchema, CrediarySchema } from '@/schemas/crediary';
 
-export default function Account() {
+export default function Crediary() {
     const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [account, setAccount] = useState<any>([]);
+    const [crediary, setCrediary] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
 
 
     useEffect(() => {
-        const getAccount = async () => {
+        const getCrediary = async () => {
             setLoading(true)
             try {
                 const response = await appservice.get(`(WS_CARREGA_CLIENTE)?token=${user?.token}`);
@@ -41,19 +42,8 @@ export default function Account() {
                     setMessage(message)
                     return
                 }
-                setAccount(data);
-                let infoCustomer = {
-                    emailCliente: data.emailCliente,
-                    celularCliente: data.celularCliente
-                }
-                setInfoCustomerToExcludeData(infoCustomer)
-                const normalizedData = {
-                    ...data,
-                    cepCliente: data?.cepCliente
-                        ? unMask(String(data.cepCliente))
-                        : '',
-                };
-                reset(normalizedData)
+                setCrediary(data);
+                reset(data)
 
             } catch (error) {
                 console.log(error)
@@ -61,33 +51,42 @@ export default function Account() {
                 setLoading(false)
             }
         }
-        getAccount();
-    }, [])
+        getCrediary();
+    }, [user])
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<AccountSchema>({
+    const { control, handleSubmit, reset, formState: { errors } } = useForm<CrediarySchema>({
         defaultValues: {
-            cpfcnpj: maskCpfCnpj(String(user?.cpfcnpj)),
-            nomeCliente: account?.nomeCliente,
-            enderecoCliente: account?.enderecoCliente,
-            cepCliente: account?.cepCliente ? unMask(String(account?.cepCliente)) : '',
-            ufCliente: account?.ufCliente,
-            cidadeCliente: account?.cidadeCliente,
-            celularCliente: account?.celularCliente,
-            emailCliente: account?.emailCliente,
-            nascimentoCliente: account?.nascimentoCliente,
+            nomeMae: crediary?.nomeMae,
+            sexo: crediary?.sexo,
+            escolaridade: crediary?.escolaridade,
+            localTrabalho: crediary?.localTrabalho,
+            estadoCivil: crediary?.estadoCivil,
+            nomeConjuge: crediary?.nomeConjuge,
+            cpfConjuge: crediary?.cpfConjuge,
+            profissao: crediary?.profissao,
+            renda: crediary?.renda,
         },
-        resolver: zodResolver(accountSchema),
+        resolver: zodResolver(crediarySchema),
     })
 
-    const onSubmit: SubmitHandler<AccountSchema> = async (data: AccountSchema) => {
+    const onSubmit: SubmitHandler<CrediarySchema> = async (data: CrediarySchema) => {
         setLoading(true);
         try {
-            const response = await appservice.get(`(WS_ALTERA_CLIENTE)?token=${user?.token}&nomeCliente=${data.nomeCliente}&enderecoCliente=${data.enderecoCliente}&cepCliente=${data.cepCliente}&cidadeCliente=${data.cidadeCliente}&ufCliente=${data.ufCliente}&celularCliente=${unMask(data.celularCliente)}&emailCliente=${data.emailCliente}&nascimentoCliente=${data.nascimentoCliente}`);
+            const response = await appservice.post(`(WS_CREDIARIO_CLIENTE)`, {
+                token: user?.token,
+                nomeMae: data.nomeMae,
+                sexo: data.sexo,
+                escolaridade: data.escolaridade,
+                localTrabalho: data.localTrabalho,
+                estadoCivil: data.estadoCivil,
+                nomeConjuge: data.nomeConjuge,
+                cpfConjuge: data.cpfConjuge,
+                profissao: data.profissao,
+                renda: data.renda,
+            });
             const { message, success } = response.data?.resposta;
-            if (success){
-                Alert.alert('Atenção', message, [
-                    { text: 'Ok', onPress: () => router.replace('/') },
-                ]);
+            if (success) {
+                router.push('/load-images')
             }
             if (!success) {
                 Alert.alert('Atenção', message, [
@@ -117,165 +116,166 @@ export default function Account() {
                     <View className='flex-1 flex-col items-center justify-start'>
                         <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
                             <View className=''>
-                                <User2Icon size={60} color={'#1a9cd9'} />
+                                <HandshakeIcon size={60} color={'#1a9cd9'} />
                             </View>
                             <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
                                 <Text className="text-2xl font-bold text-gray-700">
-                                    Meus dados
+                                    Crediário
                                 </Text>
-                                <Text className="text-gray-700">Confira seus dados abaixo </Text>
-                                <Text className="text-gray-700">Preencha ou altere conforme a necessidade</Text>
+                                <Text className="text-gray-700">Preencha os dados corretamente</Text>
+                                <Text className="text-gray-700">Se houver dados poderão ser alterados. </Text>
                             </View>
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'cpfcnpj'}
+                                    name={'nomeMae'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'CPF ou CNPJ'}
+                                            label={'Nome da mãe'}
                                             value={value}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.cpfcnpj ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.nomeMae ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.cpfcnpj && <Text className='text-red-500'>{errors.cpfcnpj.message}</Text>}
-                            </View>
-                            <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'nomeCliente'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Nome completo'}
-                                            value={value}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.nomeCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
-                                {errors.nomeCliente && <Text className='text-red-500'>{errors.nomeCliente.message}</Text>}
+                                {errors.nomeMae && <Text className='text-red-500'>{errors.nomeMae.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'enderecoCliente'}
+                                    name={'sexo'}
+                                    render={({ field: { value, onChange, onBlur } }) => (
+                                        <Input
+                                            label={'Genero'}
+                                            value={value}
+                                            onChangeText={onChange}
+                                            onBlur={onBlur}
+                                            inputClasses={`${errors.sexo ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                        />
+                                    )}
+                                />
+                                {errors.sexo && <Text className='text-red-500'>{errors.sexo.message}</Text>}
+                            </View>
+
+                            <View className='w-full'>
+                                <Controller
+                                    control={control}
+                                    name={'escolaridade'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
                                             label={'Endereço'}
                                             value={value}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.enderecoCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.escolaridade ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.enderecoCliente && <Text className='text-red-500'>{errors.enderecoCliente.message}</Text>}
+                                {errors.escolaridade && <Text className='text-red-500'>{errors.escolaridade.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'cepCliente'}
+                                    name={'localTrabalho'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'CEP'}
+                                            label={'Local do trabalho'}
                                             value={maskCep(value ? String(value) : '')}
                                             onChangeText={(text) => onChange(unMask(text))}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.cepCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.localTrabalho ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.cepCliente && <Text className='text-red-500'>{errors.cepCliente.message}</Text>}
+                                {errors.localTrabalho && <Text className='text-red-500'>{errors.localTrabalho.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'ufCliente'}
+                                    name={'estadoCivil'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'UF'}
+                                            label={'Estado civil'}
                                             value={String(value)}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.ufCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.estadoCivil ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.ufCliente && <Text className='text-red-500'>{errors.ufCliente.message}</Text>}
+                                {errors.estadoCivil && <Text className='text-red-500'>{errors.estadoCivil.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'cidadeCliente'}
+                                    name={'nomeConjuge'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'Cidade'}
+                                            label={'Nome do conjuge'}
                                             value={String(value)}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.cidadeCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.nomeConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.cidadeCliente && <Text className='text-red-500'>{errors.cidadeCliente.message}</Text>}
+                                {errors.nomeConjuge && <Text className='text-red-500'>{errors.nomeConjuge.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'celularCliente'}
+                                    name={'cpfConjuge'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'Celular'}
-                                            value={maskPhone(String(value))}
+                                            label={'CPF conjuge'}
+                                            value={maskCpfCnpj(String(value))}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.celularCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.cpfConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.celularCliente && <Text className='text-red-500'>{errors.celularCliente.message}</Text>}
+                                {errors.cpfConjuge && <Text className='text-red-500'>{errors.cpfConjuge.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'emailCliente'}
+                                    name={'profissao'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'E-mail'}
+                                            label={'Profissão'}
                                             value={String(value)}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.emailCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.profissao ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.emailCliente && <Text className='text-red-500'>{errors.emailCliente.message}</Text>}
+                                {errors.profissao && <Text className='text-red-500'>{errors.profissao.message}</Text>}
                             </View>
 
                             <View className='w-full'>
                                 <Controller
                                     control={control}
-                                    name={'nascimentoCliente'}
+                                    name={'renda'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
-                                            label={'Nascimento'}
+                                            label={'Renda'}
                                             value={String(value)}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.nascimentoCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.renda ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
                                     )}
                                 />
-                                {errors.nascimentoCliente && <Text className='text-red-500'>{errors.nascimentoCliente.message}</Text>}
+                                {errors.renda && <Text className='text-red-500'>{errors.renda.message}</Text>}
                             </View>
                             <View className='w-full py-4'>
                                 <Button

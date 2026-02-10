@@ -1,9 +1,10 @@
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, Alert } from 'react-native'
 import React from 'react'
 import { Button } from '@/components/Button'
-import { ArrowLeftIcon, LogOutIcon, MenuIcon } from 'lucide-react-native'
+import { ArrowLeftIcon, LogOutIcon, MenuIcon, UserMinus2Icon } from 'lucide-react-native'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { useAuth } from '@/contexts/AuthContext'
+import { router } from 'expo-router'
 
 export default function DrawerHeader({ typel, typer }: any) {
   const { signOut } = useAuth();
@@ -43,6 +44,20 @@ export default function DrawerHeader({ typel, typer }: any) {
           <Button
             label={<LogOutIcon color={'white'} />}
             onPress={() => signOut()}
+          />
+        }
+        {typer === 'exclude' &&
+          <Button
+            label={<UserMinus2Icon color={'white'} />}
+            onPress={() =>
+              Alert.alert('Exclusão de dados', 'Vamos direcioná-lo para o processo de exclusão de dados.', [
+                {
+                  text: 'Cancelar',
+                  style: 'cancel',
+                },
+                { text: 'Ok', onPress: () => router.push('/data-exclude') },
+              ])
+            }
           />
         }
       </View>

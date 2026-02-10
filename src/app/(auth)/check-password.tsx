@@ -1,4 +1,4 @@
-import { View, Text, Image, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { useAuth } from '@/contexts/AuthContext';

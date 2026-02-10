@@ -78,6 +78,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
       "expo-router",
       [
         "expo-location",
@@ -95,6 +101,10 @@
             "extraMavenRepos": [
               "../../node_modules/@notifee/react-native/android/libs"
             ],
+            "compileSdkVersion": 35, // Mantenha 34 por segurança
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "kotlinVersion": "2.0.21", // <-- Versão compatível com o KSP
             "usesCleartextTraffic": true
           }
         }

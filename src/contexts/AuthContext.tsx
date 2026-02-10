@@ -32,6 +32,8 @@ interface AuthContextData {
   message: string | undefined;
   positionGlobal: any;
   returnStore: any;
+  setInfoCustomerToExcludeData: any;
+  infoCustomerToExcludeData: any;
 }
 
 const USER_KEY = 'user-data';
@@ -46,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [positionGlobal, setPositionGlobal] = useState<any>([0, 0]);
   const [returnStore, setReturnStore] = useState<any>('');
+  const [infoCustomerToExcludeData, setInfoCustomerToExcludeData] = useState<any>([]);
 
   useEffect(() => {
     (async () => {
@@ -189,6 +192,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         cpfcnpj: credentials.cpfcnpj,
         codigoCliente: credentials.codigoCliente,
         nomeCliente: credentials.nomeCliente,
+        emailCliente: credentials?.emailCliente,
+        celularCliente: credentials?.celularCliente,
         token: data.token,
       }
 
@@ -248,8 +253,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const userData = {
         cpfcnpj: alterData.cpfcnpj,
-        nomeCliente: user?.nomeCliente,
         codigoCliente: user?.codigoCliente,
+        nomeCliente: user?.nomeCliente,
         token: data?.token,
       } as any;
 
@@ -309,6 +314,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         message,
         positionGlobal,
         returnStore,
+        setInfoCustomerToExcludeData,
+        infoCustomerToExcludeData
       }}
     >
       {children}

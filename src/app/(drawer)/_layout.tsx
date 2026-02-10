@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Drawer } from 'expo-router/drawer';
-import { HomeIcon, KeyRoundIcon, User2Icon, UserIcon } from 'lucide-react-native';
+import { HandshakeIcon, HomeIcon, KeyRoundIcon, User2Icon, UserIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { BackHandler, View } from 'react-native';
 import { DrawerContent, DrawerItemList } from '@react-navigation/drawer';
@@ -32,7 +32,7 @@ function CustomDrawerContent(props: any) {
 }
 
 export default function DrawerLayout() {
-const { signedIn } = useAuth();
+    const { signedIn } = useAuth();
     return (
         <Drawer
             drawerContent={CustomDrawerContent}
@@ -65,6 +65,19 @@ const { signedIn } = useAuth();
                     drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <UserIcon color={color} size={size} />
+                    ),
+                }}
+            />
+
+            <Drawer.Screen
+                name="(crediary)"
+                options={{
+                    drawerLabel: "Crediário",
+                    title: "Crediário",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <HandshakeIcon color={color} size={size} />
                     ),
                 }}
             />

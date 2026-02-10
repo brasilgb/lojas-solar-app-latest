@@ -132,11 +132,6 @@ export default function AlterPassword() {
                                 />
                             </View>
                         </View>
-                        <View className='w-full bg-white flex-row items-center justify-center p-8'>
-                            <Link href={'/'} asChild>
-                                <Button variant={'link'} label={'Voltar'} labelClasses='text-solar-blue-secondary' />
-                            </Link>
-                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
