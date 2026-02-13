@@ -1,24 +1,95 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { HandshakeIcon, User2Icon } from 'lucide-react-native'
+import { HandshakeIcon } from 'lucide-react-native'
 import { useAuth } from '@/contexts/AuthContext';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { accountSchema, AccountSchema } from '@/schemas/account';
 import { zodResolver } from '@hookform/resolvers/zod';
 import appservice from '@/services/appservice';
 import { Input } from '@/components/Input';
-import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
-import { Link, router } from 'expo-router';
+import { maskCep, maskCpfCnpj, maskMoney, unMask } from '@/utils/mask';
+import { router } from 'expo-router';
 import { Button } from '@/components/Button';
 import { crediarySchema, CrediarySchema } from '@/schemas/crediary';
+import DataModal from '@/components/DataModal';
 
 export default function Crediary() {
     const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [crediary, setCrediary] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
+    const [loading, setLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [itemSelecionado, setItemSelecionado] = useState<{ id: any; label: string } | null>(null);
+    const [crediary, setCrediary] = useState<any>([]);
+    const [escolaridade, setEscolaridade] = useState<any>([]);
+    const [estadoCivil, setEstadoCivil] = useState<any>([]);
+    const [profissao, setProfissao] = useState<any>([]);
+    const [genero, setGenero] = useState<any>(
+        [
+            { id: 1, label: 'Masculino' },
+            { id: 2, label: 'Feminino' }
+        ]
+    )
 
+    const [modalConfig, setModalConfig] = useState<{
+        type: 'escolaridade' | 'estadoCivil' | 'profissao' | 'sexo' | null;
+        items: any[];
+    }>({ type: null, items: [] });
+
+    const openModal = (type: 'escolaridade' | 'estadoCivil' | 'profissao' | 'sexo', data: any[]) => {
+        setModalConfig({ type, items: data });
+        setModalVisible(true);
+    };
+
+    useEffect(() => {
+        const getEscolaridade = async () => {
+            try {
+                const response = await appservice.get(`(WS_ESCOLARIDADE)`);
+                const { data } = response.data.resposta;
+                const escolData = data.map((pr: any, index: number) => ({
+                    id: index,
+                    label: pr.escolaridade
+                }));
+                setEscolaridade(escolData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getEscolaridade();
+    }, []);
+
+    useEffect(() => {
+        const getEstadoCivil = async () => {
+            try {
+                const response = await appservice.get(`(WS_ESTADO_CIVIL)`);
+                const { data } = response.data.resposta;
+                const estCivData = data.map((pr: any, index: number) => ({
+                    id: index,
+                    label: pr.estadoCivil
+                }));
+                setEstadoCivil(estCivData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getEstadoCivil();
+    }, []);
+
+    useEffect(() => {
+        const getProfissao = async () => {
+            try {
+                const response = await appservice.get(`(WS_PROFISSAO)`);
+                const { data } = response.data.resposta;
+                const profData = data.map((pr: any, index: number) => ({
+                    id: index,
+                    label: pr.profissao
+                }));
+                setProfissao(profData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getProfissao();
+    }, []);
 
     useEffect(() => {
         const getCrediary = async () => {
@@ -54,7 +125,7 @@ export default function Crediary() {
         getCrediary();
     }, [user])
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<CrediarySchema>({
+    const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CrediarySchema>({
         defaultValues: {
             nomeMae: crediary?.nomeMae,
             sexo: crediary?.sexo,
@@ -68,6 +139,8 @@ export default function Crediary() {
         },
         resolver: zodResolver(crediarySchema),
     })
+
+    const estadoCivilAtual = watch('estadoCivil');
 
     const onSubmit: SubmitHandler<CrediarySchema> = async (data: CrediarySchema) => {
         setLoading(true);
@@ -93,17 +166,32 @@ export default function Crediary() {
                     { text: 'Ok' },
                 ]);
             }
-
         } catch (error) {
             console.log(error)
         } finally {
             setLoading(false);
         }
-
     }
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
+            <DataModal
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                items={modalConfig.items}
+                onSelect={(item) => {
+                    if (modalConfig.type) {
+                        // Atualiza o valor no React Hook Form dinamicamente
+                        setValue(modalConfig.type, item.label, { shouldValidate: true });
+                        if (modalConfig.type === 'estadoCivil' && item.label.toUpperCase() !== 'CASADO') {
+                            setValue('nomeConjuge', '');
+                            setValue('cpfConjuge', '');
+                        }
+                    }
+                    setModalVisible(false);
+                }}
+            />
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -125,6 +213,7 @@ export default function Crediary() {
                                 <Text className="text-gray-700">Preencha os dados corretamente</Text>
                                 <Text className="text-gray-700">Se houver dados poderão ser alterados. </Text>
                             </View>
+
                             <View className='w-full'>
                                 <Controller
                                     control={control}
@@ -143,36 +232,32 @@ export default function Crediary() {
                             </View>
 
                             <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'sexo'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Genero'}
-                                            value={value}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.sexo ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
+                                <TouchableOpacity onPress={() => openModal('sexo', genero)}>
+                                    <Controller
+                                        control={control}
+                                        name="sexo"
+                                        render={({ field: { value } }) => (
+                                            <View pointerEvents="none">
+                                                <Input label="Genero" value={value} editable={false} />
+                                            </View>
+                                        )}
+                                    />
+                                </TouchableOpacity>
                                 {errors.sexo && <Text className='text-red-500'>{errors.sexo.message}</Text>}
                             </View>
 
                             <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'escolaridade'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Endereço'}
-                                            value={value}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.escolaridade ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
+                                <TouchableOpacity onPress={() => openModal('escolaridade', escolaridade)}>
+                                    <Controller
+                                        control={control}
+                                        name="escolaridade"
+                                        render={({ field: { value } }) => (
+                                            <View pointerEvents="none">
+                                                <Input label="Escolaridade" value={value} editable={false} />
+                                            </View>
+                                        )}
+                                    />
+                                </TouchableOpacity>
                                 {errors.escolaridade && <Text className='text-red-500'>{errors.escolaridade.message}</Text>}
                             </View>
 
@@ -183,8 +268,8 @@ export default function Crediary() {
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
                                             label={'Local do trabalho'}
-                                            value={maskCep(value ? String(value) : '')}
-                                            onChangeText={(text) => onChange(unMask(text))}
+                                            value={value}
+                                            onChangeText={onChange}
                                             onBlur={onBlur}
                                             inputClasses={`${errors.localTrabalho ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                                         />
@@ -194,70 +279,70 @@ export default function Crediary() {
                             </View>
 
                             <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'estadoCivil'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Estado civil'}
-                                            value={String(value)}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.estadoCivil ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
+                                <TouchableOpacity onPress={() => openModal('estadoCivil', estadoCivil)}>
+                                    <Controller
+                                        control={control}
+                                        name="estadoCivil"
+                                        render={({ field: { value } }) => (
+                                            <View pointerEvents="none">
+                                                <Input label="Estado Civil" value={value} editable={false} />
+                                            </View>
+                                        )}
+                                    />
+                                </TouchableOpacity>
                                 {errors.estadoCivil && <Text className='text-red-500'>{errors.estadoCivil.message}</Text>}
                             </View>
 
-                            <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'nomeConjuge'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Nome do conjuge'}
-                                            value={String(value)}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.nomeConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                            {estadoCivilAtual?.toUpperCase() === 'CASADO' && (
+                                <View className="w-full gap-4 mt-2">
+                                    <View className='w-full'>
+                                        <Controller
+                                            control={control}
+                                            name={'nomeConjuge'}
+                                            render={({ field: { value, onChange, onBlur } }) => (
+                                                <Input
+                                                    label={'Nome do conjuge'}
+                                                    value={String(value)}
+                                                    onChangeText={onChange}
+                                                    onBlur={onBlur}
+                                                    inputClasses={`${errors.nomeConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                                />
+                                            )}
                                         />
-                                    )}
-                                />
-                                {errors.nomeConjuge && <Text className='text-red-500'>{errors.nomeConjuge.message}</Text>}
-                            </View>
+                                        {errors.nomeConjuge && <Text className='text-red-500'>{errors.nomeConjuge.message}</Text>}
+                                    </View>
+
+                                    <View className='w-full'>
+                                        <Controller
+                                            control={control}
+                                            name={'cpfConjuge'}
+                                            render={({ field: { value, onChange, onBlur } }) => (
+                                                <Input
+                                                    label={'CPF conjuge'}
+                                                    value={maskCpfCnpj(String(value))}
+                                                    onChangeText={onChange}
+                                                    onBlur={onBlur}
+                                                    inputClasses={`${errors.cpfConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                                />
+                                            )}
+                                        />
+                                        {errors.cpfConjuge && <Text className='text-red-500'>{errors.cpfConjuge.message}</Text>}
+                                    </View>
+                                </View>
+                            )}
 
                             <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'cpfConjuge'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'CPF conjuge'}
-                                            value={maskCpfCnpj(String(value))}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.cpfConjuge ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
-                                {errors.cpfConjuge && <Text className='text-red-500'>{errors.cpfConjuge.message}</Text>}
-                            </View>
-
-                            <View className='w-full'>
-                                <Controller
-                                    control={control}
-                                    name={'profissao'}
-                                    render={({ field: { value, onChange, onBlur } }) => (
-                                        <Input
-                                            label={'Profissão'}
-                                            value={String(value)}
-                                            onChangeText={onChange}
-                                            onBlur={onBlur}
-                                            inputClasses={`${errors.profissao ? '!border-solar-orange-secondary' : ''} text-gray-800`}
-                                        />
-                                    )}
-                                />
+                                <TouchableOpacity onPress={() => openModal('profissao', profissao)}>
+                                    <Controller
+                                        control={control}
+                                        name="profissao"
+                                        render={({ field: { value } }) => (
+                                            <View pointerEvents="none">
+                                                <Input label="Profissão" value={value} editable={false} />
+                                            </View>
+                                        )}
+                                    />
+                                </TouchableOpacity>
                                 {errors.profissao && <Text className='text-red-500'>{errors.profissao.message}</Text>}
                             </View>
 
@@ -268,7 +353,7 @@ export default function Crediary() {
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
                                             label={'Renda'}
-                                            value={String(value)}
+                                            value={maskMoney(String(value))}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
                                             inputClasses={`${errors.renda ? '!border-solar-orange-secondary' : ''} text-gray-800`}
@@ -280,7 +365,7 @@ export default function Crediary() {
                             <View className='w-full py-4'>
                                 <Button
                                     disabled={loading}
-                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
+                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Continuar'}
                                     onPress={handleSubmit(onSubmit)}
                                 />
                             </View>

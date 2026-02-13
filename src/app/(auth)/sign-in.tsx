@@ -56,11 +56,12 @@ export default function SignIn() {
                                     name={'cpfcnpj'}
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
+                                            placeholder='CPF ou CNPJ'
                                             keyboardType='numeric'
                                             value={maskCpfCnpj(value)}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.cpfcnpj ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            inputClasses={`${errors.cpfcnpj ? '!border-solar-orange-secondary' : ''} text-gray-800 placeholder:text-gray-400`}
                                         />
                                     )}
                                 />

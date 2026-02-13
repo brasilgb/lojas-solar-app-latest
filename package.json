@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start -p 8085",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
@@ -17,6 +17,7 @@
     "@react-native-firebase/messaging": "^23.8.6",
     "@react-navigation/drawer": "^7.5.0",
     "@react-navigation/native": "^7.1.8",
+    "@shopify/flash-list": "^2.2.2",
     "axios": "^1.13.4",
     "class-variance-authority": "^0.7.1",
     "expo": "~54.0.33",

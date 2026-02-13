@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
     View, Text, ScrollView, Pressable,
-    Image, Modal, Alert, TouchableOpacity
+    Image, Modal, Alert, TouchableOpacity,
+    ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -10,6 +11,10 @@ import * as SecureStore from 'expo-secure-store';
 import appservice from '@/services/appservice';
 import { useAuth } from '@/contexts/AuthContext';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { Button } from '@/components/Button';
+import { router } from 'expo-router';
+import { ImagePlusIcon, User2Icon } from 'lucide-react-native';
+
 // Configuração dos documentos
 const UPLOAD_CONFIG = [
     { key: 'selfCliente', label: 'Tire uma selfie', icon: require('@/assets/images/docs/selfie.png') },
@@ -55,7 +60,7 @@ const LoadImages = ({ route }: any) => {
 
     const handlePickImage = async (source: 'camera' | 'gallery') => {
         setModalVisible(false);
-        
+
         const options: ImagePicker.ImagePickerOptions = {
             base64: true,
             allowsEditing: true,
@@ -63,7 +68,7 @@ const LoadImages = ({ route }: any) => {
             quality: 0.7, // Reduzido para performance no upload
         };
 
-        const result = source === 'camera' 
+        const result = source === 'camera'
             ? await ImagePicker.launchCameraAsync(options)
             : await ImagePicker.launchImageLibraryAsync(options);
 
@@ -75,7 +80,7 @@ const LoadImages = ({ route }: any) => {
 
     const updateImageState = async (key: string, uri: string, base64?: string) => {
         setImages(prev => ({ ...prev, [key]: uri }));
-        
+
         // Persistência Local
         const storageData = await SecureStore.getItemAsync('StoreImg');
         let currentList = storageData ? JSON.parse(storageData) : [];
@@ -121,8 +126,8 @@ const LoadImages = ({ route }: any) => {
             <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <View className="flex-1 items-center justify-end bg-[#0000007b]" onTouchEnd={() => setModalVisible(false)}>
                     <View className="bg-white w-full rounded-t-3xl p-6">
-                        <Text className="text-xl text-solar-blue-dark font-bold mb-4">Selecione a fonte</Text>
-                        <View className="flex-row justify-around pb-6">
+                        <Text className="text-xl text-solar-blue-secondary font-bold mb-4">Selecione a fonte</Text>
+                        <View className="flex-row justify-around pb-10">
                             <SourceButton icon="camera" label="Câmera" onPress={() => handlePickImage('camera')} />
                             <SourceButton icon="image" label="Galeria" onPress={() => handlePickImage('gallery')} />
                         </View>
@@ -131,35 +136,52 @@ const LoadImages = ({ route }: any) => {
             </Modal>
 
             <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-                <ScrollView className="flex-1 bg-solar-gray-dark px-4">
-                    <View className="py-6 items-center">
-                        <Text className="text-2xl text-solar-blue-dark font-bold">Documentos</Text>
-                        <Text className="text-center text-solar-blue-dark mt-2">Envie uma selfie e fotos dos seus documentos</Text>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    showsVerticalScrollIndicator={false}
+                    bounces={false}
+                >
+                    <View className='flex-1 flex-col items-center justify-start'>
+                        <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
+                            <View className=''>
+                                <ImagePlusIcon size={60} color={'#1a9cd9'} />
+                            </View>
+                            <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
+                                <Text className="text-2xl font-bold text-gray-700">
+                                    Documentos
+                                </Text>
+                                <Text className="text-gray-700">Envie uma selfie e fotos </Text>
+                                <Text className="text-gray-700">dos seus documentos</Text>
+                            </View>
+
+                            {UPLOAD_CONFIG.map((item) => {
+                                const isDone = !!images[item.key];
+                                return (
+                                    <Pressable
+                                        key={item.key}
+                                        onPress={() => { setSelectedType(item.key); setModalVisible(true); }}
+                                        className={`flex-row items-center justify-between p-4 mb-2 rounded-xl border ${isDone
+                                            ? 'border-green-500 bg-green-50'
+                                            : 'border-gray-500 bg-white'
+                                            }`}
+                                    >
+                                        <Text className="flex-1 text-base text-solar-blue-dark mr-2">{item.label}</Text>
+                                        <Image
+                                            source={images[item.key] ? { uri: images[item.key] } : item.icon}
+                                            className="w-12 h-12 rounded-md"
+                                        />
+                                    </Pressable>
+                                )
+                            })}
+                            <View className='w-full py-4'>
+                                <Button
+                                    disabled={loading || !isFormComplete}
+                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Continuar'}
+                                    onPress={() => router.replace('/images-sent')}
+                                />
+                            </View>
+                        </View>
                     </View>
-
-                    {UPLOAD_CONFIG.map((item) => (
-                        <Pressable 
-                            key={item.key}
-                            onPress={() => { setSelectedType(item.key); setModalVisible(true); }}
-                            className={`flex-row items-center justify-between p-4 mb-3 bg-white rounded-xl`}
-                        >
-                            <Text className="flex-1 text-base text-solar-blue-dark mr-2">{item.label}</Text>
-                            <Image 
-                                source={images[item.key] ? { uri: images[item.key] } : item.icon} 
-                                className="w-12 h-12 rounded-md"
-                            />
-                        </Pressable>
-                    ))}
-
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('ImagesSent')}
-                        disabled={!isFormComplete}
-                        className={`py-4 rounded-full border-2 border-white my-6 items-center ${isFormComplete ? 'bg-solar-orange-middle' : 'bg-gray-400'}`}
-                    >
-                        <Text className={`text-lg font-bold ${isFormComplete ? 'text-solar-blue-dark' : 'text-gray-200'}`}>
-                            Continuar
-                        </Text>
-                    </TouchableOpacity>
                 </ScrollView>
             </ScreenLayout>
         </>
@@ -168,7 +190,7 @@ const LoadImages = ({ route }: any) => {
 
 // Sub-componente para limpar o modal
 const SourceButton = ({ icon, label, onPress }: any) => (
-    <TouchableOpacity className="items-center p-4 bg-gray-100 rounded-2xl" onPress={onPress}>
+    <TouchableOpacity className="items-center p-4 bg-gray-100 rounded-xl border border-gray-500" onPress={onPress}>
         <Ionicons name={icon === 'camera' ? 'camera' : 'image'} size={40} color="#024D9F" />
         <Text className="text-solar-blue-dark mt-1">{label}</Text>
     </TouchableOpacity>

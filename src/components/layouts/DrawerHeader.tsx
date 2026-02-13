@@ -1,13 +1,13 @@
 import { View, Text, Image, Alert } from 'react-native'
 import React from 'react'
 import { Button } from '@/components/Button'
-import { ArrowLeftIcon, LogOutIcon, MenuIcon, UserMinus2Icon } from 'lucide-react-native'
+import { ArrowLeftIcon, LogInIcon, LogOutIcon, MenuIcon, UserMinus2Icon } from 'lucide-react-native'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { useAuth } from '@/contexts/AuthContext'
 import { router } from 'expo-router'
 
 export default function DrawerHeader({ typel, typer }: any) {
-  const { signOut } = useAuth();
+  const { signOut, signedIn } = useAuth();
 
   const navigation = useNavigation();
 
@@ -41,10 +41,19 @@ export default function DrawerHeader({ typel, typer }: any) {
           />
         }
         {typer === 'drawer' &&
-          <Button
-            label={<LogOutIcon color={'white'} />}
-            onPress={() => signOut()}
-          />
+          (
+            signedIn
+              ?
+              <Button
+                label={<LogOutIcon color={'white'} />}
+                onPress={() => signOut()}
+              />
+              :
+              <Button
+                label={<LogInIcon color={'white'} />}
+                onPress={() => router.push('/sign-in')}
+              />
+          )
         }
         {typer === 'exclude' &&
           <Button
