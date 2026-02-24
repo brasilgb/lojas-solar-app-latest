@@ -10,6 +10,7 @@ import { maskPhone } from '@/utils/mask';
 import { router } from 'expo-router';
 import { excludeDataSchema, ExcludeDataSchema } from '@/schemas/account';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function DataExclude() {
   const [loading, setLoading] = useState(false);
@@ -51,16 +52,14 @@ export default function DataExclude() {
         >
           <View className='flex-1 flex-col items-center justify-start'>
             <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-              <View className=''>
-                <User2Icon size={60} color={'#1a9cd9'} />
-              </View>
-              <View className="bg-white rounded-xl px-4 pb-4 flex-col justify-center items-center">
-                <Text className="text-2xl font-bold text-gray-700">
-                  Meus dados
-                </Text>
-                <Text className="text-gray-700">Preencha o formulário abaixo corretamente para</Text>
-                <Text className="text-gray-700"> iniciarmos o processo de exclusão de dados.</Text>
-              </View>
+
+              <PageHeader
+                title="Exclusão de dados"
+                subtitle="Preencha o formulário abaixo corretamente"
+                description="Após o envio dos dados iniciarmos o processo de exclusão de dados."
+                icon={<User2Icon size={26} color="#1a9cd9" />}
+              />
+
               <View className='w-full'>
                 <Controller
                   control={control}

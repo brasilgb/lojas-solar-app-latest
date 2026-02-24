@@ -123,7 +123,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<FilePenLineIcon color={'white'} size={30} />}
                             label={'Assinar Doc'}
-                            url={!signedIn ? '/recover-password' : '/docsassign'}
+                            url={signedIn ? '/sign-in' : '/view-doc'}
                         />
                         <ButtonMenu
                             icon={<HandCoinsIcon color={'white'} size={30} />}

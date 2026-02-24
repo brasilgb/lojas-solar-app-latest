@@ -11,6 +11,7 @@ import { Input } from '@/components/Input';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
 import { Link, router } from 'expo-router';
 import { Button } from '@/components/Button';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Account() {
     const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
@@ -84,7 +85,7 @@ export default function Account() {
         try {
             const response = await appservice.get(`(WS_ALTERA_CLIENTE)?token=${user?.token}&nomeCliente=${data.nomeCliente}&enderecoCliente=${data.enderecoCliente}&cepCliente=${data.cepCliente}&cidadeCliente=${data.cidadeCliente}&ufCliente=${data.ufCliente}&celularCliente=${unMask(data.celularCliente)}&emailCliente=${data.emailCliente}&nascimentoCliente=${data.nascimentoCliente}`);
             const { message, success } = response.data?.resposta;
-            if (success){
+            if (success) {
                 Alert.alert('Atenção', message, [
                     { text: 'Ok', onPress: () => router.replace('/') },
                 ]);
@@ -116,16 +117,14 @@ export default function Account() {
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
                         <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <View className=''>
-                                <User2Icon size={60} color={'#1a9cd9'} />
-                            </View>
-                            <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
-                                <Text className="text-2xl font-bold text-gray-700">
-                                    Meus dados
-                                </Text>
-                                <Text className="text-gray-700">Confira seus dados abaixo </Text>
-                                <Text className="text-gray-700">Preencha ou altere conforme a necessidade</Text>
-                            </View>
+
+                            <PageHeader
+                                title="Meus dados"
+                                subtitle="Confira seus dados abaixo"
+                                description="Preencha ou altere conforme a necessidade."
+                                icon={<User2Icon size={26} color="#1a9cd9" />}
+                            />
+
                             <View className='w-full'>
                                 <Controller
                                     control={control}

@@ -2,35 +2,29 @@ import React from 'react'
 import { Stack } from 'expo-router'
 import DrawerHeader from '@/components/layouts/DrawerHeader'
 
-export default function AccountLayout() {
+export default function DocsAssignLayout() {
 
     return (
         <Stack
-            initialRouteName='crediary'
+            initialRouteName='docs-assign'
             screenOptions={{
                 animation: 'fade'
             }}
         >
             <Stack.Screen
-                name="crediary"
+                name="docs-assign"
                 options={{
                     header: () => <DrawerHeader typel={'drawer'} typer={''} />
                 }}
             />
 
             <Stack.Screen
-                name="load-images"
+                name="view-doc"
                 options={{
                     header: () => <DrawerHeader typel={'stack'} typer={''} />
                 }}
             />
 
-            <Stack.Screen
-                name="images-sent"
-                options={{
-                    header: () => <DrawerHeader typel={'stack'} typer={''} />
-                }}
-            />
         </Stack>
     )
 

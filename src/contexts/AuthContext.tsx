@@ -74,7 +74,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (data?.loja) {
         setReturnStore(data.loja);
       }
-
     }
     loadPosition();
   }, []);
@@ -104,7 +103,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (cpfcnpj: any) => {
     setLoading(true);
-    
     try {
       const response = await appservice.get(`(WS_LOGIN_APP)?cpfcnpj=${cpfcnpj}`);
 
@@ -284,7 +282,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const signOut = async () => {
-
     Alert.alert(
       'Atenção - Ação de Logout',
       'Você será desconectado, deseja continuar?',

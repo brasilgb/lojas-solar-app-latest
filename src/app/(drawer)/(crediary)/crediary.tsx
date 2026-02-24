@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { Button } from '@/components/Button';
 import { crediarySchema, CrediarySchema } from '@/schemas/crediary';
 import DataModal from '@/components/DataModal';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Crediary() {
     const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
@@ -203,16 +204,13 @@ export default function Crediary() {
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
                         <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <View className=''>
-                                <HandshakeIcon size={60} color={'#1a9cd9'} />
-                            </View>
-                            <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
-                                <Text className="text-2xl font-bold text-gray-700">
-                                    Crediário
-                                </Text>
-                                <Text className="text-gray-700">Preencha os dados corretamente</Text>
-                                <Text className="text-gray-700">Se houver dados poderão ser alterados. </Text>
-                            </View>
+
+                            <PageHeader
+                                title="Crediário"
+                                subtitle="Preencha os dados corretamente"
+                                description="Se houver dados incorretos deverão ser ajustados."
+                                icon={<HandshakeIcon size={26} color="#1a9cd9" />}
+                            />
 
                             <View className='w-full'>
                                 <Controller

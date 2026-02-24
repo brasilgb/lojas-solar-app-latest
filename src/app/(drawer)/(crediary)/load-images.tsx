@@ -14,6 +14,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { Button } from '@/components/Button';
 import { router } from 'expo-router';
 import { ImagePlusIcon, User2Icon } from 'lucide-react-native';
+import { PageHeader } from '@/components/PageHeader';
 
 // Configuração dos documentos
 const UPLOAD_CONFIG = [
@@ -123,17 +124,48 @@ const LoadImages = ({ route }: any) => {
 
     return (
         <>
-            <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-                <View className="flex-1 items-center justify-end bg-[#0000007b]" onTouchEnd={() => setModalVisible(false)}>
-                    <View className="bg-white w-full rounded-t-3xl p-6">
-                        <Text className="text-xl text-solar-blue-secondary font-bold mb-4">Selecione a fonte</Text>
-                        <View className="flex-row justify-around pb-10">
-                            <SourceButton icon="camera" label="Câmera" onPress={() => handlePickImage('camera')} />
-                            <SourceButton icon="image" label="Galeria" onPress={() => handlePickImage('gallery')} />
+            <Modal
+                animationType="slide"
+                transparent
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                {/* BACKDROP */}
+                <Pressable
+                    className="flex-1 bg-black/50 justify-end"
+                    onPress={() => setModalVisible(false)}
+                >
+                    {/* CONTEÚDO */}
+                    <Pressable className="bg-white w-full rounded-t-3xl px-6 pt-3 pb-6">
+
+                        {/* HANDLE */}
+                        <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center mb-4" />
+
+                        {/* HEADER */}
+                        <Text className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                            Selecionar fonte
+                        </Text>
+
+                        {/* AÇÕES */}
+                        <View className="flex-row justify-between gap-4">
+                            <SourceButton
+                                icon="camera"
+                                label="Câmera"
+                                onPress={() => handlePickImage('camera')}
+                            />
+
+                            <SourceButton
+                                icon="image"
+                                label="Galeria"
+                                onPress={() => handlePickImage('gallery')}
+                            />
                         </View>
-                    </View>
-                </View>
+
+                    </Pressable>
+                </Pressable>
             </Modal>
+
+
 
             <ScreenLayout backgroundColor='bg-solar-blue-primary'>
                 <ScrollView
@@ -143,7 +175,7 @@ const LoadImages = ({ route }: any) => {
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
                         <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <View className=''>
+                            {/* <View className=''>
                                 <ImagePlusIcon size={60} color={'#1a9cd9'} />
                             </View>
                             <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
@@ -152,24 +184,50 @@ const LoadImages = ({ route }: any) => {
                                 </Text>
                                 <Text className="text-gray-700">Envie uma selfie e fotos </Text>
                                 <Text className="text-gray-700">dos seus documentos</Text>
-                            </View>
-
+                            </View> */}
+                            <PageHeader
+                                title="Documentos"
+                                subtitle="Envie uma selfie ou foto"
+                                description="Envie uma selfie e/ou fotos de documentos, poderá selecionar em sua galeria."
+                                icon={<ImagePlusIcon size={26} color="#1a9cd9" />}
+                            />
                             {UPLOAD_CONFIG.map((item) => {
                                 const isDone = !!images[item.key];
                                 return (
+
                                     <Pressable
                                         key={item.key}
-                                        onPress={() => { setSelectedType(item.key); setModalVisible(true); }}
-                                        className={`flex-row items-center justify-between p-4 mb-2 rounded-xl border ${isDone
-                                            ? 'border-green-500 bg-green-50'
-                                            : 'border-gray-500 bg-white'
+                                        onPress={() => {
+                                            setSelectedType(item.key);
+                                            setModalVisible(true);
+                                        }}
+                                        className={`flex-row items-center justify-between p-4 mb-3 rounded-xl border
+                                                ${isDone
+                                                ? 'border-green-400 bg-green-50'
+                                                : 'border-gray-200 bg-white'
                                             }`}
                                     >
-                                        <Text className="flex-1 text-base text-solar-blue-dark mr-2">{item.label}</Text>
-                                        <Image
-                                            source={images[item.key] ? { uri: images[item.key] } : item.icon}
-                                            className="w-12 h-12 rounded-md"
-                                        />
+                                        {/* TEXTO */}
+                                        <View className="flex-1 pr-3">
+                                            <Text className="text-base font-medium text-gray-900">
+                                                {item.label}
+                                            </Text>
+
+                                            {isDone && (
+                                                <Text className="text-xs text-green-600 mt-1">
+                                                    Concluído
+                                                </Text>
+                                            )}
+                                        </View>
+
+                                        {/* IMAGEM */}
+                                        <View className="w-12 h-12 rounded-lg bg-gray-100 items-center justify-center overflow-hidden">
+                                            <Image
+                                                source={images[item.key] ? { uri: images[item.key] } : item.icon}
+                                                className="w-full h-full"
+                                                resizeMode="cover"
+                                            />
+                                        </View>
                                     </Pressable>
                                 )
                             })}

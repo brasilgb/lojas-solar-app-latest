@@ -5,7 +5,12 @@ import DrawerHeader from '@/components/layouts/DrawerHeader'
 export default function AccountLayout() {
 
     return (
-        <Stack initialRouteName='account'>
+        <Stack
+            initialRouteName='account'
+            screenOptions={{
+                animation: 'fade'
+            }}
+        >
             <Stack.Screen
                 name="account"
                 options={{

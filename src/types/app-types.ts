@@ -5,4 +5,12 @@ carTipo: string;
 carTitulo: string;
 }
 
-export type {AppCaroucelProps}
+interface AssignDocsProps {
+    date: string;
+    number: string;
+    origin: string;
+    serie: string;
+    link: string;
+}
+
+export type {AppCaroucelProps, AssignDocsProps}

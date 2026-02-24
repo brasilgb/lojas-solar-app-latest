@@ -1,9 +1,9 @@
-import { View, Text, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator } from 'react-native'
-import React from 'react'
-import { Link, useLocalSearchParams } from 'expo-router'
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { User2Icon, UserMinus2Icon } from 'lucide-react-native';
 import { Button } from '@/components/Button';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { Link, useLocalSearchParams } from 'expo-router';
+import { UserMinus2Icon } from 'lucide-react-native';
+import React from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 
 export default function DataAnalise() {
   const params = useLocalSearchParams();
@@ -14,39 +14,52 @@ export default function DataAnalise() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
+        
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          <View className='flex-1 flex-col items-center justify-start'>
-            <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-              <View className=''>
-                <UserMinus2Icon size={60} color={'#1a9cd9'} />
+
+          <View className="flex-1 bg-gray-100 justify-center px-4">
+            <View className="w-full bg-white rounded-2xl p-6">
+
+              <View className="items-center mb-4">
+                <View className="bg-blue-100 p-4 rounded-full">
+                  <UserMinus2Icon size={32} color="#1a9cd9" />
+                </View>
               </View>
-              <View className="bg-white rounded-xl px-4 pb-4 flex-col justify-center items-center">
-                <Text className="text-2xl font-bold text-gray-700">
-                  Remoção de dados
+
+              <Text className="text-xl font-bold text-gray-900 text-center mb-2">
+                Remoção de dados
+              </Text>
+
+              <Text className="text-sm text-gray-600 text-center leading-5 mb-4">
+                Nossa equipe iniciará o processo de exclusão dos seus dados.
+              </Text>
+
+              <View className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                <Text className="text-sm text-gray-600 text-center">
+                  Aguarde nosso contato por e-mail ou telefone para dar continuidade ao processo.
                 </Text>
-                <Text className="text-gray-700">Nossa equipe proceguirá com o </Text>
-                <Text className="text-gray-700">processo para a exclusão de dados.</Text>
               </View>
-              <View className='w-full'>
-                <Text className="text-lg text-gray-500 font-medium mt-8 text-center">
-                  Aguarde nosso e-mail ou ligação para prosseguir com o
-                  processo de exclusão de dados.
-                </Text>
-                <Text className="mt-8 text-lg text-gray-500 font-medium text-center">Seu e-mail para contato {params?.email}</Text>
-              </View>
-              <View className='w-full py-4'>
-                <Link href={'/account'} asChild>
-                  <Button
-                    label={'Continuar'}
-                  />
-                </Link>
-              </View>
+
+              <Text className="text-sm text-gray-500 text-center mb-6">
+                Seu e-mail para contato:
+                <Text className="text-gray-900 font-medium"> {params?.email}</Text>
+              </Text>
+
+              <Link href="/account" asChild>
+                <Button
+                  label="Continuar"
+                  className="w-full py-3 rounded-lg"
+                  labelClasses="text-white font-semibold"
+                />
+              </Link>
+
             </View>
           </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenLayout>

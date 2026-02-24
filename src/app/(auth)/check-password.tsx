@@ -1,4 +1,4 @@
-import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,85 +51,126 @@ export default function SignIn() {
                     contentContainerStyle={{ flexGrow: 1 }}
                     showsVerticalScrollIndicator={false}
                     bounces={false}
+                    keyboardShouldPersistTaps="always"
                 >
-                    <View className='flex-1 flex-col items-center justify-start'>
-                        <View className='h-60 w-full flex-row items-center justify-center'>
-                            <Image source={require('@/assets/images/logo_lojas_solar.png')} style={{ width: 220, height: 40 }} />
+                    <View className='flex-1 justify-center px-6'>
+
+                        <View className='items-center mb-10'>
+                            <Image
+                                source={require('@/assets/images/logo_lojas_solar.png')}
+                                style={{ width: 180, height: 32 }}
+                                resizeMode="contain"
+                            />
                         </View>
-                        <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <View className=''>
-                                <KeyRoundIcon size={60} color={'#1a9cd9'} />
-                            </View>
-                            <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
-                                <Text className="text-2xl font-bold text-gray-700">
-                                    Acessar Conta
+
+                        <View className='bg-white rounded-3xl p-6 shadow-sm'>
+
+                            <View className="items-center mb-6">
+                                <View className="bg-blue-100 p-3 rounded-full mb-3">
+                                    <KeyRoundIcon size={28} color="#1a9cd9" />
+                                </View>
+
+                                <Text className="text-xl font-bold text-gray-900">
+                                    Acessar conta
                                 </Text>
-                                <Text className="text-gray-700 text-sm font-medium">CPF/CNPJ: <Text className='font-bold'>{params?.cpfcnpj}</Text></Text>
-                                <Text className="text-gray-700">Quase lá <Text className='font-bold capitalize'>{(String(params?.nomeCliente).split(" ")[0]).toLowerCase()}</Text>, digite agora sua senha</Text>
+
+                                <Text className="text-sm text-gray-500 mt-1 text-center">
+                                    {String(params?.nomeCliente).split(" ")[0]}, digite sua senha para continuar
+                                </Text>
+
+                                <Text className="text-xs text-gray-400 mt-1">
+                                    CPF/CNPJ: <Text className="font-medium text-gray-600">{params?.cpfcnpj}</Text>
+                                </Text>
                             </View>
-                            <View className='w-full mt-10'>
-                                <View className='relative'>
+
+                            <View className="w-full mb-4">
+                                <View className="relative">
+
                                     <Controller
                                         control={control}
-                                        name={'senha'}
+                                        name="senha"
                                         render={({ field: { value, onChange, onBlur } }) => (
                                             <Input
                                                 secureTextEntry={isSecure}
-                                                placeholder='Sua senha'
+                                                placeholder="Sua senha"
                                                 value={value}
                                                 onChangeText={onChange}
                                                 onBlur={onBlur}
-                                                inputClasses={`${errors.senha ? '!border-solar-orange-secondary' : ''} text-gray-800 placeholder:text-gray-400`}
+                                                inputClasses={`pr-12 ${errors.senha ? '!border-red-500' : ''
+                                                    } text-gray-800 placeholder:text-gray-400`}
                                             />
                                         )}
                                     />
-                                    {message && <Text className='text-red-500'>{message}</Text>}
-                                    {errors.senha && <Text className='text-red-500'>{errors.senha.message}</Text>}
+
+                                    <Pressable
+                                        onPress={() => setIsSecure(!isSecure)}
+                                        className="absolute right-3 top-3"
+                                    >
+                                        {isSecure ? <EyeIcon color={'#6b7280'} /> : <EyeClosedIcon color={'#6b7280'} />}
+                                    </Pressable>
+
                                 </View>
-                                <View className='absolute right-0 -top-1'>
-                                    <Button variant={'link'} label={isSecure ? <EyeIcon /> : <EyeClosedIcon />} onPress={() => setIsSecure(!isSecure)} />
-                                </View>
+
+                                {message && (
+                                    <Text className="text-red-500 text-sm mt-1">{message}</Text>
+                                )}
+                                {errors.senha && (
+                                    <Text className="text-red-500 text-sm mt-1">
+                                        {errors.senha.message}
+                                    </Text>
+                                )}
                             </View>
-                            <View className='flex-row items-center justify-between w-full'>
-                                <View>
-                                    <Controller
-                                        control={control}
-                                        name="connected"
-                                        render={({ field: { onChange, value } }) => (
-                                            <Checkbox
-                                                label="Continuar logado"
-                                                checkboxClasses="w-5 h-5"
-                                                isSelected={value}
-                                                onValueChange={onChange}
-                                                labelClasses="text-base text-gray-500 font-medium"
-                                            />
-                                        )}
-                                    />
-                                </View>
-                                <View>
-                                    <Button
-                                        variant={'link'}
-                                        label={'Esqueci minha senha'}
-                                        className='p-0'
-                                        labelClasses="text-base text-gray-500"
-                                        onPress={recoverPasswordHandle}
-                                    />
-                                </View>
-                            </View>
-                            <View className='w-full py-4'>
-                                <Button
-                                    disabled={loading}
-                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Entrar'}
-                                    onPress={handleSubmit(onSubmit)}
+
+                            <View className="flex-row items-center justify-between mb-6">
+                                <Controller
+                                    control={control}
+                                    name="connected"
+                                    render={({ field: { onChange, value } }) => (
+                                        <Checkbox
+                                            checkboxClasses="w-5 h-5"
+                                            label="Continuar logado"
+                                            isSelected={value}
+                                            onValueChange={onChange}
+                                            labelClasses="text-sm text-gray-500"
+                                        />
+                                    )}
                                 />
+
+                                <Button
+                                    variant="link"
+                                    label="Esqueci minha senha"
+                                    className="p-0"
+                                    labelClasses="text-sm text-gray-500"
+                                    onPress={recoverPasswordHandle}
+                                />
+
                             </View>
-                        </View>
-                        <View className='w-full bg-white flex-row items-center justify-center p-8'>
-                            <Link href={'/'} asChild>
-                                <Button variant={'link'} label={'Voltar'} labelClasses='text-solar-blue-secondary' />
-                            </Link>
+
+                            <Button
+                                disabled={loading}
+                                label={
+                                    loading
+                                        ? <ActivityIndicator color="white" size="small" />
+                                        : 'Entrar'
+                                }
+                                onPress={handleSubmit(onSubmit)}
+                                className="py-3 rounded-lg"
+                                labelClasses="text-white font-semibold"
+                            />
+
+                            <View className="items-center mt-6">
+                                <Link href="/sign-in" asChild>
+                                    <Button
+                                        variant="link"
+                                        label="Voltar"
+                                        labelClasses="text-blue-600"
+                                    />
+                                </Link>
+                            </View>
+
                         </View>
                     </View>
+
                 </ScrollView>
             </KeyboardAvoidingView>
         </ScreenLayout>

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Input } from '@/components/Input'
 import { AlterPasswordSchema, alterPasswordSchema } from '@/schemas/signIn'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function AlterPassword() {
     const { user, loading, message, alterPassword } = useAuth();
@@ -47,16 +48,12 @@ export default function AlterPassword() {
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
                         <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <View className=''>
-                                <KeyRoundIcon size={60} color={'#1a9cd9'} />
-                            </View>
-                            <View className="bg-white rounded-xl px-6 pb-4 flex-col justify-center items-center">
-                                <Text className="text-2xl font-bold text-gray-700">
-                                    Alterar sua senha
-                                </Text>
-                                <Text className="text-gray-700">Para alterar sua senha </Text>
-                                <Text className="text-gray-700">digite a senha antiga e a nova senha</Text>
-                            </View>
+                            <PageHeader
+                                title="Altere sua senha"
+                                subtitle="Preencha os campos corretamente"
+                                description="Para alterar sua senha digite a senha antiga e a nova senha."
+                                icon={<KeyRoundIcon size={26} color="#1a9cd9" />}
+                            />
                             <View className='w-full mt-2'>
                                 <View className='relative'>
                                     <Controller
@@ -77,7 +74,7 @@ export default function AlterPassword() {
                                     {errors.senhaAnterior && <Text className='text-red-500'>{errors.senhaAnterior.message}</Text>}
                                 </View>
                                 <View className='absolute right-0 top-6'>
-                                    <Button variant={'link'} label={isSecure ? <EyeIcon /> : <EyeClosedIcon />} onPress={() => setIsSecure(!isSecure)} />
+                                    <Button variant={'link'} label={isSecure ? <EyeIcon color={'#6b7280'} /> : <EyeClosedIcon color={'#6b7280'} />} onPress={() => setIsSecure(!isSecure)} />
                                 </View>
                             </View>
                             <View className='w-full mt-2'>
@@ -99,7 +96,7 @@ export default function AlterPassword() {
                                     {errors.senha && <Text className='text-red-500'>{errors.senha.message}</Text>}
                                 </View>
                                 <View className='absolute right-0 top-6'>
-                                    <Button variant={'link'} label={isSecure ? <EyeIcon /> : <EyeClosedIcon />} onPress={() => setIsSecure(!isSecure)} />
+                                    <Button variant={'link'} label={isSecure ? <EyeIcon color={'#6b7280'} /> : <EyeClosedIcon color={'#6b7280'} />} onPress={() => setIsSecure(!isSecure)} />
                                 </View>
                             </View>
                             <View className='w-full mt-2'>
@@ -120,8 +117,8 @@ export default function AlterPassword() {
                                     />
                                     {errors.repitaSenha && <Text className='text-red-500'>{errors.repitaSenha.message}</Text>}
                                 </View>
-                                <View className='absolute right-0 top-6'>
-                                    <Button variant={'link'} label={isSecure ? <EyeIcon /> : <EyeClosedIcon />} onPress={() => setIsSecure(!isSecure)} />
+                                <View className='absolute right-0 top-6 text-gray-500'>
+                                    <Button variant={'link'} label={isSecure ? <EyeIcon color={'#6b7280'} /> : <EyeClosedIcon color={'#6b7280'} />} onPress={() => setIsSecure(!isSecure)} />
                                 </View>
                             </View>
                             <View className='w-full py-4'>
