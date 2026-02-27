@@ -18,6 +18,15 @@ export default function HistoryLayout() {
           title: 'History',
         }}
       />
+    
+      <Stack.Screen
+        name="history-items"
+        options={{
+          header: () => <DrawerHeader typel='stack' />,
+          headerShown: true,
+          title: 'History',
+        }}
+      />
     </Stack>
   )
 }

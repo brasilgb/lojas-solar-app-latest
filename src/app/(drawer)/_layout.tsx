@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react'
 import { Drawer } from 'expo-router/drawer';
-import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogOut, MapPinIcon, PhoneCallIcon, ShieldUserIcon, User2Icon, UserIcon, WrenchIcon } from 'lucide-react-native';
+import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogInIcon, LogOut, LogOutIcon, MapPinIcon, PhoneCallIcon, ShieldUserIcon, User2Icon, UserIcon, WrenchIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { BackHandler, View, Text } from 'react-native';
 import { DrawerContent, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
 import DrawerHeader from '@/components/layouts/DrawerHeader';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
 function CustomDrawerContent(props: any) {
-    const { user } = useAuth();
+    const { user, signedIn, signOut } = useAuth();
 
     useEffect(() => {
         const onBackPress = () => {
@@ -22,34 +22,94 @@ function CustomDrawerContent(props: any) {
         return () => subscription.remove();
     }, []);
 
+    const TextBoasVindas = () => {
+        return (
+            <View className='flex-col items-center justify-center'>
+                <Text className='text-white'>Faça o login e aproveite as vantagens do</Text>
+                <Text className='text-white font-semibold'>Aplicativo das Lojas Solar</Text>
+            </View>
+        )
+    };
+
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+
+        if (hour < 12) return 'Bom dia';
+        if (hour < 18) return 'Boa tarde';
+        return 'Boa noite';
+    };
+
+    const HeaderUser = () => {
+        const greeting = getGreeting();
+
+        return (
+            <View className="items-center justify-center py-6 bg-solar-blue-primary">
+                <View className="mt-4 w-24 h-24 rounded-full border-4 border-solar-green-primary bg-white items-center justify-center mb-4">
+                    <UserIcon size={60} color={'#1a9cd9'} />
+                </View>
+
+                {signedIn ? (
+                    <>
+                        <Text className="text-white text-base">
+                            {greeting},
+                        </Text>
+
+                        <Text className="text-white text-sm font-bold">
+                            {user?.nomeCliente}
+                        </Text>
+                    </>
+                ) : (
+                    <>
+                        <Text className="text-white text-base text-center px-6">
+                            Faça login e aproveite as vantagens do
+                        </Text>
+
+                        <Text className="text-white text-lg font-semibold">
+                            Aplicativo das Lojas Solar
+                        </Text>
+                    </>
+                )}
+            </View>
+        );
+    };
 
     return (
         <View className="flex-1">
 
-            <View className="items-center justify-center py-4 bg-solar-blue-primary">
-                <View className="mt-4 w-24 h-24 rounded-full border-4 border-solar-green-primary bg-white items-center justify-center mb-4">
-                    <UserIcon size={60} color={'#1a9cd9'} />
-                </View>
-                <Text className="text-white">{user?.nomeCliente}</Text>
-            </View>
+            <HeaderUser />
 
             <DrawerContent {...props}>
                 <DrawerItemList {...props} />
             </DrawerContent>
 
-            <View className={`flex-row items-center justify-between p-5 border-t border-t-gray-200`}>
-                <Link
-                    className="text-xs text-gray-600"
-                    href={'/(drawer)/frequently-asked-questions'}
-                >
-                    Perguntas frequentes
-                </Link>
-                <Link
-                    className="text-xs text-gray-600"
-                    href={'/(drawer)/privacy-police'}
-                >
-                    Política de Privacidade
-                </Link>
+            <View>
+                <View className='px-4'>
+                    <DrawerItem
+                        icon={({ color, size }) => (
+                            signedIn ? <LogOutIcon color={color} size={size} /> : <LogInIcon color={color} size={size} />
+                        )}
+                        label={signedIn ? 'Sair' : 'Login'}
+                        onPress={() =>
+                            signedIn
+                                ? signOut()
+                                : router.push('/sign-in')
+                        }
+                    />
+                </View>
+                <View className={`flex-row items-center justify-between p-5 border-t border-t-gray-200`}>
+                    <Link
+                        className="text-xs text-gray-600"
+                        href={'/questions'}
+                    >
+                        Perguntas frequentes
+                    </Link>
+                    <Link
+                        className="text-xs text-gray-600"
+                        href={'/privacy-police'}
+                    >
+                        Política de Privacidade
+                    </Link>
+                </View>
             </View>
 
         </View>
@@ -148,11 +208,11 @@ export default function DrawerLayout() {
             />
 
             <Drawer.Screen
-                name="stores-location"
+                name="(location)"
                 options={{
+                    headerShown: false,
                     drawerLabel: "Lojas Próximas de Você",
                     title: "Lojas Próximas de Você",
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <MapPinIcon color={color} size={size} />
                     ),
@@ -165,7 +225,6 @@ export default function DrawerLayout() {
                 options={{
                     drawerLabel: "Fale Conosco",
                     title: "Fale Conosco",
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <PhoneCallIcon color={color} size={size} />
                     ),
@@ -234,12 +293,14 @@ export default function DrawerLayout() {
                 options={{
                     drawerLabel: () => null,
                     drawerItemStyle: { display: 'none' },
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
                 }}
             />
 
             <Drawer.Screen
-                name="frequently-asked-questions"
+                name="(question)"
                 options={{
+                    headerShown: false,
                     drawerLabel: () => null,
                     drawerItemStyle: { display: 'none' },
                 }}

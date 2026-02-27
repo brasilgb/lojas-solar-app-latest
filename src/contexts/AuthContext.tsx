@@ -31,6 +31,7 @@ interface AuthContextData {
   disconnect: () => Promise<void>;
   message: string | undefined;
   positionGlobal: any;
+  setPositionGlobal: any;
   returnStore: any;
   setInfoCustomerToExcludeData: any;
   infoCustomerToExcludeData: any;
@@ -309,6 +310,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signOut,
         disconnect,
         message,
+        setPositionGlobal,
         positionGlobal,
         returnStore,
         setInfoCustomerToExcludeData,

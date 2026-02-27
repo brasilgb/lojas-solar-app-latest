@@ -18,6 +18,14 @@ export default function AssistanceLayout() {
           title: 'Assistance',
         }}
       />
+      <Stack.Screen
+        name="assistance-detail"
+        options={{
+          header: () => <DrawerHeader typel='stack' />,
+          headerShown: true,
+          title: 'Assistance',
+        }}
+      />
     </Stack>
   )
 }

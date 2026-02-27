@@ -86,79 +86,71 @@ export default function PrivacySettings() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1'>
+      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+        <PageHeader
+          title="Privacidade"
+          subtitle="Configurações de privacidade"
+          description="Controle como seus dados serão utilizados."
+          icon={<UserLockIcon size={26} color="#1a9cd9" />}
+        />
 
-        <View className='flex-1 bg-white rounded-t-3xl p-6'>
+        {loading ? (
+          <View className="flex-1 items-center justify-center mt-10">
+            <ActivityIndicator size="large" color="#F99F1E" />
+          </View>
+        ) : (
+          <>
 
-          <PageHeader
-            title="Privacidade"
-            subtitle="Configurações de privacidade"
-            description="Controle como seus dados serão utilizados."
-            icon={<UserLockIcon size={26} color="#1a9cd9" />}
-          />
+            <View className="gap-4 mt-4">
 
-          {/* LOADING */}
-          {loading ? (
-            <View className="flex-1 items-center justify-center mt-10">
-              <ActivityIndicator size="large" color="#F99F1E" />
-            </View>
-          ) : (
-            <>
-              {/* LISTA */}
-              <View className="gap-4 mt-4">
-
-                {/* NOTIFICAÇÕES */}
-                <View className="bg-gray-50 rounded-xl p-4 flex-row items-center justify-between">
-                  <View className="flex-1 pr-3">
-                    <Text className="text-base font-semibold text-gray-800">
-                      {autorizaCliente?.[0]?.texto || 'Notificações'}
-                    </Text>
-                    <Text className="text-xs text-gray-500 mt-1">
-                      Receber atualizações via WhatsApp ou Push
-                    </Text>
-                  </View>
-
-                  <Switch
-                    value={isEnabledNotify}
-                    onValueChange={toggleNotify}
-                  />
+              <View className="bg-gray-50 rounded-xl p-4 flex-row items-center justify-between">
+                <View className="flex-1 pr-3">
+                  <Text className="text-base font-semibold text-gray-800">
+                    {autorizaCliente?.[0]?.texto || 'Notificações'}
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Receber atualizações via WhatsApp ou Push
+                  </Text>
                 </View>
 
-                {/* EMAIL */}
-                <View className="bg-gray-50 rounded-xl p-4 flex-row items-center justify-between">
-                  <View className="flex-1 pr-3">
-                    <Text className="text-base font-semibold text-gray-800">
-                      {autorizaCliente?.[1]?.texto || 'E-mail'}
-                    </Text>
-                    <Text className="text-xs text-gray-500 mt-1">
-                      Receber comunicações por e-mail
-                    </Text>
-                  </View>
-
-                  <Switch
-                    value={isEnabledEmail}
-                    onValueChange={toggleEmail}
-                  />
-                </View>
-
-              </View>
-
-              {/* BOTÃO */}
-              <View className="mt-auto pt-8 pb-4">
-                <Button
-                  disabled={saving}
-                  label={
-                    saving
-                      ? <ActivityIndicator color="white" />
-                      : 'Salvar configurações'
-                  }
-                  onPress={handleSubmitPrivacity}
+                <Switch
+                  value={isEnabledNotify}
+                  onValueChange={toggleNotify}
                 />
               </View>
-            </>
-          )}
 
-        </View>
+              <View className="bg-gray-50 rounded-xl p-4 flex-row items-center justify-between">
+                <View className="flex-1 pr-3">
+                  <Text className="text-base font-semibold text-gray-800">
+                    {autorizaCliente?.[1]?.texto || 'E-mail'}
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Receber comunicações por e-mail
+                  </Text>
+                </View>
+
+                <Switch
+                  value={isEnabledEmail}
+                  onValueChange={toggleEmail}
+                />
+              </View>
+
+            </View>
+
+            <View className="mt-auto pt-8 pb-4">
+              <Button
+                disabled={saving}
+                label={
+                  saving
+                    ? <ActivityIndicator color="white" />
+                    : 'Salvar configurações'
+                }
+                onPress={handleSubmitPrivacity}
+              />
+            </View>
+          </>
+        )}
+
       </View>
     </ScreenLayout>
   )

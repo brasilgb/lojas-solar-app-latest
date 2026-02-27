@@ -91,6 +91,7 @@ export default function SignIn() {
                                         name="senha"
                                         render={({ field: { value, onChange, onBlur } }) => (
                                             <Input
+                                                autoFocus
                                                 secureTextEntry={isSecure}
                                                 placeholder="Sua senha"
                                                 value={value}

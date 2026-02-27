@@ -72,9 +72,12 @@ export default function Home() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
             >
-                <View className="bg-white rounded-xl py-6 flex-col justify-center items-center">
-                    <Text className="text-base font-bold text-gray-700">
-                        Olá, {user?.nomeCliente || 'visitante'}
+                <View className="bg-white px-4 py-4 rounded-b-3xl shadow-sm">
+                    <Text className="text-sm text-gray-500">
+                        {signedIn ? 'Bem-vindo de volta' : 'Olá'}
+                    </Text>
+                    <Text className="text-lg font-bold text-gray-800">
+                        {user?.nomeCliente || 'Visitante'}
                     </Text>
                     <Text className="text-gray-700">Bem vindo ao app das lojas solar</Text>
                 </View>
@@ -102,62 +105,75 @@ export default function Home() {
                         </View>
                     )}
                 </View>
-                <View className="py-6 flex-col justify-center items-center m-2">
-                    <Text className="text-gray-600">Você está próximo(a) a loja de: <Text className='font-bold'>{returnStore && returnStore?.cidade.split("-")[0]}</Text></Text>
-                    <Text className='text-gray-600 mb-4'>Faça-nos uma visita</Text>
+                <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm items-center">
+                    <Text className="text-gray-600">Loja mais próxima</Text>
+                    <Text className="font-bold text-lg text-gray-800 mt-1">
+                        {returnStore && returnStore?.cidade.split('-')[0] || 'Não identificado'}
+                    </Text>
+                    <Text className="text-gray-500 mb-3">Venha nos visitar 📍</Text>
                     <BouncingPin />
                 </View>
             </ScrollView>
-            <View className='bg-solar-blue-primary p-2 flex-row items-center justify-start'>
+            <View className="bg-solar-blue-primary py-3">
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    className="flex-row"
+                    contentContainerStyle={{
+                        paddingHorizontal: 12,
+                    }}
                 >
-                    <View className='flex-row gap-2'>
+                    <View className="flex-row gap-3">
                         <ButtonMenu
-                            icon={<ShoppingBasket color={'white'} size={30} />}
+                            icon={<ShoppingBasket color={'white'} size={28} />}
                             label={'Comprar'}
                             url={'https://www.lojasolar.com.br/'}
                         />
+
                         <ButtonMenu
-                            icon={<FilePenLineIcon color={'white'} size={30} />}
+                            icon={<FilePenLineIcon color={'white'} size={28} />}
                             label={'Assinar Doc'}
-                            url={signedIn ? '/sign-in' : '/view-doc'}
+                            url={!signedIn ? '/sign-in' : '/docs-assign'}
                         />
+
                         <ButtonMenu
-                            icon={<HandCoinsIcon color={'white'} size={30} />}
+                            icon={<HandCoinsIcon color={'white'} size={28} />}
                             label={'Pagamentos'}
                             url={!signedIn ? '/sign-in' : '/payment'}
                         />
+
                         <ButtonMenu
-                            icon={<BanknoteArrowDownIcon color={'white'} size={30} />}
+                            icon={<BanknoteArrowDownIcon color={'white'} size={28} />}
                             label={'Cashback'}
                             url={!signedIn ? '/sign-in' : '/cashback'}
                         />
+
                         <ButtonMenu
-                            icon={<MapPinIcon color={'white'} size={30} />}
+                            icon={<MapPinIcon color={'white'} size={28} />}
                             label={'Lojas'}
-                            url={'(stores)'}
+                            url={'/stores'}
                         />
+
                         <ButtonMenu
-                            icon={<WrenchIcon color={'white'} size={30} />}
+                            icon={<WrenchIcon color={'white'} size={28} />}
                             label={'Assistência'}
                             url={!signedIn ? '/sign-in' : '/assistance'}
                         />
+
                         <ButtonMenu
-                            icon={<PhoneCallIcon color={'white'} size={30} />}
-                            label={'Fale Conosco'}
+                            icon={<PhoneCallIcon color={'white'} size={28} />}
+                            label={'Contato'}
                             url={'/contact-us'}
                         />
+
                         <ButtonMenu
-                            icon={<HistoryIcon color={'white'} size={30} />}
+                            icon={<HistoryIcon color={'white'} size={28} />}
                             label={'Histórico'}
                             url={!signedIn ? '/sign-in' : '/history'}
                         />
+
                         <ButtonMenu
-                            icon={<UserIcon color={'white'} size={30} />}
-                            label={'Minha Conta'}
+                            icon={<UserIcon color={'white'} size={28} />}
+                            label={'Conta'}
                             url={!signedIn ? '/sign-in' : '/my-account'}
                         />
                     </View>

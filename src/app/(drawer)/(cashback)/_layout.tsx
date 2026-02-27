@@ -18,6 +18,24 @@ export default function CashbackLayout() {
           title: 'Cashback',
         }}
       />
+
+      <Stack.Screen
+        name="history-cashback"
+        options={{
+          header: () => <DrawerHeader typel='stack' />,
+          headerShown: true,
+          title: 'Histórico de Cashback',
+        }}
+      />
+
+      <Stack.Screen
+        name="cashback-requested"
+        options={{
+          header: () => <DrawerHeader typel='stack' />,
+          headerShown: true,
+          title: 'Cashback',
+        }}
+      />
     </Stack>
   )
 }

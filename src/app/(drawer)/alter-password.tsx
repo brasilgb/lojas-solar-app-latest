@@ -36,24 +36,24 @@ export default function AlterPassword() {
     }
 
     return (
-        <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
-                <ScrollView
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    showsVerticalScrollIndicator={false}
-                    bounces={false}
+        <ScreenLayout backgroundColor="bg-solar-blue-primary">
+            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+                <PageHeader
+                    title="Altere sua senha"
+                    subtitle="Preencha os campos corretamente"
+                    description="Para alterar sua senha digite a senha antiga e a nova senha."
+                    icon={<KeyRoundIcon size={26} color="#1a9cd9" />}
+                />
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={{ flex: 1 }}
                 >
-                    <View className='flex-1 flex-col items-center justify-start'>
-                        <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-                            <PageHeader
-                                title="Altere sua senha"
-                                subtitle="Preencha os campos corretamente"
-                                description="Para alterar sua senha digite a senha antiga e a nova senha."
-                                icon={<KeyRoundIcon size={26} color="#1a9cd9" />}
-                            />
+                    <ScrollView
+                        contentContainerStyle={{ flexGrow: 1 }}
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                    >
+                        <View className='flex-1 flex-col items-center justify-start'>
                             <View className='w-full mt-2'>
                                 <View className='relative'>
                                     <Controller
@@ -121,17 +121,17 @@ export default function AlterPassword() {
                                     <Button variant={'link'} label={isSecure ? <EyeIcon color={'#6b7280'} /> : <EyeClosedIcon color={'#6b7280'} />} onPress={() => setIsSecure(!isSecure)} />
                                 </View>
                             </View>
-                            <View className='w-full py-4'>
-                                <Button
-                                    disabled={loading}
-                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
-                                    onPress={handleSubmit(onSubmit)}
-                                />
-                            </View>
                         </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                        <View className='w-full py-4'>
+                            <Button
+                                disabled={loading}
+                                label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
+                                onPress={handleSubmit(onSubmit)}
+                            />
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </View>
         </ScreenLayout>
     )
 }

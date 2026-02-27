@@ -1,10 +1,10 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { View, Text } from "react-native";
 
 type PageHeaderProps = {
     title: string;
     subtitle?: string;
-    description?: string;
+    description?: string | ReactNode;
     icon?: React.ReactNode;
     rightElement?: React.ReactNode; // botão, badge, etc
 };

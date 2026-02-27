@@ -107,6 +107,7 @@ export default function Crediary() {
                             },
                         },
                     ]);
+                    return
                 }
 
                 if (!success) {
