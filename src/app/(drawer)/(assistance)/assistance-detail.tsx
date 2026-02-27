@@ -59,75 +59,77 @@ const AssistanceDetail = () => {
                     icon={<WrenchIcon size={26} color="#1a9cd9" />}
                 />
 
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                >
+                <View className='mt-4'>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                    >
 
-                    <Card className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                        <CardHeader className="gap-3">
+                        <Card className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                            <CardHeader className="gap-3">
 
-                            <Text className="text-base font-semibold text-gray-700">
-                                Abertura:{' '}
-                                <Text className="font-normal text-gray-500">
-                                    {details?.Abertura ?? '-'}
+                                <Text className="text-base font-semibold text-gray-700">
+                                    Abertura:{' '}
+                                    <Text className="font-normal text-gray-500">
+                                        {details?.Abertura ?? '-'}
+                                    </Text>
                                 </Text>
-                            </Text>
 
-                            <Text className="text-base font-semibold text-gray-700">
-                                Defeito:{' '}
-                                <Text className="font-normal text-gray-500">
-                                    {details?.defeito ?? '-'}
+                                <Text className="text-base font-semibold text-gray-700">
+                                    Defeito:{' '}
+                                    <Text className="font-normal text-gray-500">
+                                        {details?.defeito ?? '-'}
+                                    </Text>
                                 </Text>
-                            </Text>
 
-                            <Text className="text-base font-semibold text-gray-700">
-                                Status:{' '}
-                                <Text className="font-normal text-gray-500">
-                                    {details?.status ?? '-'}
+                                <Text className="text-base font-semibold text-gray-700">
+                                    Status:{' '}
+                                    <Text className="font-normal text-gray-500">
+                                        {details?.status ?? '-'}
+                                    </Text>
                                 </Text>
-                            </Text>
 
-                        </CardHeader>
-                    </Card>
+                            </CardHeader>
+                        </Card>
 
-                    <Card className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <Card className="bg-gray-50 border border-gray-200 rounded-lg p-4">
 
-                        <View className="border-l-2 border-gray-200 pl-4">
+                            <View className="border-l-2 border-gray-200 pl-4">
 
-                            {details?.eventos?.length ? (
-                                details.eventos.map((e, i) => {
-                                    const isLast = i === details.eventos!.length - 1;
+                                {details?.eventos?.length ? (
+                                    details.eventos.map((e, i) => {
+                                        const isLast = i === details.eventos!.length - 1;
 
-                                    return (
-                                        <View
-                                            key={`${i}-${e.xEventos}`}
-                                            className={`mb-${isLast ? '0' : '6'}`}
-                                        >
-                                            {/* DOT */}
+                                        return (
                                             <View
-                                                className={`absolute w-4 h-4 rounded-full -left-6 top-1 ${isLast
+                                                key={`${i}-${e.xEventos}`}
+                                                className={`mb-${isLast ? '0' : '6'}`}
+                                            >
+                                                {/* DOT */}
+                                                <View
+                                                    className={`absolute w-4 h-4 rounded-full -left-6 top-1 ${isLast
                                                         ? 'bg-solar-orange-primary'
                                                         : 'bg-gray-400'
-                                                    }`}
-                                            />
+                                                        }`}
+                                                />
 
-                                            <Text className="text-sm font-medium text-gray-600">
-                                                {e.xEventos}
-                                            </Text>
-                                        </View>
-                                    );
-                                })
-                            ) : (
-                                <Text className="text-gray-400 text-sm">
-                                    Nenhum evento encontrado
-                                </Text>
-                            )}
+                                                <Text className="text-sm font-medium text-gray-600">
+                                                    {e.xEventos}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })
+                                ) : (
+                                    <Text className="text-gray-400 text-sm">
+                                        Nenhum evento encontrado
+                                    </Text>
+                                )}
 
-                        </View>
+                            </View>
 
-                    </Card>
-                </ScrollView>
+                        </Card>
+                    </ScrollView>
+                </View>
 
             </View>
         </ScreenLayout>

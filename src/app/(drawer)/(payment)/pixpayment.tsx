@@ -22,8 +22,7 @@ const PixPayment = () => {
             const response = await appservice.get(
                 `(WS_TRANSACAO_PIX)?token=${mtoken}&tempoPix=3600&valorPix=${valueOrder}&mensagemPix=Pagamento Pix Grupo Solar`,
             );
-            const { success, message, txid, banco, copiaColaPix } =
-                response.data.resposta;
+            const { success, message, txid, banco, copiaColaPix } = response.data.resposta;
             if (success) {
                 let dataPay = {
                     idTransacao: txid,
@@ -74,8 +73,8 @@ const PixPayment = () => {
         const response = await appservice.get(
             `(WS_ATUALIZA_ORDEM)?token=91362590064312210014616&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`,
         );
-        const { success } = response.data.resposta;
-        console.log('pix pago ', success);
+        const { success, message } = response.data.resposta;
+        console.log('pix pago ', message);
         return;
     };
 
@@ -144,6 +143,7 @@ const PixPayment = () => {
                     </Pressable>
 
                 </View>
+
             </View>
         </View>
     );

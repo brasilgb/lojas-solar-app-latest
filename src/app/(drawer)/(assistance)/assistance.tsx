@@ -79,27 +79,28 @@ const AssistanceProtocol = () => {
           description="Aqui consta todos os seus equipamentos enviados para garantia."
           icon={<WrenchIcon size={26} color="#1a9cd9" />}
         />
-
-        <FlashList
-          data={protocols}
-          renderItem={renderItem}
-          keyExtractor={(item: any) => item.nProtocolo?.toString()}
-          estimatedItemSize={20}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          onRefresh={getProtocols}
-          refreshing={loading}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          ListEmptyComponent={
-            !loading ? (
-              <View className="items-center mt-10">
-                <Text className="text-gray-400">
-                  Nenhum protocolo encontrado
-                </Text>
-              </View>
-            ) : null
-          }
-        />
+        <View className='flex-1 mt-4'>
+          <FlashList
+            data={protocols}
+            renderItem={renderItem}
+            keyExtractor={(item: any) => item.nProtocolo?.toString()}
+            estimatedItemSize={20}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            onRefresh={getProtocols}
+            refreshing={loading}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListEmptyComponent={
+              !loading ? (
+                <View className="items-center">
+                  <Text className="text-gray-400">
+                    Nenhum protocolo encontrado
+                  </Text>
+                </View>
+              ) : null
+            }
+          />
+        </View>
       </View>
     </ScreenLayout>
   );

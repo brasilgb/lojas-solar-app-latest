@@ -1,7 +1,7 @@
 {
-  "name": "lojas-solar-app",
+  "name": "com.loja.solar",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.5.5",
   "scripts": {
     "start": "expo start -p 8085",
     "android": "expo run:android",

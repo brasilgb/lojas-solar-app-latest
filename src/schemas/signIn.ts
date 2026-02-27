@@ -21,3 +21,16 @@ export const alterPasswordSchema = z.object({
 });
 
 export type AlterPasswordSchema = z.infer<typeof alterPasswordSchema>;
+
+export const RegisterPasswordSchema = z
+    .object({
+        email: z.email({error: 'Informe um e-mail válido'}),
+        celular: z.string({error: 'Informe o celular'}),
+        senha: z.string({error: 'Informe a senha'}),
+        repitaSenha: z.string({error: 'Repita a asenha'}),
+    })
+    .refine((value: any) => value.senha === value.repitaSenha, {
+        error: 'As senhas são diferentes',
+        path: ['repitaSenha'],
+    });
+export type RegisterPasswordFormType = z.infer<typeof RegisterPasswordSchema>;

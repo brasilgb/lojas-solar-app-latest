@@ -48,22 +48,20 @@ export default function HistoryItems() {
                     bounces={false}
                 >
 
-                    {historicoItems?.map((item: any) => (
+                    {historicoItems?.map((item: any, index: number) => (
                         <View
-                            key={item.numero}
+                            key={index}
                             className="flex-row items-center bg-white my-2 p-3 rounded-2xl border border-gray-200 shadow-sm"
                         >
-                            {/* IMAGEM */}
+
                             <Image
                                 source={{ uri: item?.linkImagem }}
-                                className="h-20 w-20 rounded-xl"
+                                className="h-24 w-24 rounded-xl border border-gray-200 bg-gray-50/80"
                                 resizeMode="cover"
                             />
 
-                            {/* CONTEÚDO */}
                             <View className="flex-1 ml-3 justify-between">
 
-                                {/* DESCRIÇÃO */}
                                 <Text
                                     className="text-base font-semibold text-gray-800"
                                     numberOfLines={2}
@@ -71,7 +69,6 @@ export default function HistoryItems() {
                                     {item?.descricao}
                                 </Text>
 
-                                {/* DETALHES */}
                                 <Text className="text-sm text-gray-500 mt-1">
                                     {parseInt(item?.quantidade)} un × R${' '}
                                     {maskMoney(
@@ -79,7 +76,6 @@ export default function HistoryItems() {
                                     )}
                                 </Text>
 
-                                {/* PREÇO TOTAL */}
                                 <Text className="text-lg font-bold text-solar-blue-secondary mt-2">
                                     R$ {maskMoney(item?.total)}
                                 </Text>

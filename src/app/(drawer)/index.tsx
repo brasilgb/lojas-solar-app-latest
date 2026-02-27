@@ -132,7 +132,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<FilePenLineIcon color={'white'} size={28} />}
                             label={'Assinar Doc'}
-                            url={!signedIn ? '/sign-in' : '/docs-assign'}
+                            url={!signedIn ? '/sign-in' : '/not-registered'}
                         />
 
                         <ButtonMenu

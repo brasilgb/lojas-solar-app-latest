@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native'
+import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
 import { BanknoteArrowDownIcon, X } from 'lucide-react-native'
@@ -64,12 +64,20 @@ export default function Cashback() {
   );
 
   const handleHistoricoCachback = () => {
-    setDateIni(dataAnterior);
-    setDateFin(new Date());
-    router.push({
-      pathname: '/history-cashback',
-      params: historicoCashback,
-    });
+    setLoading(true)
+    try {
+      setDateIni(dataAnterior);
+      setDateFin(new Date());
+      router.push({
+        pathname: '/history-cashback',
+        params: historicoCashback,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false)
+    }
+
   };
 
   useEffect(() => {
@@ -164,7 +172,7 @@ export default function Cashback() {
           icon={<BanknoteArrowDownIcon size={26} color="#1a9cd9" />}
         />
 
-        <View className="p-4 bg-gray-100 rounded-3xl flex-1 gap-4 mt-2">
+        <View className="p-4 bg-gray-100 rounded-3xl flex-1 gap-4 mt-4">
           <View className="flex-col gap-4">
             <View className="bg-solar-blue-primary rounded-2xl p-5 shadow-md">
               <Text className="text-white text-sm opacity-80">
@@ -216,10 +224,9 @@ export default function Cashback() {
 
           <View>
             <Button
-              label="Solicitar Cashback"
+              label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Solicitar Cashback'}
               onPress={handleHistoricoCachback}
               disabled={!historicoCashback?.data?.length}
-              className="mt-2"
             />
           </View>
         </View>

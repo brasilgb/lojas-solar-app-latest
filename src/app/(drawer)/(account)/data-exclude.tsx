@@ -41,24 +41,23 @@ export default function DataExclude() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
+      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+        <PageHeader
+          title="Exclusão de dados"
+          subtitle="Preencha o formulário abaixo corretamente"
+          description="Após o envio dos dados iniciarmos o processo de exclusão de dados."
+          icon={<User2Icon size={26} color="#1a9cd9" />}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
         >
-          <View className='flex-1 flex-col items-center justify-start'>
-            <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
-
-              <PageHeader
-                title="Exclusão de dados"
-                subtitle="Preencha o formulário abaixo corretamente"
-                description="Após o envio dos dados iniciarmos o processo de exclusão de dados."
-                icon={<User2Icon size={26} color="#1a9cd9" />}
-              />
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
+            <View className='flex-1 flex-col items-center justify-start'>
 
               <View className='w-full'>
                 <Controller
@@ -114,17 +113,17 @@ export default function DataExclude() {
                 {errors.celularCliente && <Text className='text-red-500'>{errors.celularCliente.message}</Text>}
               </View>
 
-              <View className='w-full py-4'>
-                <Button
-                  disabled={loading}
-                  label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
-                  onPress={handleSubmit(onSubmit)}
-                />
-              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <View className='w-full py-4'>
+              <Button
+                disabled={loading}
+                label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
+                onPress={handleSubmit(onSubmit)}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </ScreenLayout>
   )
 }

@@ -21,6 +21,7 @@ interface User {
 
 interface AuthContextData {
   signedIn: boolean;
+  setUser: any;
   user: User | null;
   loading: boolean;
   signIn: (cpfcnpj: any) => Promise<void>;
@@ -301,6 +302,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         signedIn: !!user,
+        setUser,
         user,
         loading,
         signIn,

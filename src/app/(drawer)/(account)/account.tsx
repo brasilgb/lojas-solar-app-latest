@@ -9,16 +9,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import appservice from '@/services/appservice';
 import { Input } from '@/components/Input';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components/Button';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function Account() {
+    const params = useLocalSearchParams();
     const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
     const [loading, setLoading] = useState(false);
     const [account, setAccount] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
 
+const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
 
     useEffect(() => {
         const getAccount = async () => {

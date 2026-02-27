@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
@@ -33,8 +32,6 @@ const CartPayment: React.FC = () => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [registeredOrder, setRegisteredOrder] = useState<RegisteredOrder | null>(null);
-
-    const { bottom } = useSafeAreaInsets();
     const params = useLocalSearchParams();
     const order = JSON.parse(params?.dataOrder as string);
     const orderTotal = parseFloat(String(params?.totalAmount)).toFixed(2);
@@ -105,12 +102,12 @@ const CartPayment: React.FC = () => {
                 Recurrent: false,
                 SoftDescriptor: "123456789ABCD",
                 CreditCard: {
-                    CardNumber: unMask(orderData?.dadosCartao?.numeroCartao as any),
+                    CardNumber: unMask(orderData?.dadosCartao?.numeroCartao),
                     Holder: orderData?.dadosCartao.nomeCartao,
                     ExpirationDate: orderData?.dadosCartao.validadeCartao,
                     SecurityCode: orderData?.dadosCartao.cvvCartao,
                     SaveCard: false,
-                    Brand: getCardBrandName(orderData?.dadosCartao?.numeroCartao as any),
+                    Brand: getCardBrandName(String(orderData?.dadosCartao?.numeroCartao)),
                 },
             },
         });
@@ -144,6 +141,7 @@ const CartPayment: React.FC = () => {
                     description="Informe os dados do seu cartão."
                     icon={<HandCoinsIcon size={26} color="#1a9cd9" />}
                 />
+
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={{ flex: 1 }}
@@ -253,26 +251,26 @@ const CartPayment: React.FC = () => {
                             </View>
 
                             <View className="flex-row items-center justify-center mt-6 gap-2">
-                                    <LockIcon size={15} color={"#f9b233"} /> <Text className="text-xs text-gray-400">Pagamento seguro e criptografado</Text>
+                                <LockIcon size={15} color={"#f9b233"} />
+                                <Text className="text-xs text-gray-400">Pagamento seguro e criptografado</Text>
                             </View>
-
 
                         </View>
                     </ScrollView>
-                            <View className="mt-6">
-                                <Button
-                                    label={
-                                        loading
-                                            ? <ActivityIndicator size="small" color="#bccf00" />
-                                            : "Continuar pagamento"
-                                    }
-                                    variant="default"
-                                    size="lg"
-                                    disabled={loading}
-                                    onPress={handleSubmit(onSubmit)}
-                                    className="w-full"
-                                />
-                            </View>
+                    <View className="mt-6">
+                        <Button
+                            label={
+                                loading
+                                    ? <ActivityIndicator size="small" color="#bccf00" />
+                                    : "Continuar pagamento"
+                            }
+                            variant="default"
+                            size="lg"
+                            disabled={loading}
+                            onPress={handleSubmit(onSubmit)}
+                            className="w-full"
+                        />
+                    </View>
                 </KeyboardAvoidingView>
             </View>
         </ScreenLayout>

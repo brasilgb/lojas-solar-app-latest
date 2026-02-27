@@ -96,15 +96,15 @@ function CustomDrawerContent(props: any) {
                         }
                     />
                 </View>
-                <View className={`flex-row items-center justify-between p-5 border-t border-t-gray-200`}>
+                <View className={`flex-row bg-solar-blue-primary rounded-br-[16] items-center justify-between p-5 border-t border-t-gray-200`}>
                     <Link
-                        className="text-xs text-gray-600"
+                        className="text-xs text-white"
                         href={'/questions'}
                     >
                         Perguntas frequentes
                     </Link>
                     <Link
-                        className="text-xs text-gray-600"
+                        className="text-xs text-white"
                         href={'/privacy-police'}
                     >
                         Política de Privacidade
@@ -124,8 +124,8 @@ export default function DrawerLayout() {
             screenOptions={{
                 drawerHideStatusBarOnOpen: false,
                 drawerType: 'front',
-                drawerActiveBackgroundColor: '#bccf00',
-                drawerActiveTintColor: '#0d3b85'
+                drawerActiveBackgroundColor: '#1a9dd9c8',
+                drawerActiveTintColor: '#ffffff'
             }}
         >
 

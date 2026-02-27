@@ -23,7 +23,6 @@ export default function DrawerHeader({ typel, typer }: any) {
       className="bg-solar-blue-primary flex-row items-center justify-between"
     >
 
-      {/* LEFT */}
       <View className="w-12 items-start">
         {typel === 'stack' && (
           <TouchableOpacity
@@ -44,7 +43,6 @@ export default function DrawerHeader({ typel, typer }: any) {
         )}
       </View>
 
-      {/* CENTER */}
       <View className="flex-1 items-center justify-center">
         <Image
           source={require('@/assets/images/logo_lojas_solar.png')}
@@ -53,7 +51,6 @@ export default function DrawerHeader({ typel, typer }: any) {
         />
       </View>
 
-      {/* RIGHT */}
       <View className="w-12 items-end">
         {typer === 'drawer' && (
           signedIn ? (

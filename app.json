@@ -2,12 +2,11 @@
   "expo": {
     "name": "Lojas Solar",
     "slug": "comlojasolar",
-    "version": "2.0.0",
+    "version": "1.5.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "lojassolarapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -68,7 +67,6 @@
           "apiKey": "AIzaSyA8m2VnsHjhhYsFSRdYGwW3h_119sQOCbc"
         }
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.loja.solar"
     },
