@@ -173,7 +173,7 @@ const OpenPayments = () => {
                     </Text>
 
                     {/* VALORES */}
-                    <View className="flex-row justify-between items-end mt-3">
+                    <View className="flex-row justify-between items-end">
 
                         <View>
                             {crediario.acrescimo > 0 && (
@@ -195,50 +195,58 @@ const OpenPayments = () => {
     };
 
     const FooterPaymentTotal = () => (
-        <View
-            className="absolute bottom-0 left-0 right-0 bg-solar-blue-primary px-4 pt-4 pb-6 border-t border-white/10"
-            style={{
-                elevation: 12,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.15,
-                shadowRadius: 6,
-            }}
-        >
+    <View
+        className="absolute bottom-0 left-0 right-0 bg-solar-blue-primary px-4 py-4 border-t border-white/10 flex-row items-center justify-between"
+        style={{
+            elevation: 12,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
+        }}
+    >
 
-            {/* RESUMO */}
-            <View className="mb-4">
-                <Text className="text-sm text-white/70">
-                    {installmentsCount}{' '}
-                    {installmentsCount > 1
-                        ? 'parcelas selecionadas'
-                        : 'parcela selecionada'}
-                </Text>
+        {/* RESUMO */}
+        {/* Usamos flex-1 para ocupar o espaço restante e mr-4 para desgrudar do botão */}
+        <View className="flex-1 mr-4">
+            <Text 
+                className="text-sm text-white/70" 
+                numberOfLines={1} 
+                adjustsFontSizeToFit
+            >
+                {installmentsCount}{' '}
+                {installmentsCount > 1
+                    ? 'parcelas selecionadas' // Encurtei a frase para evitar quebra de linha em telas pequenas
+                    : 'parcela selecionada'}
+            </Text>
 
-                <Text className="text-3xl font-extrabold text-white mt-1">
-                    R$ {maskMoney(String((totalAmount || 0).toFixed(2)))}
-                </Text>
-            </View>
-
-            {/* BOTÃO FULL WIDTH */}
-            <Button
-                size="lg"
-                variant="secondary"
-                label={`Pagar agora`}
-                className="w-full"
-                onPress={() =>
-                    router.push({
-                        pathname: '/methods',
-                        params: {
-                            dataOrder: JSON.stringify(selectedPayments),
-                            totalAmount: totalAmount,
-                        },
-                    })
-                }
-            />
-
+            {/* Reduzi levemente de 3xl para 2xl para caber melhor na horizontal */}
+            <Text 
+                className="text-3xl font-extrabold text-white mt-1"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+            >
+                R$ {maskMoney(String((totalAmount || 0).toFixed(2)))}
+            </Text>
         </View>
-    );
+
+        <Button
+             // Se o seu componente Button aceitar 'md', é melhor para não ficar tão alto. Se não, mantenha 'lg'.
+            variant="secondary"
+            label="Pagar agora"
+            onPress={() =>
+                router.push({
+                    pathname: '/methods',
+                    params: {
+                        dataOrder: JSON.stringify(selectedPayments),
+                        totalAmount: totalAmount,
+                    },
+                })
+            }
+        />
+
+    </View>
+);
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
@@ -293,7 +301,7 @@ const OpenPayments = () => {
 
                                     {installmentsCount > 0 && (
                                         <Text className="text-sm text-solar-blue-primary font-semibold">
-                                            {installmentsCount} selecionados
+                                            {installmentsCount} {installmentsCount > 1 ? 'selecionados' : 'selecionado'}
                                         </Text>
                                     )}
                                 </TouchableOpacity>

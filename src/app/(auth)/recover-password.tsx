@@ -3,7 +3,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { Link, router, useLocalSearchParams } from 'expo-router'
 import { KeyRoundIcon } from 'lucide-react-native'
 import React from 'react'
-import { View, Text, Image } from 'react-native'
+import { View, Text } from 'react-native'
 
 export default function RecoverPassword() {
   const params = useLocalSearchParams()

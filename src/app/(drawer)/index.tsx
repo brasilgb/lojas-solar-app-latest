@@ -9,6 +9,7 @@ import appservice from '@/services/appservice';
 import { AppCaroucelProps } from '@/types/app-types';
 import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HistoryIcon, MapPinIcon, PhoneCallIcon, ShoppingBasket, UserIcon, WrenchIcon } from 'lucide-react-native';
 import BouncingPin from '@/components/BouncingPin';
+import FastImage from 'react-native-fast-image';
 
 // Obtém largura da tela
 const width = Dimensions.get('window').width;
@@ -22,14 +23,25 @@ export default function Home() {
     const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(() => {
-        const getCaroucel = async () => {
-            const response = await appservice.get(`(WS_CARROCEL_PROMOCAO)`);
-            // Garante que é um array antes de setar
-            if (response.data?.resposta?.data?.carrocel) {
-                setDataCaroucel(response.data.resposta.data.carrocel);
-            }
+        async function getCarrocel() {
+            await appservice
+                .get(`(WS_CARROCEL_PROMOCAO)`)
+                .then((response: any) => {
+                    const { data } = response.data.resposta;
+                    const imagesToPrefetch = data.carrocel.map((item: any) => item.carLinkImagem);
+                    // Inicia o download de todas as imagens em background
+                    Promise.all(imagesToPrefetch.map((url: any) => Image.prefetch(url)))
+                        .then(() => {
+                            setDataCaroucel(data.carrocel); // Só seta o estado após o download (opcional)
+                        })
+                        .catch(() => setDataCaroucel(data.carrocel)); // Ou seta de qualquer forma se falhar
+
+                })
+                .catch(err => {
+                    console.log(err);
+                })
         }
-        getCaroucel();
+        getCarrocel();
     }, []);
 
     const renderItem = ({ item }: { item: AppCaroucelProps }) => {
@@ -39,11 +51,13 @@ export default function Home() {
                 onPress={() => console.log('Clicou no banner:')} // Aqui você pode colocar navegação
                 className="flex-1 justify-center overflow-hidden"
             >
-                <Image
-                    source={{ uri: item.carLinkImagem }}
-                    // 'cover' preenche tudo sem distorcer. 'contain' mostra a imagem inteira mas pode deixar bordas brancas.
+                <FastImage
+                    source={{
+                        uri: item.carLinkImagem,
+                        priority: FastImage.priority.high,
+                    }}
                     style={{ width: width, height: '100%' }}
-                    resizeMode="cover"
+                    resizeMode={FastImage.resizeMode.cover}
                 />
             </TouchableOpacity>
         );
@@ -52,7 +66,7 @@ export default function Home() {
     const Pagination = () => {
         return (
             <View className="flex-row justify-center items-center absolute bottom-4 w-full">
-                {dataCaroucel.map((_, index) => (
+                {dataCaroucel?.map((_, index) => (
                     <View
                         key={index}
                         className={`h-2 mx-1 ${index === activeIndex
@@ -83,14 +97,14 @@ export default function Home() {
                 </View>
 
                 <View className="relative bg-white">
-                    {dataCaroucel.length > 0 ? (
+                    {dataCaroucel?.length > 0 ? (
                         <View>
                             <Carousel
                                 ref={ref}
                                 loop
                                 width={width}
                                 height={width} // Altura proporcional (60% da largura). Ajuste se quiser maior.
-                                autoPlay={dataCaroucel.length > 1 ? true : false}
+                                autoPlay={dataCaroucel?.length > 1 ? true : false}
                                 autoPlayInterval={4000} // 4 segundos
                                 data={dataCaroucel}
                                 scrollAnimationDuration={1000}
@@ -101,7 +115,10 @@ export default function Home() {
                         </View>
                     ) : (
                         <View style={{ width: width, height: width }} className="bg-gray-200 justify-center items-center">
-                            <ActivityIndicator color={'#bccf00'} size={'large'} />
+                            <Image
+                                source={require('@/assets/images/default-slide.png')}
+                                style={{ width: '100%', height: 410, resizeMode: 'cover' }}
+                            />
                         </View>
                     )}
                 </View>
@@ -132,13 +149,13 @@ export default function Home() {
                         <ButtonMenu
                             icon={<FilePenLineIcon color={'white'} size={28} />}
                             label={'Assinar Doc'}
-                            url={!signedIn ? '/sign-in' : '/not-registered'}
+                            url={!signedIn ? '/sign-in' : '/docs-assign'}
                         />
 
                         <ButtonMenu
                             icon={<HandCoinsIcon color={'white'} size={28} />}
                             label={'Pagamentos'}
-                            url={!signedIn ? '/sign-in' : '/payment'}
+                            url={!signedIn ? '/sign-in' : '/cardbillpaid'}
                         />
 
                         <ButtonMenu
@@ -150,7 +167,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<MapPinIcon color={'white'} size={28} />}
                             label={'Lojas'}
-                            url={'/stores'}
+                            url={'/initial-location'}
                         />
 
                         <ButtonMenu
@@ -162,7 +179,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<PhoneCallIcon color={'white'} size={28} />}
                             label={'Contato'}
-                            url={'/contact-us'}
+                            url={'/contact'}
                         />
 
                         <ButtonMenu
@@ -174,7 +191,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<UserIcon color={'white'} size={28} />}
                             label={'Conta'}
-                            url={!signedIn ? '/sign-in' : '/my-account'}
+                            url={!signedIn ? '/sign-in' : '/account'}
                         />
                     </View>
                 </ScrollView>

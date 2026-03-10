@@ -7,6 +7,10 @@ const PaymentLayout = () => {
         switch (routeName) {
             case 'payment':
                 return 'drawer'; // tela raiz (abre menu)
+            case 'pixpayment':
+                return 'pay'; // tela raiz (abre menu)
+            case 'cardbillpaid':
+                return 'pay'; // tela raiz (abre menu)
 
             default:
                 return 'stack'; // telas internas (voltar)

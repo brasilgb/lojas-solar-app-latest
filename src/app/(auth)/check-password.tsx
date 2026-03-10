@@ -159,16 +159,6 @@ export default function SignIn() {
                                 labelClasses="text-white font-semibold"
                             />
 
-                            <View className="items-center mt-6">
-                                <Link href="/sign-in" asChild>
-                                    <Button
-                                        variant="link"
-                                        label="Voltar"
-                                        labelClasses="text-blue-600"
-                                    />
-                                </Link>
-                            </View>
-
                         </View>
                     </View>
 

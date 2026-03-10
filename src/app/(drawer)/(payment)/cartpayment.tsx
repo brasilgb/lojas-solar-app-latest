@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from "react-native";
 import { useForm, Controller } from "react-hook-form";
@@ -16,25 +14,45 @@ import { getCardBrandName } from "@/lib/creditcart";
 import { PageHeader } from "@/components/PageHeader";
 import { HandCoinsIcon, LockIcon } from "lucide-react-native";
 import { ScreenLayout } from "@/components/layouts/ScreenLayout";
+import moment from "moment";
+import 'moment/locale/pt-br';
+moment.locale('pt-br');
 
-type RegisteredOrder = {
-    numeroOrdem: string;
-    valorOrdem: number;
-    dadosCartao: {
-        numeroCartao: string;
-        nomeCartao: string;
-        validadeCartao: string;
-        cvvCartao: string;
-    };
-};
+// Define o que vem nos parâmetros da URL/Rota
+interface OrderData {
+    numeroOrdem: string | number;
+    // adicione outras propriedades que existam no seu JSON
+}
 
-const CartPayment: React.FC = () => {
+// Define o que o backend de Pix retorna
+interface CartResponseData {
+    MerchantOrderId: string;
+    PaymentId: string;
+    AuthorizationCode: string;
+    CartNumber: string;
+    ReceivedDate: string;
+}
+
+// Define a estrutura do que você envia para atualizar a ordem
+interface OrderUpdatePayload {
+    numeroOrdem: string | number;
+    statusOrdem: number;
+    idTransacao: string;
+    tipoPagamento: number;
+    urlBoleto: string;
+    ReceivedDate: string;
+}
+/**
+ *         MerchantOrderId, PaymentId, Authori
+ */
+
+const CartPayment = () => {
+
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [registeredOrder, setRegisteredOrder] = useState<RegisteredOrder | null>(null);
     const params = useLocalSearchParams();
     const order = JSON.parse(params?.dataOrder as string);
-    const orderTotal = parseFloat(String(params?.totalAmount)).toFixed(2);
+    const valueOrder = String(params?.totalAmount);
     const mtoken = user?.token;
 
     const { control, handleSubmit, formState: { errors } } = useForm<CartPaymentFormType>({
@@ -47,6 +65,13 @@ const CartPayment: React.FC = () => {
         resolver: zodResolver(CartPaymentSchema),
     });
 
+    const pegarUltimosQuatro = (numero?: string): string => {
+        if (!numero) return '****';
+        // Remove tudo que não é dígito e pega os últimos 4
+        const cleanNumber = numero.replace(/\D/g, '');
+        return cleanNumber.slice(-4).padStart(4, '*');
+    };
+
     const onSubmit = async (values: CartPaymentFormType) => {
         setLoading(true);
         try {
@@ -58,39 +83,34 @@ const CartPayment: React.FC = () => {
         }
     };
 
-    const processOrder = async (values: CartPaymentFormType) => {
-        let orderData = registeredOrder;
+    async function processOrder(values: CartPaymentFormType) {
 
-        // 1. Registrar ordem no backend se ainda não tiver
-        if (!orderData) {
-            const response = await appservice.post("(WS_ORDEM_PAGAMENTO)", {
-                token: mtoken,
-                valor: orderTotal,
-                parcela: order,
-                tipoPagamento: 2,
-                validaDados: "S",
-                dadosCartao: {
-                    numeroCartao: maskCreditCart(values.numeroCartao),
-                    nomeCartao: values.nomeCartao,
-                    validadeCartao: maskDateValidate(values.validadeCartao),
-                    cvvCartao: values.cvvCartao,
-                },
-            });
+        const response = await appservice.post("(WS_ORDEM_PAGAMENTO)", {
+            token: mtoken,
+            valor: valueOrder,
+            parcela: order,
+            tipoPagamento: 2,
+            validaDados: "S",
+            dadosCartao: {
+                numeroCartao: maskCreditCart(values.numeroCartao),
+                nomeCartao: values.nomeCartao,
+                validadeCartao: maskDateValidate(values.validadeCartao),
+                cvvCartao: values.cvvCartao,
+            },
+        });
+        const { success, message, data } = response.data.resposta;
+        if (!success) throw new Error(message);
+        cartPaymentHandle(data);
 
-            const { success, message, data } = response.data.resposta;
+    }
 
-            if (!success) throw new Error(message);
+    async function cartPaymentHandle(data: any) {
 
-            orderData = data;
-            setRegisteredOrder(data);
-        }
-
-        // 2. Processar pagamento no gateway (Cielo)
         const paymentResponse = await servicecart.post("(PAG_CARTAO_CREDITO)", {
-            MerchantOrderId: orderData?.numeroOrdem,
+            MerchantOrderId: data?.numeroOrdem,
             Payment: {
                 Type: "CreditCard",
-                Amount: Number(orderData?.valorOrdem) * 100,
+                Amount: Math.round(parseFloat(valueOrder) * 100),
                 Currency: "BRL",
                 Country: "BRA",
                 Provider: "Cielo",
@@ -102,33 +122,67 @@ const CartPayment: React.FC = () => {
                 Recurrent: false,
                 SoftDescriptor: "123456789ABCD",
                 CreditCard: {
-                    CardNumber: unMask(orderData?.dadosCartao?.numeroCartao),
-                    Holder: orderData?.dadosCartao.nomeCartao,
-                    ExpirationDate: orderData?.dadosCartao.validadeCartao,
-                    SecurityCode: orderData?.dadosCartao.cvvCartao,
+                    CardNumber: unMask(data?.dadosCartao?.numeroCartao),
+                    Holder: data?.dadosCartao.nomeCartao,
+                    ExpirationDate: data?.dadosCartao.validadeCartao,
+                    SecurityCode: data?.dadosCartao.cvvCartao,
                     SaveCard: false,
-                    Brand: getCardBrandName(String(orderData?.dadosCartao?.numeroCartao)),
+                    Brand: getCardBrandName(String(data?.dadosCartao?.numeroCartao)),
                 },
             },
         });
 
-        const { success, ReturnMessage, ReturnCode, PaymentId } = paymentResponse.data.response;
+        const { success, ReturnCode, ReturnMessage, AuthorizationCode, PaymentId, ReceivedDate, MerchantOrderId } = paymentResponse.data.response;
+        if (success && ReturnCode === '00') {
+            await sendOrderAtualize({
+                MerchantOrderId,
+                PaymentId,
+                AuthorizationCode,
+                ReceivedDate,
+                CartNumber: data?.dadosCartao?.numeroCartao
+            });
 
-        if (!success || ReturnCode !== "00") {
-            throw new Error(ReturnMessage || "Erro ao processar pagamento no gateway.");
+        } else {
+            Alert.alert("Atenção", `${ReturnMessage}, verifique os dados do cartão.` || "Pagamento negado pela operadora.");
         }
+    };
 
-        // 3. Atualizar ordem no backend
-        const updateResponse = await appservice.get(
-            `(WS_ATUALIZA_ORDEM)?token=${mtoken}&numeroOrdem=${orderData?.numeroOrdem}&statusOrdem=2&idTransacao=${PaymentId}&tipoPagamento=2&urlBoleto=${paymentResponse.data.response.AuthorizationCode}`
-        );
+    // 3. Atualizar ordem no backend
+    async function sendOrderAtualize(dataCart: CartResponseData) {
+        let orderResponse: OrderUpdatePayload = {
+            numeroOrdem: dataCart.MerchantOrderId,
+            statusOrdem: 2,
+            idTransacao: dataCart.PaymentId,
+            tipoPagamento: 2,
+            urlBoleto: dataCart.AuthorizationCode,
+            ReceivedDate: dataCart.ReceivedDate
+        };
+        try {
+            const response = await appservice.get(
+                `(WS_ATUALIZA_ORDEM)?token=${mtoken}&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`
+            );
 
-        const { success: updateSuccess } = updateResponse.data.resposta;
-        if (!updateSuccess) throw new Error("Falha ao atualizar status da ordem.");
+            const { success, message } = response.data.response;
+            if (!success) {
+                // Se o backend retornar success: false
+                Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
+                return; // Interrompe para não redirecionar se for um erro crítico
+            }
 
-        // 4. Limpar estado e redirecionar
-        setRegisteredOrder(null);
-        router.replace("/cardbillpaid");
+            router.replace({
+                pathname: "/cardbillpaid",
+                params: {
+                    value: valueOrder,
+                    paymentId: dataCart.PaymentId, // Removi o 'a' extra de 'payament'
+                    lastCardNumber: pegarUltimosQuatro(dataCart.CartNumber),
+                    dateTransaction: moment().format('DD [de] MMMM, HH:mm')
+                }
+            });
+
+        } catch (error) {
+            Alert.alert("Erro de Conexão", "O pagamento foi processado, mas houve um erro ao atualizar seu pedido.");
+            console.error('erro 01', error);
+        }
     };
 
     return (
@@ -159,7 +213,7 @@ const CartPayment: React.FC = () => {
                                     Total a pagar
                                 </Text>
                                 <Text className="text-3xl font-extrabold text-solar-blue-secondary mt-1">
-                                    R$ {maskMoney(parseFloat(orderTotal).toFixed(2))}
+                                    R$ {maskMoney(parseFloat(valueOrder).toFixed(2))}
                                 </Text>
                             </View>
 
@@ -221,7 +275,7 @@ const CartPayment: React.FC = () => {
                                                     onChangeText={onChange}
                                                     value={maskDateValidate(value)}
                                                     keyboardType="numeric"
-                                                    maxLength={5}
+                                                    maxLength={7}
                                                     inputClasses={errors.validadeCartao ? "!border-solar-red-primary" : ""}
                                                 />
                                             )}

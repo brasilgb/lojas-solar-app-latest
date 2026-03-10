@@ -104,17 +104,6 @@ export default function SignIn() {
                                     className="mt-2"
                                 />
 
-                                {/* LINK */}
-                                <View className='items-center mt-6'>
-                                    <Link href={'/'} asChild>
-                                        <Button
-                                            variant={'link'}
-                                            label={'Voltar'}
-                                            labelClasses='text-solar-blue-secondary'
-                                        />
-                                    </Link>
-                                </View>
-
                             </View>
                         </View>
                     </TouchableWithoutFeedback>

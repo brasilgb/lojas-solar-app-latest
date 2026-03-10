@@ -59,26 +59,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
-  useEffect(() => {
-    async function loadPosition() {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission to access location was denied');
+useEffect(() => {
+  async function loadPosition() {
+    try {
+      // 1. Verifica se o serviço de localização está ativo no dispositivo
+      const enabled = await Location.hasServicesEnabledAsync();
+      if (!enabled) {
+        Alert.alert(
+          "GPS Desativado",
+          "Por favor, ative a localização no seu dispositivo para encontrar lojas próximas."
+        );
+        return;
       }
-      const location = await Location.getCurrentPositionAsync({});
+
+      // 2. Solicita a permissão
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          "Permissão Negada",
+          "Precisamos da sua localização para mostrar as lojas mais próximas de você."
+        );
+        return;
+      }
+
+      // 3. Obtém a localização com timeout para não travar o app
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
       const { latitude, longitude } = location.coords;
       setPositionGlobal([latitude, longitude]);
 
+      // 4. Chamada à API
       const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${latitude}&longitude=${longitude}`);
-      const { data } = response.data.resposta;
+      
+      // Tratamento dos dados da API
+      const data = response.data?.resposta?.data;
       if (Array.isArray(data) && data.length > 0) {
         setReturnStore(data[0]);
       } else if (data?.loja) {
         setReturnStore(data.loja);
       }
+
+    } catch (error) {
+      console.error("Erro no fluxo de localização:", error);
+      // Opcional: Alerta genérico para o usuário
     }
+  }
+
+  // Pequeno delay para garantir que o layout do App já carregou
+  const timer = setTimeout(() => {
     loadPosition();
-  }, []);
+  }, 800);
+
+  return () => clearTimeout(timer);
+}, []);
 
   async function loadStorageData() {
     try {

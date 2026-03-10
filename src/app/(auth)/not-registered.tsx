@@ -46,7 +46,6 @@ const NotRegistered = () => {
               }
               labelClasses="text-xl font-medium"
               label="Quero me cadastrar agora"
-              variant="secondary"
             />
             <Button
               onPress={() => router.push('/')}

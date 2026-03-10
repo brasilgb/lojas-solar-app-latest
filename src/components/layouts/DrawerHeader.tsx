@@ -33,6 +33,15 @@ export default function DrawerHeader({ typel, typer }: any) {
           </TouchableOpacity>
         )}
 
+        {typel === 'pay' && (
+          <TouchableOpacity
+            onPress={() => router.replace('/payment')}
+            className="p-2"
+          >
+            <ArrowLeftIcon color="white" size={24} />
+          </TouchableOpacity>
+        )}
+
         {typel === 'drawer' && (
           <TouchableOpacity
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}

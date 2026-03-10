@@ -105,7 +105,6 @@ const AssistanceDetail = () => {
                                                 key={`${i}-${e.xEventos}`}
                                                 className={`mb-${isLast ? '0' : '6'}`}
                                             >
-                                                {/* DOT */}
                                                 <View
                                                     className={`absolute w-4 h-4 rounded-full -left-6 top-1 ${isLast
                                                         ? 'bg-solar-orange-primary'

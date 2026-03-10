@@ -39,10 +39,14 @@ const methods = () => {
                 },
             });
             const { success, message, data, token } = response.data.resposta;
-
+            console.log(success, 'message', message);
+            
             router.push({
-                pathname: '/(drawer)/(payment)/pixpayment',
-                params: { valueOrder: totalAmount },
+                pathname: '/pixpayment',
+                params: { 
+                    valueOrder: totalAmount,
+                    dataOrder: JSON.stringify(data)
+                 },
             });
         } catch (error) {
             console.log(error);
@@ -97,7 +101,7 @@ const methods = () => {
                         <TouchableOpacity
                             onPress={() =>
                                 router.push({
-                                    pathname: '/(drawer)/(payment)/cartpayment',
+                                    pathname: '/cartpayment',
                                     params: {
                                         dataOrder: JSON.stringify(order),
                                         totalAmount: totalAmount,

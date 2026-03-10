@@ -6,6 +6,7 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { Button } from '@/components/Button'
 import Map, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import Carousel from "react-native-reanimated-carousel"
+import type { ICarouselInstance } from "react-native-reanimated-carousel";
 import { useAuth } from '@/contexts/AuthContext'
 import { StoreCard } from '@/components/StoreCard'
 import { router } from 'expo-router'
@@ -31,6 +32,7 @@ export default function InitialLocation() {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const modalRef = useRef<Modalize>(null)
+    const carouselRef = useRef<ICarouselInstance>(null);
 
     const [cities, setCities] = useState<any[]>([])
     const [selectedCity, setSelectedCity] = useState<any>(null)
@@ -116,6 +118,41 @@ export default function InitialLocation() {
         setSelectedCity(city)
         modalRef.current?.close()
 
+        setLojasProximas([])
+
+        try {
+            const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${city.latitude}&longitude=${city.longitude}`)
+            const { data } = response.data.resposta
+            setLojasProximas(data)
+
+            setActiveIndex(0)
+
+            if (carouselRef.current) {
+                carouselRef.current.scrollTo({ index: 0, animated: false })
+            }
+
+            if (data && data.length > 0) {
+                const firstStore = data[0];
+                const newRegion = {
+                    latitude: Number(firstStore.latitude),
+                    longitude: Number(firstStore.longitude),
+                    latitudeDelta: 0.0043,
+                    longitudeDelta: 0.0034,
+                };
+                mapRef.current?.animateToRegion(newRegion, 400);
+            } else {
+                // Fallback: se não tiver loja, centraliza na cidade
+                const fallbackRegion = {
+                    latitude: Number(city.latitude),
+                    longitude: Number(city.longitude),
+                    latitudeDelta: 0.0043,
+                    longitudeDelta: 0.0034,
+                };
+                mapRef.current?.animateToRegion(fallbackRegion, 400);
+            }
+        } catch (error) {
+            console.log("Erro ao buscar lojas da nova cidade: ", error);
+        }
         const newRegion = {
             latitude: Number(city.latitude),
             longitude: Number(city.longitude),
@@ -125,11 +162,8 @@ export default function InitialLocation() {
 
         mapRef.current?.animateToRegion(newRegion, 400)
 
-        const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${city.latitude}&longitude=${city.longitude}`)
-        const { data } = response.data.resposta
-        setLojasProximas(data)
     }
-
+// console.log(selectedCity)
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
             <View className='flex-1 flex-col items-center justify-start'>
@@ -155,7 +189,7 @@ export default function InitialLocation() {
                                 Localização
                             </Text>
                             <Text className='text-gray-100 text-base font-semibold'>
-                                {selectedCity?.nome ?? lojasProximas[activeIndex]?.cidade ?? 'Localização não definida'}
+                                {lojasProximas[0]?.cidade ?? 'Localização não definida'}
                             </Text>
                         </View>
 
@@ -205,6 +239,8 @@ export default function InitialLocation() {
 
                         <View className="z-50 absolute bottom-0 h-60 w-full">
                             <Carousel
+                                key={`${selectedCity?.latitude}-${selectedCity?.longitude}` || 'default'}
+                                ref={carouselRef}
                                 loop={false}
                                 width={width}
                                 height={220}
