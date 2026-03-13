@@ -1,14 +1,14 @@
-import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, Text, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
-import { CopyIcon, HandCoinsIcon, Share2Icon } from 'lucide-react-native';
-import QRCode from 'react-native-qrcode-svg';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { PageHeader } from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
-import { PageHeader } from '@/components/PageHeader';
 import { maskMoney } from '@/utils/mask';
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import * as Clipboard from 'expo-clipboard';
+import { useLocalSearchParams } from 'expo-router';
+import { CopyIcon, HandCoinsIcon, Share2Icon } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Pressable, Share, Text, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 // Define o que vem nos parâmetros da URL/Rota
 interface OrderData {
@@ -114,7 +114,7 @@ const PixPayment = () => {
 
     return (
         <ScreenLayout backgroundColor="bg-solar-blue-primary">
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
                 <PageHeader
                     title="Pagamento PIX"

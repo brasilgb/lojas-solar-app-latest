@@ -53,7 +53,7 @@ const AssistanceProtocol = () => {
         })
       }
     >
-      <Card className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 mx-2">
+      <Card className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
         <CardHeader className="border-b border-gray-200 mb-3 pb-2">
           <Text className="text-lg font-bold text-gray-700">
             Protocolo {item.nProtocolo}
@@ -71,7 +71,7 @@ const AssistanceProtocol = () => {
 
   return (
     <ScreenLayout backgroundColor="bg-solar-blue-primary">
-      <View className="flex-1 bg-white rounded-t-3xl p-6">
+      <View className="flex-1 bg-white rounded-t-3xl p-4">
 
         <PageHeader
           title="Assistência Técnica"

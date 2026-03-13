@@ -12,13 +12,13 @@ import { EyeClosedIcon, EyeIcon, KeyRoundIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import {
-  ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -82,7 +82,7 @@ const RegisterPassword = () => {
 
   return (
     <ScreenLayout backgroundColor="bg-solar-blue-primary">
-      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4'>
         <PageHeader
           title="Registrar uma senha"
           subtitle="Preencha os campos corretamente"

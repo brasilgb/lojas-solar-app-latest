@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import {
-    View, Text, ScrollView, Pressable,
-    Image, Modal, Alert, TouchableOpacity,
-    ActivityIndicator
-} from 'react-native';
+import { Button } from '@/components/Button';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { useAuth } from '@/contexts/AuthContext';
+import appservice from '@/services/appservice';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import * as SecureStore from 'expo-secure-store';
-import appservice from '@/services/appservice';
-import { useAuth } from '@/contexts/AuthContext';
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { Button } from '@/components/Button';
 import { router } from 'expo-router';
-import { ImagePlusIcon, User2Icon } from 'lucide-react-native';
-import { PageHeader } from '@/components/PageHeader';
+import * as SecureStore from 'expo-secure-store';
+import { ImagePlusIcon } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Image, Modal,
+    Pressable,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 // Configuração dos documentos
 const UPLOAD_CONFIG = [
@@ -174,7 +179,7 @@ const LoadImages = ({ route }: any) => {
                     bounces={false}
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
-                        <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
+                        <View className='w-full flex-1 bg-white rounded-t-3xl p-4 flex-col justify-start items-center gap-4'>
                             {/* <View className=''>
                                 <ImagePlusIcon size={60} color={'#1a9cd9'} />
                             </View>

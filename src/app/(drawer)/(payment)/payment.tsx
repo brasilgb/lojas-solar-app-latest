@@ -1,16 +1,16 @@
 import { Button } from '@/components/Button';
+import { PageHeader } from '@/components/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/Tabs';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { useAuth } from '@/contexts/AuthContext';
+import appservice from '@/services/appservice';
+import { maskMoney } from '@/utils/mask';
 import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
 import { CheckIcon, ClockIcon, HandCoinsIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import PaymentHistory from './payment-history';
-import { useAuth } from '@/contexts/AuthContext';
-import appservice from '@/services/appservice';
-import { maskMoney } from '@/utils/mask';
-import { PageHeader } from '@/components/PageHeader';
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 
 const OpenPayments = () => {
     const { user } = useAuth();
@@ -250,7 +250,7 @@ const OpenPayments = () => {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
                 <PageHeader
                     title="Pagamentos"
@@ -263,7 +263,7 @@ const OpenPayments = () => {
 
                     <Tabs defaultValue="opened">
 
-                        <TabsList className="px-4 pt-4">
+                        <TabsList className="pt-4">
                             <TabsTrigger id="opened" title="Em aberto" value="opened" />
                             <TabsTrigger id="history" title="Histórico" value="history" />
                         </TabsList>

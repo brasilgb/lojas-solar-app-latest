@@ -169,7 +169,7 @@ export default function InitialLocation() {
             <View className='flex-1 flex-col items-center justify-start'>
                 <View className='w-full flex-1 bg-white rounded-t-3xl flex-col justify-start items-center'>
 
-                    <View className='w-full px-6'>
+                    <View className='w-full px-4 my-4'>
                         <PageHeader
                             title="Localização"
                             subtitle="Lojas mais próximas"

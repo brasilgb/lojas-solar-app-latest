@@ -1,12 +1,12 @@
-import { View, Text, Image, ScrollView } from 'react-native'
-import React, { useEffect, useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
-import { HistoryIcon } from 'lucide-react-native'
-import { useLocalSearchParams } from 'expo-router'
 import { useAuth } from '@/contexts/AuthContext'
 import appservice from '@/services/appservice'
 import { maskMoney } from '@/utils/mask'
+import { useLocalSearchParams } from 'expo-router'
+import { HistoryIcon } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
+import { Image, ScrollView, Text, View } from 'react-native'
 
 export default function HistoryItems() {
     const { user } = useAuth();
@@ -35,7 +35,7 @@ export default function HistoryItems() {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
                 <PageHeader
                     title="Histórico"
                     subtitle="Detalhes da compras"

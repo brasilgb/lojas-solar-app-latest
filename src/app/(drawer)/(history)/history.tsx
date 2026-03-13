@@ -1,16 +1,16 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
-import { CalendarDaysIcon, HistoryIcon } from 'lucide-react-native'
-import MonthPicker from 'react-native-month-year-picker';
 import { useAuth } from '@/contexts/AuthContext'
 import appservice from '@/services/appservice'
 import { maskMoney } from '@/utils/mask'
-import { router, useFocusEffect } from 'expo-router'
 import { FlashList } from '@shopify/flash-list'
+import { router, useFocusEffect } from 'expo-router'
+import { CalendarDaysIcon, HistoryIcon } from 'lucide-react-native'
 import moment from 'moment'
 import 'moment/locale/pt-br'
+import React, { useCallback, useState } from 'react'
+import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import MonthPicker from 'react-native-month-year-picker'
 
 interface HistoryProps {
   numero: string;
@@ -138,7 +138,7 @@ export default function History() {
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
       <View className='flex-1'>
 
-        <View className='flex-1 bg-white rounded-t-3xl p-6'>
+        <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
           <PageHeader
             title="Histórico"

@@ -152,7 +152,7 @@ export default function HistoryCashback() {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
                 <PageHeader
                     title="Cashback"

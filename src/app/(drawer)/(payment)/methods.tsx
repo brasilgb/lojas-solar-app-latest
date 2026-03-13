@@ -1,17 +1,17 @@
-import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-} from 'react-native';
-import React, { useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
-import { CreditCardIcon, HandCoinsIcon } from 'lucide-react-native';
+import { PageHeader } from '@/components/PageHeader';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
 import { maskMoney } from '@/utils/mask';
-import { PageHeader } from '@/components/PageHeader';
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { router, useLocalSearchParams } from 'expo-router';
+import { CreditCardIcon, HandCoinsIcon } from 'lucide-react-native';
+import React, { useState } from 'react';
+import {
+    Image,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 const methods = () => {
     const { user } = useAuth();
@@ -57,7 +57,7 @@ const methods = () => {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
                 <PageHeader
                     title="Pagamento"
                     subtitle="Métodos de pagamento"

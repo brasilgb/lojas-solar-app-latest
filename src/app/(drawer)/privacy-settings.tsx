@@ -1,13 +1,13 @@
-import { View, Text, Alert, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Button } from '@/components/Button'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
-import { UserLockIcon } from 'lucide-react-native'
+import { Switch } from '@/components/Switch'
 import { useAuth } from '@/contexts/AuthContext'
 import appservice from '@/services/appservice'
 import { router } from 'expo-router'
-import { Switch } from '@/components/Switch'
-import { Button } from '@/components/Button'
+import { UserLockIcon } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
 
 export default function PrivacySettings() {
   const { disconnect, user } = useAuth();
@@ -86,7 +86,7 @@ export default function PrivacySettings() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4'>
         <PageHeader
           title="Privacidade"
           subtitle="Configurações de privacidade"

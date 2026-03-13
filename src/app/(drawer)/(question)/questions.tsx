@@ -1,16 +1,16 @@
-import { View, Text, ScrollView } from 'react-native'
-import React from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
-import { CircleQuestionMarkIcon } from 'lucide-react-native'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/Tabs'
+import { CircleQuestionMarkIcon } from 'lucide-react-native'
+import React from 'react'
+import { ScrollView, View } from 'react-native'
 import Comercial from './comercial'
 import Crediario from './crediario'
 
 export default function Questions() {
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
         <PageHeader
           title="Perguntas Frequentes"

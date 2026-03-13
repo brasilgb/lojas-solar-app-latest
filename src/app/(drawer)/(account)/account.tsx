@@ -1,17 +1,17 @@
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { User2Icon } from 'lucide-react-native'
-import { useAuth } from '@/contexts/AuthContext';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { accountSchema, AccountSchema } from '@/schemas/account';
-import { zodResolver } from '@hookform/resolvers/zod';
-import appservice from '@/services/appservice';
-import { Input } from '@/components/Input';
-import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
-import { Link, router, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components/Button';
+import { Input } from '@/components/Input';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { PageHeader } from '@/components/PageHeader';
+import { useAuth } from '@/contexts/AuthContext';
+import { accountSchema, AccountSchema } from '@/schemas/account';
+import appservice from '@/services/appservice';
+import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router, useLocalSearchParams } from 'expo-router';
+import { User2Icon } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 
 export default function Account() {
     const params = useLocalSearchParams();
@@ -119,7 +119,7 @@ const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
                     bounces={false}
                 >
                     <View className='flex-1 flex-col items-center justify-start'>
-                        <View className='w-full flex-1 bg-white rounded-t-3xl p-6 flex-col justify-start items-center gap-4'>
+                        <View className='w-full flex-1 bg-white rounded-t-3xl p-4 flex-col justify-start items-center gap-4'>
 
                             <PageHeader
                                 title="Meus dados"

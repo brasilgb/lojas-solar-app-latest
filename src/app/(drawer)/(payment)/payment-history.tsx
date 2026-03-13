@@ -48,8 +48,8 @@ const PaymentHistory = () => {
     );
 
     const RenderItem = ({ item }: any) => {
-        return (
-            <View className="flex-row items-center justify-between mx-1 my-1.5 px-2 rounded-xl text-lg font-normal bg-gray-50 border border-gray-200 shadow-md shadow-gray-800 py-4">
+        return ( 
+            <View className="flex-row items-center justify-between mx-1 bg-white border-gray-200 p-4 mb-3 shadow-sm px-4 py-4 my-2 rounded-2xl border">
                 <View className="flex-row items-center justify-center w-full">
                     <View className="flex-1 flex-col items-start">
                         <View className="flex-row">
@@ -94,10 +94,7 @@ const PaymentHistory = () => {
 
     return (
         <>
-            <View className="px-4 mt-4">
-                <Text className="text-sm text-gray-400 mb-2">
-                    Filtrar por período
-                </Text>
+            <View className="mt-4">
 
                 <View className="flex-row gap-3">
                     <View className="flex-1">
@@ -117,7 +114,7 @@ const PaymentHistory = () => {
             </View>
 
             {crediarios && crediarios.length === 0 ? (
-                <View className="flex-1 items-center justify-center px-6">
+                <View className="flex-1 items-center justify-center">
                     <Image
                         source={require('@/assets/images/no_payments_logo.png')}
                         className="w-[160px] h-[130px]"
@@ -132,7 +129,7 @@ const PaymentHistory = () => {
                     </Text>
                 </View>
             ) : (
-                <View className="flex-1 px-4 mt-4">
+                <View className="flex-1 mt-4">
 
                     <View className="bg-solar-blue-primary rounded-2xl p-4 flex-row justify-between items-center">
                         <View>

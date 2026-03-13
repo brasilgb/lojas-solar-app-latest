@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { router, useLocalSearchParams } from "expo-router";
-import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+import { ScreenLayout } from "@/components/layouts/ScreenLayout";
+import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCardBrandName } from "@/lib/creditcart";
 import { CartPaymentFormType, CartPaymentSchema } from "@/schemas/payment";
 import appservice from "@/services/appservice";
-import { maskCreditCart, maskDateValidate, maskMoney, unMask } from "@/utils/mask";
 import servicecart from "@/services/servicecart";
-import { getCardBrandName } from "@/lib/creditcart";
-import { PageHeader } from "@/components/PageHeader";
+import { maskCreditCart, maskDateValidate, maskMoney, unMask } from "@/utils/mask";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { router, useLocalSearchParams } from "expo-router";
 import { HandCoinsIcon, LockIcon } from "lucide-react-native";
-import { ScreenLayout } from "@/components/layouts/ScreenLayout";
 import moment from "moment";
 import 'moment/locale/pt-br';
+import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 moment.locale('pt-br');
 
 // Define o que vem nos parâmetros da URL/Rota
@@ -187,7 +187,7 @@ const CartPayment = () => {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-6'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
                 <PageHeader
                     title="Pagamento"

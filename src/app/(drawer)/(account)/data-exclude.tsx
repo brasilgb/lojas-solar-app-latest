@@ -1,16 +1,16 @@
-import { View, Text, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
-import { ScreenLayout } from '@/components/layouts/ScreenLayout';
-import { User2Icon } from 'lucide-react-native';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { useAuth } from '@/contexts/AuthContext';
-import { maskPhone } from '@/utils/mask';
-import { router } from 'expo-router';
-import { excludeDataSchema, ExcludeDataSchema } from '@/schemas/account';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/Input';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { PageHeader } from '@/components/PageHeader';
+import { useAuth } from '@/contexts/AuthContext';
+import { excludeDataSchema, ExcludeDataSchema } from '@/schemas/account';
+import { maskPhone } from '@/utils/mask';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { User2Icon } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 
 export default function DataExclude() {
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function DataExclude() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4'>
         <PageHeader
           title="Exclusão de dados"
           subtitle="Preencha o formulário abaixo corretamente"

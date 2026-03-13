@@ -1,17 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native'
+import AppDateTimePicker from '@/components/AppDateTimePicker'
+import { Button } from '@/components/Button'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
-import { BanknoteArrowDownIcon, X } from 'lucide-react-native'
-import appservice from '@/services/appservice'
-import { router, useFocusEffect } from 'expo-router'
 import { useAuth } from '@/contexts/AuthContext'
-import { Modalize } from 'react-native-modalize'
-import moment from 'moment'
+import appservice from '@/services/appservice'
 import { maskMoney } from '@/utils/mask'
-import { Button } from '@/components/Button'
 import { FlashList } from '@shopify/flash-list'
-import AppDateTimePicker from '@/components/AppDateTimePicker'
+import { router, useFocusEffect } from 'expo-router'
+import { BanknoteArrowDownIcon } from 'lucide-react-native'
+import moment from 'moment'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, Dimensions, Text, TouchableOpacity, View } from 'react-native'
+import { Modalize } from 'react-native-modalize'
 
 export default function Cashback() {
 
@@ -163,7 +163,7 @@ export default function Cashback() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-6'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4'>
 
         <PageHeader
           title="Cashback"
