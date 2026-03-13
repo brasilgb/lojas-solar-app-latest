@@ -155,7 +155,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<HandCoinsIcon color={'white'} size={28} />}
                             label={'Pagamentos'}
-                            url={!signedIn ? '/sign-in' : '/cardbillpaid'}
+                            url={!signedIn ? '/sign-in' : '/payment'}
                         />
 
                         <ButtonMenu
