@@ -86,7 +86,7 @@ export default function Home() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
             >
-                <View className="bg-white px-4 py-4 rounded-b-3xl shadow-sm">
+                <View className="bg-white px-4 py-4 rounded-3xl shadow-sm m-4">
                     <Text className="text-sm text-gray-500">
                         {signedIn ? 'Bem-vindo de volta' : 'Olá'}
                     </Text>

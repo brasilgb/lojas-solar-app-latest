@@ -17,7 +17,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     rightElement,
 }) => {
     return (
-        <View className="bg-white px-5 pt-6 pb-5 rounded-b-2xl shadow-sm w-full">
+        <View className="bg-white p-4 rounded-2xl shadow-sm w-full my-4">
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3 flex-1">
 
