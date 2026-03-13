@@ -74,13 +74,6 @@ export default function AppRootLayout() {
     });
 
     useEffect(() => {
-        (async () => {
-            const deviceId = await getDeviceId();
-            await registerDevice(deviceId, 'este é o token do firebase');
-        })();
-    }, []);
-
-    useEffect(() => {
         const getVersionCheck = async () => {
             let versionApp: any = process.env.EXPO_PUBLIC_APP_VERSION?.replace(
                 /\./g,
