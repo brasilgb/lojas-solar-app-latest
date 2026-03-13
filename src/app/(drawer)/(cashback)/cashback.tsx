@@ -174,12 +174,12 @@ export default function Cashback() {
 
         <View className="p-4 bg-gray-100 rounded-3xl flex-1 gap-4 mt-4">
           <View className="flex-col gap-4">
-            <View className="bg-solar-blue-primary rounded-2xl p-5 shadow-md">
+            <View className="bg-solar-blue-primary rounded-2xl p-2 shadow-md">
               <Text className="text-white text-sm opacity-80">
                 Saldo disponível
               </Text>
 
-              <Text className="text-white text-3xl font-bold mt-1">
+              <Text className="text-white text-2xl font-bold mt-1">
                 R$ {historicoCashback?.credTotal
                   ? maskMoney(String(historicoCashback.credTotal.toFixed(2)))
                   : '0,00'}
@@ -187,10 +187,6 @@ export default function Cashback() {
             </View>
 
             <View className="bg-white p-4 rounded-xl border border-gray-200">
-              <Text className="text-sm text-gray-500 mb-2">
-                Período
-              </Text>
-
               <View className="flex-row justify-between">
                 <AppDateTimePicker value={dateIni} onChange={setDateIni} />
                 <AppDateTimePicker value={dateFin} onChange={setDateFin} />
