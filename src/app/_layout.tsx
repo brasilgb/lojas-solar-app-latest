@@ -6,7 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import { createNotificationChannel, displayNotification } from '@/lib/notifications';
+import { displayNotification } from '@/lib/notifications';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
 
 import {
@@ -111,7 +111,6 @@ function useNotifications() {
         const setup = async () => {
             // 1. Permissões e Canal
             await notifee.requestPermission();
-            await createNotificationChannel();
 
             // 2. Token e Registro
             const fcmToken = await messaging().getToken();
