@@ -9,11 +9,11 @@ import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
 import { CheckIcon, ClockIcon, HandCoinsIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import PaymentHistory from './payment-history';
 
 const OpenPayments = () => {
-    const { user } = useAuth();
+    const { user, disconnect } = useAuth();
     const [loading, setLoading] = useState<boolean>(false);
     const mtoken = user?.token;
     const [crediarios, setCrediarios] = useState<any>([]);
@@ -27,7 +27,18 @@ const OpenPayments = () => {
         await appservice
             .get(`(WS_CARREGA_CREDIARIO)?token=${mtoken}`)
             .then((response: any) => {
-                const { data } = response.data.resposta;
+                const { data, token, message } = response.data.resposta;
+                if (!token) {
+                    Alert.alert('Atenção', message, [
+                        {
+                            text: 'Ok',
+                            onPress: () => {
+                                disconnect();
+                            },
+                        },
+                    ]);
+                    return;
+                }
                 setCrediarios(data.aberto || []); // Ensure crediarios is always an array
             })
             .catch((error: any) => {
@@ -195,58 +206,58 @@ const OpenPayments = () => {
     };
 
     const FooterPaymentTotal = () => (
-    <View
-        className="absolute bottom-0 left-0 right-0 bg-solar-blue-primary px-4 py-4 border-t border-white/10 flex-row items-center justify-between"
-        style={{
-            elevation: 12,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 6,
-        }}
-    >
+        <View
+            className="absolute bottom-0 left-0 right-0 bg-solar-blue-primary px-4 py-4 border-t border-white/10 flex-row items-center justify-between"
+            style={{
+                elevation: 12,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 6,
+            }}
+        >
 
-        {/* RESUMO */}
-        {/* Usamos flex-1 para ocupar o espaço restante e mr-4 para desgrudar do botão */}
-        <View className="flex-1 mr-4">
-            <Text 
-                className="text-sm text-white/70" 
-                numberOfLines={1} 
-                adjustsFontSizeToFit
-            >
-                {installmentsCount}{' '}
-                {installmentsCount > 1
-                    ? 'parcelas selecionadas' // Encurtei a frase para evitar quebra de linha em telas pequenas
-                    : 'parcela selecionada'}
-            </Text>
+            {/* RESUMO */}
+            {/* Usamos flex-1 para ocupar o espaço restante e mr-4 para desgrudar do botão */}
+            <View className="flex-1 mr-4">
+                <Text
+                    className="text-sm text-white/70"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                >
+                    {installmentsCount}{' '}
+                    {installmentsCount > 1
+                        ? 'parcelas selecionadas' // Encurtei a frase para evitar quebra de linha em telas pequenas
+                        : 'parcela selecionada'}
+                </Text>
 
-            {/* Reduzi levemente de 3xl para 2xl para caber melhor na horizontal */}
-            <Text 
-                className="text-3xl font-extrabold text-white mt-1"
-                numberOfLines={1}
-                adjustsFontSizeToFit
-            >
-                R$ {maskMoney(String((totalAmount || 0).toFixed(2)))}
-            </Text>
+                {/* Reduzi levemente de 3xl para 2xl para caber melhor na horizontal */}
+                <Text
+                    className="text-3xl font-extrabold text-white mt-1"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                >
+                    R$ {maskMoney(String((totalAmount || 0).toFixed(2)))}
+                </Text>
+            </View>
+
+            <Button
+                // Se o seu componente Button aceitar 'md', é melhor para não ficar tão alto. Se não, mantenha 'lg'.
+                variant="secondary"
+                label="Pagar agora"
+                onPress={() =>
+                    router.push({
+                        pathname: '/methods',
+                        params: {
+                            dataOrder: JSON.stringify(selectedPayments),
+                            totalAmount: totalAmount,
+                        },
+                    })
+                }
+            />
+
         </View>
-
-        <Button
-             // Se o seu componente Button aceitar 'md', é melhor para não ficar tão alto. Se não, mantenha 'lg'.
-            variant="secondary"
-            label="Pagar agora"
-            onPress={() =>
-                router.push({
-                    pathname: '/methods',
-                    params: {
-                        dataOrder: JSON.stringify(selectedPayments),
-                        totalAmount: totalAmount,
-                    },
-                })
-            }
-        />
-
-    </View>
-);
+    );
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>

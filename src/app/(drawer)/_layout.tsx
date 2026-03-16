@@ -69,7 +69,7 @@ function CustomDrawerContent(props: any) {
                         </Text>
                     </>
                 )}
-                
+
             </View>
         );
     };
@@ -121,193 +121,193 @@ export default function DrawerLayout() {
     const { signedIn } = useAuth();
 
     return (
-            <Drawer
-                drawerContent={CustomDrawerContent}
-                screenOptions={{
-                    drawerHideStatusBarOnOpen: false,
-                    drawerType: 'front',
-                    drawerActiveBackgroundColor: '#1a9dd9c8',
-                    drawerActiveTintColor: '#ffffff'
+        <Drawer
+            drawerContent={CustomDrawerContent}
+            screenOptions={{
+                drawerHideStatusBarOnOpen: false,
+                drawerType: 'front',
+                drawerActiveBackgroundColor: '#1a9dd9c8',
+                drawerActiveTintColor: '#ffffff'
+            }}
+        >
+
+            <Drawer.Screen
+                name="index"
+                options={{
+                    drawerLabel: "Início",
+                    title: "Bem-vindo",
+                    drawerIcon: ({ color, size }) => (
+                        <HomeIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={'drawer'} />
                 }}
-            >
+            />
 
-                <Drawer.Screen
-                    name="index"
-                    options={{
-                        drawerLabel: "Início",
-                        title: "Bem-vindo",
-                        drawerIcon: ({ color, size }) => (
-                            <HomeIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={'drawer'} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(account)"
+                options={{
+                    drawerLabel: "Minha Conta",
+                    title: "Minha Conta",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <UserIcon color={color} size={size} />
+                    ),
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(account)"
-                    options={{
-                        drawerLabel: "Minha Conta",
-                        title: "Minha Conta",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <UserIcon color={color} size={size} />
-                        ),
-                    }}
-                />
+            <Drawer.Screen
+                name="(crediary)"
+                options={{
+                    drawerLabel: "Crediário",
+                    title: "Crediário",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <HandshakeIcon color={color} size={size} />
+                    ),
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(crediary)"
-                    options={{
-                        drawerLabel: "Crediário",
-                        title: "Crediário",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <HandshakeIcon color={color} size={size} />
-                        ),
-                    }}
-                />
+            <Drawer.Screen
+                name="alter-password"
+                options={{
+                    drawerLabel: "Alterar Senha",
+                    title: "Alterar Senha",
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <KeyRoundIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="alter-password"
-                    options={{
-                        drawerLabel: "Alterar Senha",
-                        title: "Alterar Senha",
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <KeyRoundIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(docsassign)"
+                options={{
+                    headerShown: false,
+                    drawerLabel: "Assinar Documentos",
+                    title: "Assinar Documentos",
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <FilePenLineIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(docsassign)"
-                    options={{
-                        headerShown: false,
-                        drawerLabel: "Assinar Documentos",
-                        title: "Assinar Documentos",
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <FilePenLineIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="privacy-settings"
+                options={{
+                    drawerLabel: "Configurações de Privacidade",
+                    title: "Configurações de Privacidade",
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <ShieldUserIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="privacy-settings"
-                    options={{
-                        drawerLabel: "Configurações de Privacidade",
-                        title: "Configurações de Privacidade",
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <ShieldUserIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(location)"
+                options={{
+                    headerShown: false,
+                    drawerLabel: "Lojas Próximas de Você",
+                    title: "Lojas Próximas de Você",
+                    drawerIcon: ({ color, size }) => (
+                        <MapPinIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(location)"
-                    options={{
-                        headerShown: false,
-                        drawerLabel: "Lojas Próximas de Você",
-                        title: "Lojas Próximas de Você",
-                        drawerIcon: ({ color, size }) => (
-                            <MapPinIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="contact"
+                options={{
+                    drawerLabel: "Fale Conosco",
+                    title: "Fale Conosco",
+                    drawerIcon: ({ color, size }) => (
+                        <PhoneCallIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="contact"
-                    options={{
-                        drawerLabel: "Fale Conosco",
-                        title: "Fale Conosco",
-                        drawerIcon: ({ color, size }) => (
-                            <PhoneCallIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(payment)"
+                options={{
+                    drawerLabel: "Faça seu Pagamento",
+                    title: "Faça seu Pagamento",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <HandCoinsIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(payment)"
-                    options={{
-                        drawerLabel: "Faça seu Pagamento",
-                        title: "Faça seu Pagamento",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <HandCoinsIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(cashback)"
+                options={{
+                    drawerLabel: "Cashback",
+                    title: "Cashback",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <BanknoteArrowDownIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(cashback)"
-                    options={{
-                        drawerLabel: "Cashback",
-                        title: "Cashback",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <BanknoteArrowDownIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(history)"
+                options={{
+                    drawerLabel: "Histórico de Compras",
+                    title: "Histórico de Compras",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <HistoryIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(history)"
-                    options={{
-                        drawerLabel: "Histórico de Compras",
-                        title: "Histórico de Compras",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <HistoryIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(assistance)"
+                options={{
+                    drawerLabel: "Protocolo de assistência",
+                    title: "Protocolo de assistência",
+                    headerShown: false,
+                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerIcon: ({ color, size }) => (
+                        <WrenchIcon color={color} size={size} />
+                    ),
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(assistance)"
-                    options={{
-                        drawerLabel: "Protocolo de assistência",
-                        title: "Protocolo de assistência",
-                        headerShown: false,
-                        drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
-                        drawerIcon: ({ color, size }) => (
-                            <WrenchIcon color={color} size={size} />
-                        ),
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="privacy-police"
+                options={{
+                    drawerLabel: () => null,
+                    drawerItemStyle: { display: 'none' },
+                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                }}
+            />
 
-                <Drawer.Screen
-                    name="privacy-police"
-                    options={{
-                        drawerLabel: () => null,
-                        drawerItemStyle: { display: 'none' },
-                        header: () => <DrawerHeader typel={'drawer'} typer={''} />
-                    }}
-                />
+            <Drawer.Screen
+                name="(question)"
+                options={{
+                    headerShown: false,
+                    drawerLabel: () => null,
+                    drawerItemStyle: { display: 'none' },
+                }}
+            />
 
-                <Drawer.Screen
-                    name="(question)"
-                    options={{
-                        headerShown: false,
-                        drawerLabel: () => null,
-                        drawerItemStyle: { display: 'none' },
-                    }}
-                />
-
-            </Drawer>
+        </Drawer>
     )
 }

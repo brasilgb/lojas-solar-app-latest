@@ -36,7 +36,6 @@ export default function PrivacySettings() {
             {
               text: 'Ok',
               onPress: () => {
-                router.replace('/');
                 disconnect();
               },
             },

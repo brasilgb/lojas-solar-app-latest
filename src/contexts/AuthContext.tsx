@@ -314,8 +314,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const disconnect = async () => {
-    setUser(null);
     await SecureStore.deleteItemAsync(USER_KEY);
+    setUser(null);
     router.replace({
       pathname: '/(drawer)',
     });

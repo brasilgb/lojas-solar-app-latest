@@ -7,7 +7,7 @@ import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
 import { WrenchIcon } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 
 type Protocol = {
   nProtocolo: string;
@@ -16,7 +16,7 @@ type Protocol = {
 };
 
 const AssistanceProtocol = () => {
-  const { user } = useAuth();
+  const { user, disconnect } = useAuth();
   const [loading, setLoading] = useState(false);
   const [protocols, setProtocols] = useState<Protocol[]>([]);
 
@@ -29,7 +29,31 @@ const AssistanceProtocol = () => {
         `(WS_PROTOCOLO_ASSISTENCIA)?token=${user.token}`
       );
 
-      const { data } = response.data.resposta;
+      const { data, token, message } = response.data.resposta;
+      if (!token) {
+        Alert.alert('Atenção', message, [
+          {
+            text: 'Ok',
+            onPress: () => {
+              disconnect();
+            },
+          },
+        ]);
+        return;
+      }
+
+      if (!token) {
+        Alert.alert('Atenção', message, [
+          {
+            text: 'Ok',
+            onPress: () => {
+              disconnect();
+            },
+          },
+        ]);
+        return;
+      }
+
       setProtocols(data || []);
     } catch (error) {
       console.log(error);

@@ -21,7 +21,7 @@ interface HistoryProps {
 }
 
 export default function History() {
-  const { user,disconnect } = useAuth();
+  const { user, disconnect } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
@@ -31,47 +31,46 @@ export default function History() {
   const onValueChange = useCallback((event: any, newDate: any) => {
     const selectedDate = newDate || date;
     console.log(moment(date).format('YYYYMM'));
-    
+
     showPicker(false);
     setDate(selectedDate);
   },
     [date, showPicker],
   );
 
-    const getHistoricos = useCallback(async () => {
-        setLoading(true);
+  const getHistoricos = useCallback(async () => {
+    setLoading(true);
 
-        try {
-            const response = await appservice.get(
-                `(WS_HISTORICO_COMPRAS)?token=${user?.token}&dataInicial=${moment(date).format('YYYYMM')}01&dataFinal=${moment(date).format('YYYYMM')}31`,
-            );
-            const {data, token, message} = response.data.resposta;
-                    if (!token) {
-                      Alert.alert('Atenção', message, [
-                        {
-                          text: 'Ok',
-                          onPress: () => {
-                            router.replace('/');
-                            disconnect();
-                          },
-                        },
-                      ]);
-                      return;
-                    }
-            setHistoricos(data);
-        } catch (err) {
-            console.log(err);
-            setHistoricos([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [user, date]);
+    try {
+      const response = await appservice.get(
+        `(WS_HISTORICO_COMPRAS)?token=${user?.token}&dataInicial=${moment(date).format('YYYYMM')}01&dataFinal=${moment(date).format('YYYYMM')}31`,
+      );
+      const { data, token, message } = response.data.resposta;
+      if (!token) {
+        Alert.alert('Atenção', message, [
+          {
+            text: 'Ok',
+            onPress: () => {
+              disconnect();
+            },
+          },
+        ]);
+        return;
+      }
+      setHistoricos(data);
+    } catch (err) {
+      console.log(err);
+      setHistoricos([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, date]);
 
-    useFocusEffect(
-        useCallback(() => {
-            getHistoricos();
-        }, [getHistoricos]),
-    );
+  useFocusEffect(
+    useCallback(() => {
+      getHistoricos();
+    }, [getHistoricos]),
+  );
 
   const RenderItem = ({ item }: any) => {
     return (
