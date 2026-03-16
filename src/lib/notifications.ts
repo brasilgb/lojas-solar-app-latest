@@ -13,50 +13,58 @@ export interface NotificationPayload {
   messageId?: string;
 }
 
-/**
- * Cria o canal de notificação necessário para Android 8.0+.
- * Deve ser chamado uma vez, quando o app inicia.
- */
 export async function createNotificationChannel() {
-  const channelId = await notifee.createChannel({
+  // Otimização: Não precisa esperar o retorno se for apenas para garantir a existência
+  return await notifee.createChannel({
     id: 'default',
     name: 'Canal Padrão',
     importance: AndroidImportance.HIGH,
     visibility: AndroidVisibility.PUBLIC,
+    // Adicione sons ou vibração aqui se desejar
   });
-  return channelId;
 }
 
-/**
- * Exibe uma notificação rica usando Notifee.
- * Esta função é usada tanto para foreground quanto para background.
- */
 export async function displayNotification(payload: NotificationPayload) {
   const { title, subtitle, body, imageUrl, url, messageId } = payload;
 
-  // Garante que o canal existe antes de exibir a notificação
   const channelId = await createNotificationChannel();
 
+  // Tratamento de imagem para evitar quebra no Headless JS
+  const largeIcon = imageUrl ? imageUrl : undefined; 
+  // Dica: Se quiser um ícone padrão, use o nome do recurso nativo (ex: 'ic_launcher') 
+  // em vez de require do React Native para maior estabilidade em background.
+
   await notifee.displayNotification({
-    title,
+    title: title || 'Nova mensagem', // Fallback caso o data venha vazio
     subtitle,
     body,
     data: {
       url: url ?? "",
-      messageId,
-    } as any,
+      messageId: messageId ?? "",
+    },
     android: {
       channelId,
-      largeIcon: imageUrl ? imageUrl : require('@/assets/images/favicon.png'),
+      // Se largeIcon for undefined, ele usará o ícone padrão do app configurado no AndroidManifest
+      largeIcon: largeIcon, 
       importance: AndroidImportance.HIGH,
-      style: imageUrl ? { type: AndroidStyle.BIGPICTURE, picture: imageUrl } : undefined,
+      style: imageUrl ? { 
+        type: AndroidStyle.BIGPICTURE, 
+        picture: imageUrl 
+      } : {
+        type: AndroidStyle.BIGTEXT,
+        text: body || '',
+      },
       pressAction: {
         id: 'default',
       },
     },
     ios: {
-      // Para iOS, a imagem é adicionada como um anexo
-      attachments: imageUrl ? [{ url: imageUrl }] : undefined,
+      attachments: imageUrl ? [{ url: imageUrl }] : [],
+      foregroundPresentationOptions: {
+        badge: true,
+        sound: true,
+        banner: true,
+      },
     },
   });
 }

@@ -1,6 +1,6 @@
-import '@/styles/global.css'
-import { Linking, Platform } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react'
+import '@/styles/global.css';
+import { Linking, Platform, LogBox } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,49 +17,38 @@ import {
 } from '@expo-google-fonts/roboto';
 
 import { AuthProvider } from '@/contexts/AuthContext';
-import { getDeviceId } from '@/services/device';
 import appservice from '@/services/appservice';
 import { Modalize } from 'react-native-modalize';
 import VerifyVersion from '@/components/NewVersion';
 
+// Ignore logs desnecessários em produção
+LogBox.ignoreLogs(['Settings object size']);
+
 /**
- * Retorna a hora atual formatada como "[HH:MM]".
+ * LÓGICA DE BACKGROUND (FORA DO COMPONENTE)
+ * Essencial para o funcionamento com o APP FECHADO (Quit State).
  */
-const getCurrentTimeFormatted = () => {
-    const now = new Date();
-    // Obtém horas e minutos e garante que tenham dois dígitos (ex: 09:05)
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-};
-
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-    console.log('Firebase: Notificação FCM recebida (Background/Quit):', remoteMessage);
-
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+    console.log('FCM Background:', remoteMessage.messageId);
+    
+    // Se for data-only, nós exibimos manualmente via Notifee
     if (remoteMessage.data) {
-        // Extrai os dados do payload "data-only"
-        const { title, body, imageUrl, url } = remoteMessage.data as any;
-
-        const notificationSubtitle = getCurrentTimeFormatted();
-
+        const { title, body, imageUrl, url } = remoteMessage.data;
         await displayNotification({
-            title,
-            subtitle: notificationSubtitle,
-            body,
-            imageUrl,
-            url,
+            title: title as string,
+            body: body as string,
+            imageUrl: imageUrl as string,
+            url: url as string,
             messageId: remoteMessage.messageId,
         });
     }
 });
 
+// Handler para eventos de background do Notifee (Ex: Clicar na notificação com app fechado)
 notifee.onBackgroundEvent(async ({ type, detail }) => {
-    const { notification } = detail;
-
-    // Evento de clique na notificação
-    if (type === EventType.PRESS && notification?.data?.url) {
-        // Abre o link associado
-        await Linking.openURL(notification.data.url as string);
+    if (type === EventType.PRESS && detail.notification?.data?.url) {
+        // O Linking.openURL aqui tentará abrir o app na rota específica
+        await Linking.openURL(detail.notification.data.url as string);
     }
 });
 
@@ -73,139 +62,109 @@ export default function AppRootLayout() {
         Roboto_700Bold,
     });
 
+    // Hook separado para organizar a lógica de notificação
+    useNotifications();
+
     useEffect(() => {
         const getVersionCheck = async () => {
-            let versionApp: any = process.env.EXPO_PUBLIC_APP_VERSION?.replace(
-                /\./g,
-                '',
-            );
+            try {
+                const versionApp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '') || "0";
+                const response = await appservice.get('WS_VERSAO_APP');
+                const { android, ios } = response.data.resposta.data;
+                const remoteVersion = Platform.OS === 'ios' ? ios : android;
 
-            await appservice
-                .get('WS_VERSAO_APP')
-                .then((response: any) => {
-                    const { android, ios } = response.data.resposta.data;
-                    const version = Platform.OS === 'ios' ? ios : android;
-
-                    if (parseInt(version, 10) > parseInt(versionApp, 10)) {
-                        let versionNew: any = version?.split('').join('.');
-                        const data = {
-                            atual: process.env.EXPO_PUBLIC_APP_VERSION,
-                            nova: versionNew,
-                        };
-                        setVersionData({ route: { params: { data } } });
-                        modalizeRef.current?.open();
-                    }
-                })
-                .catch((err: any) => {
-                    console.log(err);
-                });
+                if (parseInt(remoteVersion, 10) > parseInt(versionApp, 10)) {
+                    const versionNew = remoteVersion.split('').join('.');
+                    setVersionData({ 
+                        route: { params: { data: { atual: process.env.EXPO_PUBLIC_APP_VERSION, nova: versionNew } } } 
+                    });
+                }
+            } catch (err) {
+                console.error('Erro ao verificar versão:', err);
+            }
         };
         getVersionCheck();
     }, []);
 
-    useNotifications();
-
-    if (!fontsLoaded) {
-        return null;
-    }
+    if (!fontsLoaded) return null;
 
     return (
         <SafeAreaProvider>
-            {versionData && (
-                <VerifyVersion
-                    {...versionData}
-                />
-            )}
             <SafeAreaView className='bg-solar-blue-primary flex-1' edges={['top', 'bottom']}>
                 <AuthProvider>
-                    <Stack
-                        initialRouteName='(drawer)'
-                    >
+                    {versionData && <VerifyVersion {...versionData} />}
+                    <Stack initialRouteName='(drawer)'>
                         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
                     </Stack>
                 </AuthProvider>
             </SafeAreaView>
         </SafeAreaProvider>
-    )
+    );
 }
 
+/**
+ * HOOK CUSTOMIZADO PARA NOTIFICAÇÕES (FOREGROUND & INITIAL)
+ */
 function useNotifications() {
     useEffect(() => {
-        const initializeNotifications = async () => {
-            // 1. Solicita permissão para notificações (iOS e Android 13+)
+        const setup = async () => {
+            // 1. Permissões e Canal
             await notifee.requestPermission();
-
-            // 2. Cria o canal de notificação para Android (obrigatório)
             await createNotificationChannel();
 
-            // 3. Obtém o token FCM e registra o dispositivo
+            // 2. Token e Registro
             const fcmToken = await messaging().getToken();
             if (fcmToken) {
-                console.log('Firebase: FCM Token obtido:', fcmToken);
                 const deviceId = await getPersistentUniqueId();
                 await registerDevice(deviceId, fcmToken);
             }
 
-            // 4. Listener para quando o app é aberto a partir de uma notificação (estado quit)
+            // 3. Lógica para quando o App estava TOTALMENTE FECHADO e foi aberto pelo clique
             const initialNotification = await notifee.getInitialNotification();
-            if (initialNotification && initialNotification.notification.data?.url) {
-                Linking.openURL(initialNotification.notification.data.url as string);
+            if (initialNotification?.notification?.data?.url) {
+                setTimeout(() => {
+                    Linking.openURL(initialNotification.notification.data?.url as string);
+                }, 1000); // Pequeno delay para a navegação estar pronta
             }
         };
 
-        initializeNotifications();
+        setup();
 
-        // 5. Listener para notificações recebidas com o app em FOREGROUND
-        const unsubscribeOnMessage = messaging().onMessage(async remoteMessage => {
-            console.log('Firebase: Notificação FCM recebida (Foreground):', remoteMessage);
+        // 4. Listener Foreground (App aberto)
+        const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
             if (remoteMessage.data) {
-                // Extrai os dados do payload "data-only"
-                const { title, body, imageUrl, url } = remoteMessage.data as any;
-
-                const notificationSubtitle = getCurrentTimeFormatted();
-
-                await displayNotification({ title, subtitle: notificationSubtitle, body, imageUrl, url, messageId: remoteMessage.messageId });
+                const { title, body, imageUrl, url } = remoteMessage.data;
+                await displayNotification({
+                    title: title as string,
+                    body: body as string,
+                    imageUrl: imageUrl as string,
+                    url: url as string,
+                    messageId: remoteMessage.messageId,
+                });
             }
         });
 
-        // Limpeza dos listeners ao desmontar o componente
+        // 5. Listener de clique com app em Foreground ou Background (não morto)
+        const unsubscribeForeground = notifee.onForegroundEvent(({ type, detail }) => {
+            if (type === EventType.PRESS && detail.notification?.data?.url) {
+                Linking.openURL(detail.notification.data.url as string);
+            }
+        });
+
         return () => {
             unsubscribeOnMessage();
-        };
-    }, []);
-
-    // 6. Listener para eventos de INTERAÇÃO com a notificação (app em foreground/background)
-    useEffect(() => {
-        const handleNotificationInteraction = (eventType: EventType, url: string | undefined) => {
-            if (eventType === EventType.PRESS && url) {
-                Linking.openURL(url);
-            }
-        };
-
-        const unsubscribeForeground = notifee.onForegroundEvent(({ type, detail }) => {
-            handleNotificationInteraction(type, detail.notification?.data?.url as string | undefined);
-        });
-
-        return () => {
             unsubscribeForeground();
         };
     }, []);
-};
+}
 
-// registerDevice: envia deviceId + pushToken ao backend
-async function registerDevice(deviceId: string, pushToken: any) {
+async function registerDevice(deviceId: string, pushToken: string) {
     try {
-
         const deviceos = Platform.OS;
         const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
-
-        const response = await appservice.get(`(WS_GRAVA_DEVICE)?deviceId=${deviceId}&pushToken=${pushToken}&deviceOs=${deviceos}&versaoApp=${versaoapp}`);
-
-        if (response) {
-            console.log('Dispositivo registrado');
-        }
-
+        await appservice.get(`(WS_GRAVA_DEVICE)?deviceId=${deviceId}&pushToken=${pushToken}&deviceOs=${deviceos}&versaoApp=${versaoapp}`);
+        console.log('Dispositivo registrado com sucesso');
     } catch (error) {
         console.log('Erro ao registrar dispositivo:', error);
     }
