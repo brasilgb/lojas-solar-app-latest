@@ -13,53 +13,67 @@ export interface NotificationPayload {
   messageId?: string;
 }
 
-
-export async function displayNotification(payload: NotificationPayload) {
-  const { title, subtitle, body, imageUrl, url, messageId } = payload;
-
-  const channelId = await notifee.createChannel({
+/**
+ * Inicializa o canal de notificações (chamar uma vez no app start)
+ */
+export async function setupNotificationChannel() {
+  await notifee.createChannel({
     id: 'default',
     name: 'Canal Padrão',
     importance: AndroidImportance.HIGH,
     visibility: AndroidVisibility.PUBLIC,
   });
+}
 
-  // Tratamento de imagem para evitar quebra no Headless JS
-  const largeIcon = imageUrl ? imageUrl : undefined;
-  // Dica: Se quiser um ícone padrão, use o nome do recurso nativo (ex: 'ic_launcher') 
-  // em vez de require do React Native para maior estabilidade em background.
+/**
+ * Exibe notificação local (usado para foreground ou data-only fallback)
+ */
+export async function displayNotification(payload: NotificationPayload) {
+  try {
+    const { title, subtitle, body, imageUrl, url, messageId } = payload;
 
-  await notifee.displayNotification({
-    title: title || 'Nova mensagem', // Fallback caso o data venha vazio
-    subtitle,
-    body,
-    data: {
-      url: url ?? "",
-      messageId: messageId ?? "",
-    },
-    android: {
-      channelId,
-      // Se largeIcon for undefined, ele usará o ícone padrão do app configurado no AndroidManifest
-      largeIcon: largeIcon,
-      importance: AndroidImportance.HIGH,
-      style: imageUrl ? {
-        type: AndroidStyle.BIGPICTURE,
-        picture: imageUrl
-      } : {
-        type: AndroidStyle.BIGTEXT,
-        text: body || '',
+    await notifee.displayNotification({
+      id: messageId, // evita duplicação
+      title: title || 'Nova mensagem',
+      subtitle,
+      body,
+      data: {
+        url: url ?? '',
+        messageId: messageId ?? '',
       },
-      pressAction: {
-        id: 'default',
+      android: {
+        channelId: 'default',
+
+        // Evita problemas com URL em background
+        largeIcon: 'ic_launcher',
+
+        importance: AndroidImportance.HIGH,
+
+        style: imageUrl
+          ? {
+              type: AndroidStyle.BIGPICTURE,
+              picture: imageUrl,
+            }
+          : {
+              type: AndroidStyle.BIGTEXT,
+              text: body || '',
+            },
+
+        pressAction: {
+          id: 'default',
+          launchActivity: 'default',
+        },
       },
-    },
-    ios: {
-      attachments: imageUrl ? [{ url: imageUrl }] : [],
-      foregroundPresentationOptions: {
-        badge: true,
-        sound: true,
-        banner: true,
+      ios: {
+        attachments: imageUrl ? [{ url: imageUrl }] : [],
+        foregroundPresentationOptions: {
+          badge: true,
+          sound: true,
+          banner: true,
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error('Erro ao exibir notificação:', error);
+  }
 }
