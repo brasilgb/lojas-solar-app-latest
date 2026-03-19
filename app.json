@@ -48,6 +48,19 @@
       }
     },
     "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "https",
+            "host": "*.lojasolar.com.br"
+          },
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
       "permissions": [
         "POST_NOTIFICATIONS",
         "ACCESS_FINE_LOCATION",

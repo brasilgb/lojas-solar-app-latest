@@ -1,8 +1,9 @@
 import '@/styles/global.css';
-import { Linking, Platform, LogBox } from 'react-native';
+import { Platform, LogBox } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import * as Linking from 'expo-linking';
 
 import messaging, {
   FirebaseMessagingTypes,
@@ -29,15 +30,15 @@ LogBox.ignoreLogs(['Settings object size']);
 /**
  * 🔥 Helper seguro para extrair dados
  */
-function parseNotificationData(
-  remoteMessage: FirebaseMessagingTypes.RemoteMessage
-) {
+function parseNotificationData(remoteMessage: FirebaseMessagingTypes.RemoteMessage) {
   const data = remoteMessage.data ?? {};
+  const notification = remoteMessage.notification ?? {};
 
   return {
-    title: data.title ?? undefined,
-    body: data.body ?? undefined,
-    imageUrl: data.imageUrl ?? undefined,
+    // Tenta pegar do objeto notification, se não tiver, tenta no data
+    title: notification.title ?? data.title ?? 'Lojas Solar',
+    body: notification.body ?? data.body ?? '',
+    imageUrl: data.imageUrl ?? undefined, // URLs de imagem geralmente vêm no data
     url: data.url ?? undefined,
     messageId: remoteMessage.messageId ?? undefined,
   };
@@ -50,7 +51,7 @@ messaging().setBackgroundMessageHandler(
   async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
     console.log('FCM Background:', remoteMessage.messageId);
 
-    if (!remoteMessage.notification && remoteMessage.data) {
+    if (!remoteMessage.notification) {
       const parsed = parseNotificationData(remoteMessage) as any;
       await displayNotification(parsed);
     }
@@ -61,11 +62,23 @@ messaging().setBackgroundMessageHandler(
  * 🔥 CLICK BACKGROUND
  */
 notifee.onBackgroundEvent(async ({ type, detail }) => {
-  if (type === EventType.PRESS) {
-    const url = detail.notification?.data?.url;
+  const { notification } = detail;
 
-    if (typeof url === 'string' && url.length > 0) {
-      await Linking.openURL(url);
+  if (type === EventType.PRESS) {
+    const url = notification?.data?.url as string;
+
+    if (url && url.startsWith('http')) {
+      console.log('🔗 Tentativa de abertura externa:', url);
+
+      // No Android, as vezes o Linking nativo falha se o app não estiver 
+      // totalmente no topo. O 'expo-linking' resolve melhor isso.
+      await Linking.openURL(url).catch(err => {
+        console.error("Erro ao abrir link externo:", err);
+      });
+    }
+
+    if (notification?.id) {
+      await notifee.cancelNotification(notification.id);
     }
   }
 });
@@ -157,13 +170,17 @@ function useNotifications() {
       }
 
       const initialNotification = await notifee.getInitialNotification();
+      const url = initialNotification?.notification?.data?.url as string;
 
-      const url = initialNotification?.notification?.data?.url;
-
-      if (typeof url === 'string' && url.length > 0) {
-        setTimeout(() => {
-          Linking.openURL(url);
-        }, 800);
+      if (url && url.startsWith('http')) {
+        // Aumentamos para 2 segundos para garantir que o Android 
+        // terminou de carregar o app antes de mandar abrir o Chrome
+        setTimeout(async () => {
+          const canOpen = await Linking.canOpenURL(url);
+          if (canOpen) {
+            await Linking.openURL(url);
+          }
+        }, 3000);
       }
     };
 
@@ -172,7 +189,7 @@ function useNotifications() {
     const unsubscribeOnMessage = messaging().onMessage(
       async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
         // evita duplicação
-        if (remoteMessage.notification) return;
+        // if (remoteMessage.notification) return;
 
         const parsed = parseNotificationData(remoteMessage) as any;
         await displayNotification(parsed);
@@ -185,6 +202,7 @@ function useNotifications() {
           const url = detail.notification?.data?.url;
 
           if (typeof url === 'string' && url.length > 0) {
+            console.log('📱 Clique em Foreground/Resume detectado:', url);
             Linking.openURL(url);
           }
         }
@@ -205,7 +223,7 @@ async function registerDevice(deviceId: string, pushToken: string) {
   try {
     const deviceos = Platform.OS;
     const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
-console.log('fcmToken:', pushToken);
+    console.log('fcmToken:', pushToken);
     await appservice.get(
       `(WS_GRAVA_DEVICE)?deviceId=${deviceId}&pushToken=${pushToken}&deviceOs=${deviceos}&versaoApp=${versaoapp}`
     );
