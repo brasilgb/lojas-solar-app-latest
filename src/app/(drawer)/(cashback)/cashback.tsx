@@ -12,6 +12,7 @@ import moment from 'moment'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Dimensions, Text, TouchableOpacity, View } from 'react-native'
 import { Modalize } from 'react-native-modalize'
+import { softCardShadow } from '@/styles/shadows'
 
 export default function Cashback() {
 
@@ -174,7 +175,7 @@ export default function Cashback() {
 
         <View className="p-4 bg-gray-100 rounded-3xl flex-1 gap-4 mt-4">
           <View className="flex-col gap-4">
-            <View className="bg-solar-blue-primary rounded-2xl p-2 shadow-md">
+            <View className="bg-solar-blue-primary rounded-2xl p-2" style={softCardShadow}>
               <Text className="text-white text-sm opacity-80">
                 Saldo disponível
               </Text>

@@ -4,9 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import messaging, {
+import {
   FirebaseMessagingTypes,
+  getInitialNotification as getMessagingInitialNotification,
+  getMessaging,
+  getToken,
+  onMessage,
+  onNotificationOpenedApp,
+  registerDeviceForRemoteMessages,
 } from '@react-native-firebase/messaging';
+import { getApps } from '@react-native-firebase/app';
 
 import notifee, { EventType } from '@notifee/react-native';
 import {
@@ -101,6 +108,12 @@ export default function AppRootLayout() {
 
 function useNotifications() {
   useEffect(() => {
+    if (getApps().length === 0) {
+      console.warn('Firebase nao inicializado. Notificacoes FCM desativadas.');
+      return;
+    }
+
+    const messagingInstance = getMessaging();
     let handledInitialUrl: string | null = null;
 
     const handlePendingNotification = async (data?: { url?: string }) => {
@@ -118,36 +131,46 @@ function useNotifications() {
     };
 
     const setup = async () => {
-      await notifee.requestPermission();
-      await messaging().registerDeviceForRemoteMessages();
-      await setupNotificationChannel();
+      try {
+        await notifee.requestPermission();
+        await registerDeviceForRemoteMessages(messagingInstance);
+        await setupNotificationChannel();
 
-      const fcmToken = await messaging().getToken();
+        const fcmToken = await getToken(messagingInstance);
 
-      if (fcmToken) {
-        const deviceId = await getPersistentUniqueId();
-        await registerDevice(deviceId, fcmToken);
+        if (fcmToken) {
+          const deviceId = await getPersistentUniqueId();
+          await registerDevice(deviceId, fcmToken);
+        }
+
+        const initialNotification = await notifee.getInitialNotification();
+        await handlePendingNotification(
+          initialNotification?.notification?.data as
+            | { url?: string }
+            | undefined
+        );
+
+        const initialRemoteMessage = await getMessagingInitialNotification(
+          messagingInstance
+        );
+        await handlePendingNotification(initialRemoteMessage?.data);
+      } catch (error) {
+        console.error('Erro ao inicializar notificacoes:', error);
       }
-
-      const initialNotification = await notifee.getInitialNotification();
-      await handlePendingNotification(
-        initialNotification?.notification?.data as { url?: string } | undefined
-      );
-
-      const initialRemoteMessage = await messaging().getInitialNotification();
-      await handlePendingNotification(initialRemoteMessage?.data);
     };
 
     setup();
 
-    const unsubscribeOnMessage = messaging().onMessage(
+    const unsubscribeOnMessage = onMessage(
+      messagingInstance,
       async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
         const parsed = parseRemoteMessage(remoteMessage);
         await displayNotification(parsed);
       }
     );
 
-    const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
+    const unsubscribeOpenedApp = onNotificationOpenedApp(
+      messagingInstance,
       async remoteMessage => {
         await handlePendingNotification(remoteMessage.data);
       }

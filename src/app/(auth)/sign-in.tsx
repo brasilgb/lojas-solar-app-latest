@@ -10,6 +10,7 @@ import { SigInSchema, sigInSchema } from '@/schemas/signIn'
 import { Link } from 'expo-router';
 import { UserRoundCheckIcon } from 'lucide-react-native';
 import { maskCpfCnpj, unMask } from '@/utils/mask';
+import { softCardShadow } from '@/styles/shadows';
 
 export default function SignIn() {
     const { signIn, loading, message } = useAuth();
@@ -52,7 +53,7 @@ export default function SignIn() {
                             </View>
 
                             {/* CARD */}
-                            <View className='bg-white rounded-3xl p-6 shadow-sm'>
+                            <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
 
                                 {/* ÍCONE */}
                                 <View className='items-center mb-4'>

@@ -6,6 +6,7 @@ import moment from 'moment';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button } from './Button';
+import { softCardShadow } from '@/styles/shadows';
 
 interface AppDateTimePickerProps {
     value: Date;
@@ -37,7 +38,10 @@ const AppDateTimePicker = ({
 
     return (
         <>
-            <View className="flex-row items-center gap-2 p-2 bg-white rounded-lg shadow shadow-black">
+            <View
+                className="flex-row items-center gap-2 p-2 bg-white rounded-lg"
+                style={softCardShadow}
+            >
                 <Text className="text-lg text-solar-blue-secondary">
                     {moment(value).format('DD/MM/YYYY')}
                 </Text>

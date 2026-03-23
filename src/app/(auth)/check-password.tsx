@@ -11,6 +11,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { EyeClosedIcon, EyeIcon, KeyRoundIcon } from 'lucide-react-native';
 import { Checkbox } from '@/components/Checkbox';
 import { unMask } from '@/utils/mask';
+import { softCardShadow } from '@/styles/shadows';
 
 export default function SignIn() {
     const params = useLocalSearchParams()
@@ -63,7 +64,7 @@ export default function SignIn() {
                             />
                         </View>
 
-                        <View className='bg-white rounded-3xl p-6 shadow-sm'>
+                        <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
 
                             <View className="items-center mb-6">
                                 <View className="bg-blue-100 p-3 rounded-full mb-3">

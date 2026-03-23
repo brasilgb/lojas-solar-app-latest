@@ -74,8 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        // 2. Solicita a permissão
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        // 2. Verifica permissão atual e só solicita se necessário
+        let { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          const permission = await Location.requestForegroundPermissionsAsync();
+          status = permission.status;
+        }
 
         if (status !== 'granted') {
           Alert.alert(
@@ -85,10 +89,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        // 3. Obtém a localização com timeout para não travar o app
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
+        // 3. Tenta obter posição atual. Se falhar, usa última posição conhecida.
+        let location: Location.LocationObject | null = null;
+        try {
+          location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+        } catch (locationError) {
+          console.warn('Falha ao obter posicao atual, tentando ultima posicao conhecida:', locationError);
+          location = await Location.getLastKnownPositionAsync({
+            maxAge: 60000,
+            requiredAccuracy: 1000,
+          });
+        }
+
+        if (!location?.coords) {
+          Alert.alert(
+            "Localizacao indisponivel",
+            "Nao foi possivel obter sua localizacao agora. Tente novamente em alguns instantes."
+          );
+          return;
+        }
 
         const { latitude, longitude } = location.coords;
         setPositionGlobal([latitude, longitude]);

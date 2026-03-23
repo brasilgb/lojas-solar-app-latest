@@ -108,7 +108,6 @@ const AssistanceProtocol = () => {
             data={protocols}
             renderItem={renderItem}
             keyExtractor={(item: any) => item.nProtocolo?.toString()}
-            estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             onRefresh={getProtocols}

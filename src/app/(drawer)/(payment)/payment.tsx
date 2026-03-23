@@ -11,6 +11,7 @@ import { CheckIcon, ClockIcon, HandCoinsIcon } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import PaymentHistory from './payment-history';
+import { softFloatingShadow } from '@/styles/shadows';
 
 const OpenPayments = () => {
     const { user, disconnect } = useAuth();
@@ -208,13 +209,7 @@ const OpenPayments = () => {
     const FooterPaymentTotal = () => (
         <View
             className="absolute bottom-0 left-0 right-0 bg-solar-blue-primary px-4 py-4 border-t border-white/10 flex-row items-center justify-between"
-            style={{
-                elevation: 12,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.15,
-                shadowRadius: 6,
-            }}
+            style={softFloatingShadow}
         >
 
             {/* RESUMO */}

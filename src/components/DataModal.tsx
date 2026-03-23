@@ -108,7 +108,6 @@ export default function DataModal({
                                 <Text className="text-gray-400">Nenhum resultado encontrado.</Text>
                             </View>
                         }
-                        estimatedItemSize={70}
                     />
                 </View>
             </Pressable>

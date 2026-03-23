@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
+import { softCardShadow } from '@/styles/shadows';
 
 type Store = {
   cidade: string;
@@ -20,8 +21,8 @@ export function StoreCard({ item, width, onPress }: Props) {
     <View className="items-center">
       <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
         <View
-          style={{ width }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm shadow-gray-300 overflow-hidden"
+          style={[{ width }, softCardShadow]}
+          className="bg-white rounded-xl border border-gray-200 overflow-hidden"
         >
           {/* HEADER */}
           <View className="p-4">
