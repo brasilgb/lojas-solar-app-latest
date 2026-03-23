@@ -11,7 +11,6 @@ import {
   getToken,
   onMessage,
   onNotificationOpenedApp,
-  registerDeviceForRemoteMessages,
 } from '@react-native-firebase/messaging';
 import { getApps } from '@react-native-firebase/app';
 
@@ -35,7 +34,9 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
 import VerifyVersion from '@/components/NewVersion';
 
-LogBox.ignoreLogs(['Settings object size']);
+LogBox.ignoreLogs([
+  'Settings object size',
+]);
 
 export default function AppRootLayout() {
   const [versionData, setVersionData] = useState<any>(null);
@@ -133,7 +134,6 @@ function useNotifications() {
     const setup = async () => {
       try {
         await notifee.requestPermission();
-        await registerDeviceForRemoteMessages(messagingInstance);
         await setupNotificationChannel();
 
         const fcmToken = await getToken(messagingInstance);

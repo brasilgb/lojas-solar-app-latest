@@ -1,5 +1,9 @@
 import 'expo-router/entry';
-import messaging from '@react-native-firebase/messaging';
+import { getApps } from '@react-native-firebase/app';
+import {
+  getMessaging,
+  setBackgroundMessageHandler,
+} from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 
 import {
@@ -9,17 +13,21 @@ import {
   setupNotificationChannel,
 } from './src/lib/notifications';
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log('Mensagem recebida em background!', remoteMessage);
+if (getApps().length > 0) {
+  const messagingInstance = getMessaging();
 
-  if (remoteMessage.notification) {
-    return;
-  }
+  setBackgroundMessageHandler(messagingInstance, async remoteMessage => {
+    console.log('Mensagem recebida em background!', remoteMessage);
 
-  await setupNotificationChannel();
+    if (remoteMessage.notification) {
+      return;
+    }
 
-  const payload = parseRemoteMessage(remoteMessage);
-  await displayNotification(payload);
-});
+    await setupNotificationChannel();
+
+    const payload = parseRemoteMessage(remoteMessage);
+    await displayNotification(payload);
+  });
+}
 
 notifee.onBackgroundEvent(handleNotifeeBackgroundEvent);
