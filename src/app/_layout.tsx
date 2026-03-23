@@ -1,16 +1,20 @@
 import '@/styles/global.css';
 import { Platform, LogBox } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import * as Linking from 'expo-linking';
 
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 
 import notifee, { EventType } from '@notifee/react-native';
-import { displayNotification, setupNotificationChannel } from '@/lib/notifications';
+import {
+  displayNotification,
+  handleNotificationPress,
+  parseRemoteMessage,
+  setupNotificationChannel,
+} from '@/lib/notifications';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
 
 import {
@@ -22,70 +26,12 @@ import {
 
 import { AuthProvider } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
-import { Modalize } from 'react-native-modalize';
 import VerifyVersion from '@/components/NewVersion';
 
 LogBox.ignoreLogs(['Settings object size']);
 
-/**
- * 🔥 Helper seguro para extrair dados
- */
-function parseNotificationData(remoteMessage: FirebaseMessagingTypes.RemoteMessage) {
-  const data = remoteMessage.data ?? {};
-  const notification = remoteMessage.notification ?? {};
-
-  return {
-    // Tenta pegar do objeto notification, se não tiver, tenta no data
-    title: notification.title ?? data.title ?? 'Lojas Solar',
-    body: notification.body ?? data.body ?? '',
-    imageUrl: data.imageUrl ?? undefined, // URLs de imagem geralmente vêm no data
-    url: data.url ?? undefined,
-    messageId: remoteMessage.messageId ?? undefined,
-  };
-}
-
-/**
- * 🔥 BACKGROUND HANDLER
- */
-messaging().setBackgroundMessageHandler(
-  async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-    console.log('FCM Background:', remoteMessage.messageId);
-
-    if (!remoteMessage.notification) {
-      const parsed = parseNotificationData(remoteMessage) as any;
-      await displayNotification(parsed);
-    }
-  }
-);
-
-/**
- * 🔥 CLICK BACKGROUND
- */
-notifee.onBackgroundEvent(async ({ type, detail }) => {
-  const { notification } = detail;
-
-  if (type === EventType.PRESS) {
-    const url = notification?.data?.url as string;
-
-    if (url && url.startsWith('http')) {
-      console.log('🔗 Tentativa de abertura externa:', url);
-
-      // No Android, as vezes o Linking nativo falha se o app não estiver 
-      // totalmente no topo. O 'expo-linking' resolve melhor isso.
-      await Linking.openURL(url).catch(err => {
-        console.error("Erro ao abrir link externo:", err);
-      });
-    }
-
-    if (notification?.id) {
-      await notifee.cancelNotification(notification.id);
-    }
-  }
-});
-
 export default function AppRootLayout() {
   const [versionData, setVersionData] = useState<any>(null);
-  const modalizeRef = useRef<Modalize>(null);
 
   const [fontsLoaded] = useFonts({
     Roboto_400Regular,
@@ -125,7 +71,7 @@ export default function AppRootLayout() {
           });
         }
       } catch (err) {
-        console.error('Erro ao verificar versão:', err);
+        console.error('Erro ao verificar versao:', err);
       }
     };
 
@@ -153,14 +99,28 @@ export default function AppRootLayout() {
   );
 }
 
-/**
- * 🔥 HOOK
- */
 function useNotifications() {
   useEffect(() => {
+    let handledInitialUrl: string | null = null;
+
+    const handlePendingNotification = async (data?: { url?: string }) => {
+      const url = data?.url;
+
+      if (!url || handledInitialUrl === url) {
+        return;
+      }
+
+      handledInitialUrl = url;
+
+      setTimeout(() => {
+        handleNotificationPress({ url });
+      }, 800);
+    };
+
     const setup = async () => {
       await notifee.requestPermission();
       await messaging().registerDeviceForRemoteMessages();
+      await setupNotificationChannel();
 
       const fcmToken = await messaging().getToken();
 
@@ -170,55 +130,48 @@ function useNotifications() {
       }
 
       const initialNotification = await notifee.getInitialNotification();
-      const url = initialNotification?.notification?.data?.url as string;
+      await handlePendingNotification(
+        initialNotification?.notification?.data as { url?: string } | undefined
+      );
 
-      if (url && url.startsWith('http')) {
-        // Aumentamos para 2 segundos para garantir que o Android 
-        // terminou de carregar o app antes de mandar abrir o Chrome
-        setTimeout(async () => {
-          const canOpen = await Linking.canOpenURL(url);
-          if (canOpen) {
-            await Linking.openURL(url);
-          }
-        }, 3000);
-      }
+      const initialRemoteMessage = await messaging().getInitialNotification();
+      await handlePendingNotification(initialRemoteMessage?.data);
     };
 
     setup();
 
     const unsubscribeOnMessage = messaging().onMessage(
       async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-        // evita duplicação
-        // if (remoteMessage.notification) return;
-
-        const parsed = parseNotificationData(remoteMessage) as any;
+        const parsed = parseRemoteMessage(remoteMessage);
         await displayNotification(parsed);
       }
     );
 
-    const unsubscribeForeground = notifee.onForegroundEvent(
-      ({ type, detail }) => {
-        if (type === EventType.PRESS) {
-          const url = detail.notification?.data?.url;
+    const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
+      async remoteMessage => {
+        await handlePendingNotification(remoteMessage.data);
+      }
+    );
 
-          if (typeof url === 'string' && url.length > 0) {
-            console.log('📱 Clique em Foreground/Resume detectado:', url);
-            Linking.openURL(url);
-          }
+    const unsubscribeForeground = notifee.onForegroundEvent(
+      async ({ type, detail }) => {
+        if (type === EventType.PRESS) {
+          console.log('Clique em foreground detectado:', detail.notification?.data);
+          await handlePendingNotification(
+            detail.notification?.data as { url?: string }
+          );
         }
       }
     );
 
     return () => {
       unsubscribeOnMessage();
+      unsubscribeOpenedApp();
       unsubscribeForeground();
     };
   }, []);
 }
 
-/**
- * 🔥 REGISTER
- */
 async function registerDevice(deviceId: string, pushToken: string) {
   try {
     const deviceos = Platform.OS;
