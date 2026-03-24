@@ -187,7 +187,7 @@ const CartPayment = () => {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-4'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4 gap-2'>
 
                 <PageHeader
                     title="Pagamento"

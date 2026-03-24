@@ -164,7 +164,7 @@ export default function Cashback() {
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-4'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4 gap-2'>
 
         <PageHeader
           title="Cashback"
@@ -173,7 +173,7 @@ export default function Cashback() {
           icon={<BanknoteArrowDownIcon size={26} color="#1a9cd9" />}
         />
 
-        <View className="p-4 bg-gray-100 rounded-3xl flex-1 gap-4 mt-4">
+        <View className="bg-white rounded-t-3xl flex-1">
           <View className="flex-col gap-4">
             <View className="bg-solar-blue-primary rounded-2xl p-2" style={softCardShadow}>
               <Text className="text-white text-sm opacity-80">
@@ -187,7 +187,7 @@ export default function Cashback() {
               </Text>
             </View>
 
-            <View className="bg-white p-4 rounded-xl border border-gray-200">
+            <View className="bg-white p-2 rounded-xl border border-gray-200">
               <View className="flex-row justify-between">
                 <AppDateTimePicker value={dateIni} onChange={setDateIni} />
                 <AppDateTimePicker value={dateFin} onChange={setDateFin} />
@@ -229,7 +229,7 @@ export default function Cashback() {
         </View>
 
         <Modalize
-          modalHeight={Dimensions.get('window').height - 150}
+          modalHeight={Dimensions.get('window').height - 200}
           modalTopOffset={80}
           ref={modalizeRef}
           HeaderComponent={

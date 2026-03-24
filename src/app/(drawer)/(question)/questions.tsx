@@ -10,7 +10,7 @@ import Crediario from './crediario'
 export default function Questions() {
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-      <View className='flex-1 bg-white rounded-t-3xl p-4'>
+      <View className='flex-1 bg-white rounded-t-3xl p-4 gap-2'>
 
         <PageHeader
           title="Perguntas Frequentes"
@@ -22,7 +22,7 @@ export default function Questions() {
         <ScrollView className="flex-1">
           <View className="flex-1">
             <Tabs defaultValue="comercial">
-              <TabsList>
+              <TabsList className='px-1'>
                 <TabsTrigger
                   id="comercial"
                   title="Comercial"

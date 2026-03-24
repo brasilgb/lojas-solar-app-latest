@@ -44,7 +44,7 @@ export default function DocsAssign() {
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
 
       <View className='flex-1 flex-col items-center justify-start'>
-        <View className='w-full flex-1 bg-white rounded-t-3xl p-4 flex-col justify-start items-center gap-4'>
+        <View className='w-full flex-1 bg-white rounded-t-3xl p-4 flex-col justify-start items-center gap-2'>
 
           <PageHeader
             title="Assinar documentos"
@@ -54,7 +54,7 @@ export default function DocsAssign() {
           />
 
           {assignDocs?.length < 1 && (
-            <View className='flex-1'>
+            <View className='flex-1 p-4'>
               <Text className='text-gray-800 font-semibold'>
                 Nenhum documento disponível
               </Text>

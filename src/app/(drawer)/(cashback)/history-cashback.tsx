@@ -152,7 +152,7 @@ export default function HistoryCashback() {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-4'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4 gap-2'>
 
                 <PageHeader
                     title="Cashback"
@@ -161,7 +161,7 @@ export default function HistoryCashback() {
                     icon={<BanknoteArrowDownIcon size={26} color="#1a9cd9" />}
                 />
 
-                <View className="flex-1 p-4 bg-gray-100 rounded-3xl h-full gap-4 mt-4">
+                <View className="bg-white rounded-t-3xl flex-1">
                     {show && (
                         <MonthPicker
                             onChange={onValueChange}

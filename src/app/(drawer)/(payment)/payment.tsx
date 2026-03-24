@@ -256,7 +256,7 @@ const OpenPayments = () => {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
-            <View className='flex-1 bg-white rounded-t-3xl p-4'>
+            <View className='flex-1 bg-white rounded-t-3xl p-4 gap-2'>
 
                 <PageHeader
                     title="Pagamentos"
@@ -265,18 +265,18 @@ const OpenPayments = () => {
                     icon={<HandCoinsIcon size={26} color="#1a9cd9" />}
                 />
 
-                <View className="bg-white rounded-t-3xl flex-1 mt-4">
+                <View className="bg-white rounded-t-3xl flex-1">
 
                     <Tabs defaultValue="opened">
 
-                        <TabsList className="pt-4">
+                        <TabsList>
                             <TabsTrigger id="opened" title="Em aberto" value="opened" />
                             <TabsTrigger id="history" title="Histórico" value="history" />
                         </TabsList>
 
                         <TabsContent value="opened" className="flex-1 border-0">
 
-                            <View className="flex-1 px-4">
+                            <View className="flex-1">
 
                                 <View className="mt-4 mb-2">
                                     <Text className="text-sm text-gray-400">

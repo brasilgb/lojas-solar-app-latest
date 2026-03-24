@@ -5,7 +5,7 @@ import notifee, {
   AndroidVisibility,
   EventType,
 } from '@notifee/react-native';
-import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 
 export interface NotificationPayload {
   title?: string;
@@ -22,15 +22,32 @@ export function parseRemoteMessage(
   const data = remoteMessage.data ?? {};
   const notification = remoteMessage.notification ?? {};
 
+  const remoteMessageId =
+    typeof remoteMessage.messageId === 'string' &&
+      remoteMessage.messageId.trim()
+      ? remoteMessage.messageId.trim()
+      : undefined;
+
+  const dataMessageId =
+    typeof data.messageId === 'string' && data.messageId.trim()
+      ? data.messageId.trim()
+      : undefined;
+
   return {
-    title: notification.title ?? data.title ?? 'Lojas Solar',
-    subtitle: data.subtitle ?? undefined,
-    body: notification.body ?? data.body ?? '',
-    imageUrl: data.imageUrl ?? data.image ?? undefined,
-    url: data.url ?? undefined,
-    messageId: remoteMessage.messageId ?? data.messageId ?? undefined,
-  } as any;
+    title: notification.title ?? data.title ? 'Lojas Solar' : undefined,
+    subtitle: typeof data.subtitle === 'string' ? data.subtitle : undefined,
+    body: notification.body ?? (typeof data.body === 'string' ? data.body : ''),
+    imageUrl:
+      typeof data.imageUrl === 'string'
+        ? data.imageUrl
+        : typeof data.image === 'string'
+          ? data.image
+          : undefined,
+    url: typeof data.url === 'string' ? data.url : undefined,
+    messageId: remoteMessageId ?? dataMessageId,
+  };
 }
+
 
 export async function setupNotificationChannel() {
   await notifee.createChannel({
@@ -45,14 +62,19 @@ export async function displayNotification(payload: NotificationPayload) {
   try {
     const { title, subtitle, body, imageUrl, url, messageId } = payload;
 
+    const notificationId =
+      typeof messageId === 'string' && messageId.trim()
+        ? messageId
+        : `local-${Date.now()}`;
+
     await notifee.displayNotification({
-      id: messageId,
+      id: notificationId,
       title: title || 'Nova mensagem',
       subtitle,
       body,
       data: {
         url: url ?? '',
-        messageId: messageId ?? '',
+        messageId: notificationId,
       },
       android: {
         channelId: 'default',
@@ -64,13 +86,13 @@ export async function displayNotification(payload: NotificationPayload) {
         },
         style: imageUrl
           ? {
-              type: AndroidStyle.BIGPICTURE,
-              picture: imageUrl,
-            }
+            type: AndroidStyle.BIGPICTURE,
+            picture: imageUrl,
+          }
           : {
-              type: AndroidStyle.BIGTEXT,
-              text: body || '',
-            },
+            type: AndroidStyle.BIGTEXT,
+            text: body || '',
+          },
       },
       ios: {
         attachments: imageUrl ? [{ url: imageUrl }] : [],

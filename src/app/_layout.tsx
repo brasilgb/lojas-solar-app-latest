@@ -1,18 +1,19 @@
 import '@/styles/global.css';
-import { Platform, LogBox } from 'react-native';
+import { Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import {
-  FirebaseMessagingTypes,
   getInitialNotification as getMessagingInitialNotification,
   getMessaging,
   getToken,
   onMessage,
   onNotificationOpenedApp,
+  registerDeviceForRemoteMessages,
 } from '@react-native-firebase/messaging';
-import { getApps } from '@react-native-firebase/app';
+import { getApp, getApps } from '@react-native-firebase/app';
 
 import notifee, { EventType } from '@notifee/react-native';
 import {
@@ -33,10 +34,6 @@ import {
 import { AuthProvider } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
 import VerifyVersion from '@/components/NewVersion';
-
-LogBox.ignoreLogs([
-  'Settings object size',
-]);
 
 export default function AppRootLayout() {
   const [versionData, setVersionData] = useState<any>(null);
@@ -59,7 +56,7 @@ export default function AppRootLayout() {
         const versionApp =
           process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '') || '0';
 
-        const response = await appservice.get('WS_VERSAO_APP');
+        const response = await appservice.get('(WS_VERSAO_APP)');
         const { android, ios } = response.data.resposta.data;
 
         const remoteVersion = Platform.OS === 'ios' ? ios : android;
@@ -114,7 +111,7 @@ function useNotifications() {
       return;
     }
 
-    const messagingInstance = getMessaging();
+    const messagingInstance = getMessaging(getApp());
     let handledInitialUrl: string | null = null;
 
     const handlePendingNotification = async (data?: { url?: string }) => {
@@ -134,6 +131,7 @@ function useNotifications() {
     const setup = async () => {
       try {
         await notifee.requestPermission();
+        await registerDeviceForRemoteMessages(messagingInstance);
         await setupNotificationChannel();
 
         const fcmToken = await getToken(messagingInstance);
@@ -179,7 +177,10 @@ function useNotifications() {
     const unsubscribeForeground = notifee.onForegroundEvent(
       async ({ type, detail }) => {
         if (type === EventType.PRESS) {
-          console.log('Clique em foreground detectado:', detail.notification?.data);
+          console.log(
+            'Clique em foreground detectado:',
+            detail.notification?.data
+          );
           await handlePendingNotification(
             detail.notification?.data as { url?: string }
           );
@@ -200,6 +201,7 @@ async function registerDevice(deviceId: string, pushToken: string) {
     const deviceos = Platform.OS;
     const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
     console.log('fcmToken:', pushToken);
+
     await appservice.get(
       `(WS_GRAVA_DEVICE)?deviceId=${deviceId}&pushToken=${pushToken}&deviceOs=${deviceos}&versaoApp=${versaoapp}`
     );
