@@ -5,7 +5,7 @@ export const CartPaymentSchema = z.object({
     nomeCartao: z.string().min(1, {message: 'Informe o nome do titular'}),
     validadeCartao: z
         .string()
-        .min(1, {message: 'Informe a data de vencimento'}),
+        .regex(/^(0[1-9]|1[0-2])\/\d{4}$/, { message: 'Use o formato MM/AAAA' }),
     cvvCartao: z.string().min(1, {message: 'Informe o código de segurança'}),
 });
 export type CartPaymentFormType = z.infer<typeof CartPaymentSchema>;

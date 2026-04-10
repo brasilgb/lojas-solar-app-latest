@@ -46,8 +46,16 @@ const LoadImages = ({ route }: any) => {
     }, []);
 
     const checkPermissions = async () => {
-        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-        if (!granted) Alert.alert('Permissão necessária', 'Precisamos de acesso à câmera.');
+        const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+        const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!cameraPermission.granted) {
+            Alert.alert('Permissão necessária', 'Precisamos de acesso à câmera para tirar fotos.');
+        }
+
+        if (!mediaLibraryPermission.granted) {
+            Alert.alert('Permissão necessária', 'Precisamos de acesso à galeria para selecionar fotos.');
+        }
     };
 
     const loadStoredImages = async () => {
@@ -67,20 +75,49 @@ const LoadImages = ({ route }: any) => {
     const handlePickImage = async (source: 'camera' | 'gallery') => {
         setModalVisible(false);
 
-        const options: ImagePicker.ImagePickerOptions = {
-            base64: true,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7, // Reduzido para performance no upload
-        };
+        // Pequeno delay para garantir que o modal feche completamente
+        await new Promise(resolve => setTimeout(resolve, 300));
 
-        const result = source === 'camera'
-            ? await ImagePicker.launchCameraAsync(options)
-            : await ImagePicker.launchImageLibraryAsync(options);
+        try {
+            // Verificar permissões antes de tentar abrir
+            if (source === 'camera') {
+                const cameraPermission = await ImagePicker.getCameraPermissionsAsync();
+                if (!cameraPermission.granted) {
+                    const requestResult = await ImagePicker.requestCameraPermissionsAsync();
+                    if (!requestResult.granted) {
+                        Alert.alert('Permissão negada', 'Não foi possível acessar a câmera. Verifique as permissões do app.');
+                        return;
+                    }
+                }
+            } else if (source === 'gallery') {
+                const mediaPermission = await ImagePicker.getMediaLibraryPermissionsAsync();
+                if (!mediaPermission.granted) {
+                    const requestResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                    if (!requestResult.granted) {
+                        Alert.alert('Permissão negada', 'Não foi possível acessar a galeria. Verifique as permissões do app.');
+                        return;
+                    }
+                }
+            }
 
-        if (!result.canceled && result.assets[0]) {
-            const asset = result.assets[0];
-            updateImageState(selectedType, asset.uri, asset.base64 || '');
+            const options: ImagePicker.ImagePickerOptions = {
+                base64: true,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            };
+
+            const result = source === 'camera'
+                ? await ImagePicker.launchCameraAsync(options)
+                : await ImagePicker.launchImageLibraryAsync(options);
+
+            if (!result.canceled && result.assets && result.assets[0]) {
+                const asset = result.assets[0];
+                await updateImageState(selectedType, asset.uri, asset.base64 || '');
+            }
+        } catch (error) {
+            console.error('Erro ao abrir seletor de imagem:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar abrir o seletor de imagem.');
         }
     };
 
@@ -141,7 +178,7 @@ const LoadImages = ({ route }: any) => {
                     onPress={() => setModalVisible(false)}
                 >
                     {/* CONTEÚDO */}
-                    <Pressable className="bg-white w-full rounded-t-3xl px-6 pt-3 pb-6">
+                    <Pressable className="bg-white w-full rounded-t-3xl px-6 pt-3 pb-6" onPress={() => {}}>
 
                         {/* HANDLE */}
                         <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center mb-4" />
@@ -152,7 +189,7 @@ const LoadImages = ({ route }: any) => {
                         </Text>
 
                         {/* AÇÕES */}
-                        <View className="flex-row justify-between gap-4">
+                        <View className="flex-row justify-between gap-4" onStartShouldSetResponder={() => true}>
                             <SourceButton
                                 icon="camera"
                                 label="Câmera"
@@ -253,7 +290,11 @@ const LoadImages = ({ route }: any) => {
 
 // Sub-componente para limpar o modal
 const SourceButton = ({ icon, label, onPress }: any) => (
-    <TouchableOpacity className="items-center p-4 bg-gray-100 rounded-xl border border-gray-500" onPress={onPress}>
+    <TouchableOpacity
+        className="items-center p-4 bg-gray-100 rounded-xl border border-gray-500"
+        onPress={onPress}
+        activeOpacity={0.7}
+    >
         <Ionicons name={icon === 'camera' ? 'camera' : 'image'} size={40} color="#024D9F" />
         <Text className="text-solar-blue-dark mt-1">{label}</Text>
     </TouchableOpacity>

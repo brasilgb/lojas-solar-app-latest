@@ -50,7 +50,7 @@ const CardBillPaid = () => {
 
                     <View className="flex-row justify-between items-center">
                         <Text className="text-gray-500 text-sm">ID da Transação</Text>
-                        <Text className="text-gray-800 text-sm font-medium">{params?.payamentId}</Text>
+                        <Text className="text-gray-800 text-sm font-medium">{params?.paymentId}</Text>
                     </View>
                 </View>
 

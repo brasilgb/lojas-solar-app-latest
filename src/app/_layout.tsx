@@ -1,21 +1,23 @@
 import '@/styles/global.css';
-import { Platform } from 'react-native';
-import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { getApp, getApps } from '@react-native-firebase/app';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import {
-  getInitialNotification as getMessagingInitialNotification,
+  AuthorizationStatus,
+  getAPNSToken,
   getMessaging,
+  getInitialNotification as getMessagingInitialNotification,
   getToken,
   onMessage,
   onNotificationOpenedApp,
   registerDeviceForRemoteMessages,
+  requestPermission as requestMessagingPermission,
 } from '@react-native-firebase/messaging';
-import { getApp, getApps } from '@react-native-firebase/app';
 
-import notifee, { EventType } from '@notifee/react-native';
 import {
   displayNotification,
   handleNotificationPress,
@@ -23,6 +25,7 @@ import {
   setupNotificationChannel,
 } from '@/lib/notifications';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
+import notifee, { EventType } from '@notifee/react-native';
 
 import {
   Roboto_400Regular,
@@ -31,9 +34,9 @@ import {
   useFonts,
 } from '@expo-google-fonts/roboto';
 
+import VerifyVersion from '@/components/NewVersion';
 import { AuthProvider } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
-import VerifyVersion from '@/components/NewVersion';
 
 export default function AppRootLayout() {
   const [versionData, setVersionData] = useState<any>(null);
@@ -130,8 +133,34 @@ function useNotifications() {
 
     const setup = async () => {
       try {
+        const messagingStatus = await requestMessagingPermission(messagingInstance, {
+          alert: true,
+          badge: true,
+          sound: true,
+          carPlay: true,
+          provisional: true,
+        });
+
+        if (
+          messagingStatus !== AuthorizationStatus.AUTHORIZED &&
+          messagingStatus !== AuthorizationStatus.PROVISIONAL &&
+          messagingStatus !== AuthorizationStatus.EPHEMERAL
+        ) {
+          console.warn('Push notification permission not granted. Ignoring FCM registration.');
+          return;
+        }
+
         await notifee.requestPermission();
+
         await registerDeviceForRemoteMessages(messagingInstance);
+
+        // On iOS, this gives the APNS token needed for FCM token exchange.
+        const apnsToken = await getAPNSToken(messagingInstance);
+        if (!apnsToken) {
+          console.warn('APNS token not ready yet; waiting 2 seconds before getToken()');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
         await setupNotificationChannel();
 
         const fcmToken = await getToken(messagingInstance);

@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
 import { HandCoinsIcon, LockIcon } from "lucide-react-native";
 import moment from "moment";
-import 'moment/locale/pt-br';
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
@@ -100,7 +99,7 @@ const CartPayment = () => {
         });
         const { success, message, data } = response.data.resposta;
         if (!success) throw new Error(message);
-        cartPaymentHandle(data);
+        await cartPaymentHandle(data);
 
     }
 
@@ -143,7 +142,10 @@ const CartPayment = () => {
             });
 
         } else {
-            Alert.alert("Atenção", `${ReturnMessage}, verifique os dados do cartão.` || "Pagamento negado pela operadora.");
+            const reason = ReturnMessage
+                ? `${ReturnMessage}, verifique os dados do cartão.`
+                : "Pagamento negado pela operadora.";
+            Alert.alert("Atenção", reason);
         }
     };
 
@@ -162,7 +164,7 @@ const CartPayment = () => {
                 `(WS_ATUALIZA_ORDEM)?token=${mtoken}&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`
             );
 
-            const { success, message } = response.data.response;
+            const { success, message } = response.data.resposta || response.data.response || {};
             if (!success) {
                 // Se o backend retornar success: false
                 Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
@@ -270,7 +272,7 @@ const CartPayment = () => {
                                             render={({ field: { onChange, onBlur, value } }) => (
                                                 <Input
                                                     label="Validade"
-                                                    placeholder="MM/AA"
+                                                    placeholder="MM/AAAA"
                                                     onBlur={onBlur}
                                                     onChangeText={onChange}
                                                     value={maskDateValidate(value)}

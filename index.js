@@ -1,16 +1,16 @@
+import 'expo-router/entry';
 import notifee from '@notifee/react-native';
 import firebase, { getApp } from '@react-native-firebase/app';
 import {
-    getMessaging,
-    setBackgroundMessageHandler,
+  getMessaging,
+  setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
-import 'expo-router/entry';
 
 import {
-    displayNotification,
-    handleNotifeeBackgroundEvent,
-    parseRemoteMessage,
-    setupNotificationChannel,
+  displayNotification,
+  handleNotifeeBackgroundEvent,
+  parseRemoteMessage,
+  setupNotificationChannel,
 } from './src/lib/notifications';
 
 // Initialize Firebase if not already initialized
