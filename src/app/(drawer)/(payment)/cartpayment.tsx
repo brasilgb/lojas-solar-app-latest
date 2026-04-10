@@ -71,6 +71,16 @@ const CartPayment = () => {
         return cleanNumber.slice(-4).padStart(4, '*');
     };
 
+    const getErrorMessage = (error: any, fallback: string) => {
+        const apiMessage =
+            error?.response?.data?.resposta?.message ||
+            error?.response?.data?.response?.message ||
+            error?.response?.data?.message ||
+            error?.message;
+
+        return apiMessage || fallback;
+    };
+
     const onSubmit = async (values: CartPaymentFormType) => {
         setLoading(true);
         try {
@@ -151,6 +161,11 @@ const CartPayment = () => {
 
     // 3. Atualizar ordem no backend
     async function sendOrderAtualize(dataCart: CartResponseData) {
+        if (!mtoken) {
+            Alert.alert("Aviso", "Sessão inválida para atualizar o pedido.");
+            return;
+        }
+
         let orderResponse: OrderUpdatePayload = {
             numeroOrdem: dataCart.MerchantOrderId,
             statusOrdem: 2,
@@ -160,11 +175,14 @@ const CartPayment = () => {
             ReceivedDate: dataCart.ReceivedDate
         };
         try {
+            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
             const response = await appservice.get(
-                `(WS_ATUALIZA_ORDEM)?token=${mtoken}&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`
+                query
             );
 
-            const { success, message } = response.data.resposta || response.data.response || {};
+            const payload = response?.data?.resposta || response?.data?.response;
+            const success = payload?.success;
+            const message = payload?.message || response?.message;
             if (!success) {
                 // Se o backend retornar success: false
                 Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
@@ -182,8 +200,16 @@ const CartPayment = () => {
             });
 
         } catch (error) {
-            Alert.alert("Erro de Conexão", "O pagamento foi processado, mas houve um erro ao atualizar seu pedido.");
-            console.error('erro 01', error);
+            const message = getErrorMessage(
+                error,
+                "O pagamento foi processado, mas houve um erro ao atualizar seu pedido."
+            );
+            Alert.alert("Erro de Conexão", message);
+            console.error("Erro ao atualizar ordem de pagamento", {
+                message: error?.message,
+                status: error?.response?.status,
+                data: error?.response?.data,
+            });
         }
     };
 
