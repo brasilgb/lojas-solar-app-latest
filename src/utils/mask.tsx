@@ -92,7 +92,7 @@ function maskCreditCart(value: string) {
 function maskDateValidate(value: string) {
     if (typeof value !== 'undefined' && value) {
         value = value.replace(/\D/g, '');
-        value = value.replace(/^(\d{2})(\d{4})/, '$1/$2');
+        value = value.replace(/^(\d{2})(\d{2})/, '$1/$2');
         return value;
     }
 }

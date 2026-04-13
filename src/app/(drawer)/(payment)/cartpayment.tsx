@@ -114,6 +114,13 @@ const CartPayment = () => {
     }
 
     async function cartPaymentHandle(data: any) {
+        const validadeOriginal = data?.dadosCartao.validadeCartao || "";
+
+        let validadeFormatada = validadeOriginal;
+        if (validadeOriginal.includes('/') && validadeOriginal.length <= 5) {
+            const [mes, ano] = validadeOriginal.split('/');
+            validadeFormatada = `${mes}/20${ano}`;
+        }
 
         const paymentResponse = await servicecart.post("(PAG_CARTAO_CREDITO)", {
             MerchantOrderId: data?.numeroOrdem,
@@ -133,7 +140,7 @@ const CartPayment = () => {
                 CreditCard: {
                     CardNumber: unMask(data?.dadosCartao?.numeroCartao),
                     Holder: data?.dadosCartao.nomeCartao,
-                    ExpirationDate: data?.dadosCartao.validadeCartao,
+                    ExpirationDate: validadeFormatada,
                     SecurityCode: data?.dadosCartao.cvvCartao,
                     SaveCard: false,
                     Brand: getCardBrandName(String(data?.dadosCartao?.numeroCartao)),
@@ -180,9 +187,9 @@ const CartPayment = () => {
                 query
             );
 
-            const payload = response?.data?.resposta || response?.data?.response;
+            const payload = response?.data?.resposta;
             const success = payload?.success;
-            const message = payload?.message || response?.message;
+            const message = payload?.message;
             if (!success) {
                 // Se o backend retornar success: false
                 Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
@@ -199,7 +206,7 @@ const CartPayment = () => {
                 }
             });
 
-        } catch (error) {
+        } catch (error: any) {
             const message = getErrorMessage(
                 error,
                 "O pagamento foi processado, mas houve um erro ao atualizar seu pedido."
@@ -298,12 +305,12 @@ const CartPayment = () => {
                                             render={({ field: { onChange, onBlur, value } }) => (
                                                 <Input
                                                     label="Validade"
-                                                    placeholder="MM/AAAA"
+                                                    placeholder="MM/AA"
                                                     onBlur={onBlur}
                                                     onChangeText={onChange}
                                                     value={maskDateValidate(value)}
                                                     keyboardType="numeric"
-                                                    maxLength={7}
+                                                    maxLength={5}
                                                     inputClasses={errors.validadeCartao ? "!border-solar-red-primary" : ""}
                                                 />
                                             )}
