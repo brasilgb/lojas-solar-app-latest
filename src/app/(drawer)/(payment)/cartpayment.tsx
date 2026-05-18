@@ -41,18 +41,20 @@ interface OrderUpdatePayload {
     urlBoleto: string;
     ReceivedDate: string;
 }
+
 /**
  *         MerchantOrderId, PaymentId, Authori
  */
-
 const CartPayment = () => {
-
-    const { user } = useAuth();
+    const { user, disconnect } = useAuth();
     const [loading, setLoading] = useState(false);
     const params = useLocalSearchParams();
     const order = JSON.parse(params?.dataOrder as string);
     const valueOrder = String(params?.totalAmount);
     const mtoken = user?.token;
+
+    const [isCriticalError, setIsCriticalError] = useState(false);
+    const [paymentData, setPaymentData] = useState<CartResponseData | null>(null);
 
     const { control, handleSubmit, formState: { errors } } = useForm<CartPaymentFormType>({
         defaultValues: {
@@ -107,8 +109,18 @@ const CartPayment = () => {
                 cvvCartao: values.cvvCartao,
             },
         });
-        const { success, message, data } = response.data.resposta;
-        if (!success) throw new Error(message);
+        const { success, message, token, data } = response.data.resposta;
+        if (!token) {
+            Alert.alert('Atenção', message, [
+                {
+                    text: 'Ok',
+                    onPress: () => {
+                        disconnect();
+                    },
+                },
+            ]);
+        }
+        if (!success) { Alert.alert('Atenção deu erro', message, [{ text: 'Ok' }]); return; };
         await cartPaymentHandle(data);
 
     }
@@ -150,13 +162,16 @@ const CartPayment = () => {
 
         const { success, ReturnCode, ReturnMessage, AuthorizationCode, PaymentId, ReceivedDate, MerchantOrderId } = paymentResponse.data.response;
         if (success && ReturnCode === '00') {
-            await sendOrderAtualize({
+            const dataToSave = {
                 MerchantOrderId,
                 PaymentId,
                 AuthorizationCode,
                 ReceivedDate,
                 CartNumber: data?.dadosCartao?.numeroCartao
-            });
+            };
+
+            setPaymentData(dataToSave); // Salva para caso precise de retry manual
+            await sendOrderAtualize(dataToSave);
 
         } else {
             const reason = ReturnMessage
@@ -168,6 +183,7 @@ const CartPayment = () => {
 
     // 3. Atualizar ordem no backend
     async function sendOrderAtualize(dataCart: CartResponseData) {
+        setLoading(true);
         if (!mtoken) {
             Alert.alert("Aviso", "Sessão inválida para atualizar o pedido.");
             return;
@@ -183,40 +199,40 @@ const CartPayment = () => {
         };
         try {
             const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
-            const response = await appservice.get(
-                query
-            );
+            const response = await appservice.get(query);
 
             const payload = response?.data?.resposta;
             const success = payload?.success;
             const message = payload?.message;
+
             if (!success) {
                 // Se o backend retornar success: false
                 Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
                 return; // Interrompe para não redirecionar se for um erro crítico
             }
 
-            router.replace({
-                pathname: "/cardbillpaid",
-                params: {
-                    value: valueOrder,
-                    paymentId: dataCart.PaymentId, // Removi o 'a' extra de 'payament'
-                    lastCardNumber: pegarUltimosQuatro(dataCart.CartNumber),
-                    dateTransaction: moment().format('DD [de] MMMM, HH:mm')
-                }
-            });
+            if (response?.data?.resposta?.success) {
+                router.replace({
+                    pathname: "/cardbillpaid",
+                    params: {
+                        value: valueOrder,
+                        paymentId: dataCart.PaymentId, // Removi o 'a' extra de 'payament'
+                        lastCardNumber: pegarUltimosQuatro(dataCart.CartNumber),
+                        dateTransaction: moment().format('DD [de] MMMM, HH:mm')
+                    }
+                });
+            } else {
+                throw new Error(response?.data?.resposta?.message);
+            }
 
         } catch (error: any) {
-            const message = getErrorMessage(
-                error,
-                "O pagamento foi processado, mas houve um erro ao atualizar seu pedido."
+            setIsCriticalError(true); // Ativa o modo de erro na tela
+            Alert.alert(
+                "Pagamento Confirmado",
+                "Seu cartão foi cobrado com sucesso, mas houve uma falha ao atualizar o pedido no sistema. Por favor, clique em 'Confirmar Pagamento Novamente'."
             );
-            Alert.alert("Erro de Conexão", message);
-            console.error("Erro ao atualizar ordem de pagamento", {
-                message: error?.message,
-                status: error?.response?.status,
-                data: error?.response?.data,
-            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -241,7 +257,7 @@ const CartPayment = () => {
                         bounces={false}
                     >
 
-                        <View className="bg-white rounded-t-3xl px-5 pt-6 pb-10">
+                        <View className="bg-white rounded-t-3xl px-2 pt-6 pb-10">
 
                             <View className="items-center mb-6">
                                 <Text className="text-sm text-gray-400">
@@ -253,92 +269,104 @@ const CartPayment = () => {
                             </View>
 
                             <View className="gap-4">
-
-                                <Controller
-                                    control={control}
-                                    name="numeroCartao"
-                                    render={({ field: { onChange, onBlur, value } }) => (
-                                        <Input
-                                            label="Número do cartão"
-                                            placeholder="0000 0000 0000 0000"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={maskCreditCart(value)}
-                                            inputClasses={errors.numeroCartao ? "!border-solar-red-primary" : ""}
-                                            keyboardType="numeric"
-                                            maxLength={19}
-                                        />
+                                <View>
+                                    <Controller
+                                        control={control}
+                                        name="numeroCartao"
+                                        render={({ field: { onChange, onBlur, value } }) => (
+                                            <Input
+                                                label="Número do cartão"
+                                                placeholder="0000 0000 0000 0000"
+                                                onBlur={onBlur}
+                                                onChangeText={onChange}
+                                                value={maskCreditCart(value)}
+                                                inputClasses={errors.numeroCartao ? "!border-solar-red-primary" : ""}
+                                                keyboardType="numeric"
+                                                maxLength={19}
+                                            />
+                                        )}
+                                    />
+                                    {errors.numeroCartao && (
+                                        <Text className="text-solar-red-primary text-sm">
+                                            {errors.numeroCartao.message}
+                                        </Text>
                                     )}
-                                />
-                                {errors.numeroCartao && (
-                                    <Text className="text-solar-red-primary text-sm">
-                                        {errors.numeroCartao.message}
-                                    </Text>
-                                )}
-
-                                <Controller
-                                    control={control}
-                                    name="nomeCartao"
-                                    render={({ field: { onChange, onBlur, value } }) => (
-                                        <Input
-                                            label="Nome no cartão"
-                                            placeholder="Como está no cartão"
-                                            onBlur={onBlur}
-                                            onChangeText={onChange}
-                                            value={value}
-                                            autoCapitalize="characters"
-                                            inputClasses={errors.nomeCartao ? "!border-solar-red-primary" : ""}
-                                        />
-                                    )}
-                                />
-                                {errors.nomeCartao && (
-                                    <Text className="text-solar-red-primary text-sm">
-                                        {errors.nomeCartao.message}
-                                    </Text>
-                                )}
-
-                                <View className="flex-row gap-4">
-                                    <View className="flex-1">
-                                        <Controller
-                                            control={control}
-                                            name="validadeCartao"
-                                            render={({ field: { onChange, onBlur, value } }) => (
-                                                <Input
-                                                    label="Validade"
-                                                    placeholder="MM/AA"
-                                                    onBlur={onBlur}
-                                                    onChangeText={onChange}
-                                                    value={maskDateValidate(value)}
-                                                    keyboardType="numeric"
-                                                    maxLength={5}
-                                                    inputClasses={errors.validadeCartao ? "!border-solar-red-primary" : ""}
-                                                />
-                                            )}
-                                        />
-                                    </View>
-
-                                    <View className="flex-1">
-                                        <Controller
-                                            control={control}
-                                            name="cvvCartao"
-                                            render={({ field: { onChange, onBlur, value } }) => (
-                                                <Input
-                                                    label="CVV"
-                                                    placeholder="123"
-                                                    onBlur={onBlur}
-                                                    onChangeText={onChange}
-                                                    value={value}
-                                                    keyboardType="numeric"
-                                                    maxLength={4}
-                                                    inputClasses={errors.cvvCartao ? "!border-solar-red-primary" : ""}
-                                                />
-                                            )}
-                                        />
-                                    </View>
                                 </View>
+                                <View>
+                                    <Controller
+                                        control={control}
+                                        name="nomeCartao"
+                                        render={({ field: { onChange, onBlur, value } }) => (
+                                            <Input
+                                                label="Nome no cartão"
+                                                placeholder="Como está no cartão"
+                                                onBlur={onBlur}
+                                                onChangeText={onChange}
+                                                value={value}
+                                                autoCapitalize="characters"
+                                                inputClasses={errors.nomeCartao ? "!border-solar-red-primary" : ""}
+                                            />
+                                        )}
+                                    />
+                                    {errors.nomeCartao && (
+                                        <Text className="text-solar-red-primary text-sm">
+                                            {errors.nomeCartao.message}
+                                        </Text>
+                                    )}
+                                </View>
+                                <View>
+                                    <View className="flex-row gap-4">
+                                        <View className="flex-1">
+                                            <Controller
+                                                control={control}
+                                                name="validadeCartao"
+                                                render={({ field: { onChange, onBlur, value } }) => (
+                                                    <Input
+                                                        label="Validade"
+                                                        placeholder="MM/AA"
+                                                        onBlur={onBlur}
+                                                        onChangeText={onChange}
+                                                        value={maskDateValidate(value)}
+                                                        keyboardType="numeric"
+                                                        maxLength={5}
+                                                        inputClasses={errors.validadeCartao ? "!border-solar-red-primary" : ""}
+                                                    />
+                                                )}
+                                            />
+                                            {errors.validadeCartao && (
+                                                <Text className="text-solar-red-primary text-sm">
+                                                    {errors.validadeCartao.message}
+                                                </Text>
+                                            )}
+                                        </View>
 
+                                        <View className="flex-1">
+                                            <Controller
+                                                control={control}
+                                                name="cvvCartao"
+                                                render={({ field: { onChange, onBlur, value } }) => (
+                                                    <Input
+                                                        label="CVV"
+                                                        placeholder="123"
+                                                        onBlur={onBlur}
+                                                        onChangeText={onChange}
+                                                        value={value}
+                                                        keyboardType="numeric"
+                                                        maxLength={4}
+                                                        inputClasses={errors.cvvCartao ? "!border-solar-red-primary" : ""}
+                                                    />
+                                                )}
+                                            />
+                                            {errors.cvvCartao && (
+                                                <Text className="text-solar-red-primary text-sm">
+                                                    {errors.cvvCartao.message}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                </View>
                             </View>
-
                             <View className="flex-row items-center justify-center mt-6 gap-2">
                                 <LockIcon size={15} color={"#f9b233"} />
                                 <Text className="text-xs text-gray-400">Pagamento seguro e criptografado</Text>
@@ -347,18 +375,31 @@ const CartPayment = () => {
                         </View>
                     </ScrollView>
                     <View className="mt-6">
-                        <Button
-                            label={
-                                loading
-                                    ? <ActivityIndicator size="small" color="#bccf00" />
-                                    : "Continuar pagamento"
-                            }
-                            variant="default"
-                            size="lg"
-                            disabled={loading}
-                            onPress={handleSubmit(onSubmit)}
-                            className="w-full"
-                        />
+                        {isCriticalError ? (
+                            <Button
+                                label={loading ? <ActivityIndicator color="#fff" /> : "Confirmar Pagamento Novamente"}
+                                variant="destructive" // ou uma cor que chame atenção (ex: laranja/amarelo)
+                                disabled={loading}
+                                onPress={() => paymentData && sendOrderAtualize(paymentData)}
+                                className="w-full bg-orange-500"
+                            />
+                        ) : (
+                            <Button
+                                label={loading ? <ActivityIndicator size="small" color="#bccf00" /> : "Continuar pagamento"}
+                                variant="default"
+                                size="lg"
+                                disabled={loading}
+                                onPress={handleSubmit(onSubmit)}
+                                className="w-full"
+                            />
+                        )}
+
+                        {isCriticalError && (
+                            <Text className="text-center text-xs text-red-600 mt-2 font-bold">
+                                Atenção: O valor já foi debitado do seu cartão.
+                                Não saia desta tela até confirmar.
+                            </Text>
+                        )}
                     </View>
                 </KeyboardAvoidingView>
             </View>

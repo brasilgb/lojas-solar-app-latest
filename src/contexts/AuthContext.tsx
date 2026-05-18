@@ -249,10 +249,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       let userData = {
         cpfcnpj: credentials.cpfcnpj,
-        codigoCliente: credentials.codigoCliente,
         nomeCliente: credentials.nomeCliente,
-        emailCliente: credentials?.emailCliente,
-        celularCliente: credentials?.celularCliente,
+        codigoCliente: credentials.codigoCliente,
         token: data.token,
       }
 

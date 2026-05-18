@@ -102,24 +102,151 @@
           "locationAlwaysAndWhenInUsePermission": "Permitir que o aplicativo acesse sua localização em primeiro plano para encontrar sua posição no mapa."
         }
       ],
-      [
-        "expo-build-properties",
-        {
+      {
+        "expo": {
+          "name": "Lojas Solar",
+          "slug": "comlojasolar",
+          "version": "1.5.4",
+          "orientation": "portrait",
+          "icon": "./assets/images/icon.png",
+          "scheme": "lojassolarapp",
+          "userInterfaceStyle": "automatic",
+          "splash": {
+            "image": "./assets/images/splash-icon.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+          },
           "ios": {
-            "useFrameworks": "static"
+            "googleServicesFile": "./GoogleService-Info.plist",
+            "supportsTablet": true,
+            "bundleIdentifier": "com.loja.solar",
+            "config": {
+              "googleMapsApiKey": "AIzaSyA8m2VnsHjhhYsFSRdYGwW3h_119sQOCbc",
+              "usesNonExemptEncryption": false
+            },
+            "entitlements": {
+              "aps-environment": "production"
+            },
+            "infoPlist": {
+              "NSAppTransportSecurity": {
+                "NSAllowsArbitraryLoads": true
+              },
+              "UIBackgroundModes": [
+                "fetch",
+                "remote-notification"
+              ],
+              "NSLocationAlwaysAndWhenInUseUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
+              "NSLocationWhenInUseUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
+              "NSLocationAlwaysUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
+              "NSLocationUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia."
+            },
+            "privacyManifests": {
+              "NSPrivacyAccessedAPITypes": [
+                {
+                  "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+                  "NSPrivacyAccessedAPITypeReasons": [
+                    "CA92.1"
+                  ]
+                }
+              ]
+            }
           },
           "android": {
-            "extraMavenRepos": [
-              "../../node_modules/@notifee/react-native/android/libs"
+            "intentFilters": [
+              {
+                "action": "VIEW",
+                "data": {
+                  "scheme": "https",
+                  "host": "*.lojasolar.com.br"
+                },
+                "category": [
+                  "BROWSABLE",
+                  "DEFAULT"
+                ]
+              }
             ],
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0",
-            "kotlinVersion": "2.0.21",
-            "usesCleartextTraffic": true
-          }
+            "permissions": [
+              "POST_NOTIFICATIONS",
+              "ACCESS_FINE_LOCATION",
+              "ACCESS_COARSE_LOCATION"
+            ],
+            "blockedPermissions": [
+              "android.permission.READ_MEDIA_IMAGES",
+              "android.permission.READ_MEDIA_VIDEO"
+            ],
+            "googleServicesFile": "./google-services.json",
+            "adaptiveIcon": {
+              "foregroundImage": "./assets/images/adaptive-icon.png",
+              "backgroundColor": "#ffffff"
+            },
+            "config": {
+              "googleMaps": {
+                "apiKey": "AIzaSyA8m2VnsHjhhYsFSRdYGwW3h_119sQOCbc"
+              }
+            },
+            "predictiveBackGestureEnabled": false,
+            "package": "com.loja.solar"
+          },
+          "web": {
+            "bundler": "metro",
+            "output": "static",
+            "favicon": "./assets/images/favicon.png"
+          },
+          "plugins": [
+            [
+              "expo-image-picker",
+              {
+                "photosPermission": "The app accesses your photos to let you share them with your friends."
+              }
+            ],
+            "expo-router",
+            [
+              "expo-location",
+              {
+                "locationAlwaysAndWhenInUsePermission": "Permitir que o aplicativo acesse sua localização em primeiro plano para encontrar sua posição no mapa."
+              }
+            ],
+            [
+              "expo-build-properties",
+              {
+                "ios": {
+                  "useFrameworks": "static"
+                },
+                "android": {
+                  "extraMavenRepos": [
+                    "../../node_modules/@notifee/react-native/android/libs"
+                  ],
+                  "compileSdkVersion": 35,
+                  "targetSdkVersion": 35,
+                  "buildToolsVersion": "35.0.0",
+                  "kotlinVersion": "2.0.21",
+                  "usesCleartextTraffic": true
+                }
+              }
+            ],
+            [
+              "expo-splash-screen",
+              {
+                "image": "./assets/images/icon.png",
+                "backgroundColor": "#1a9cd9",
+                "imageWidth": 250
+              }
+            ],
+            "expo-secure-store",
+            "@react-native-community/datetimepicker"
+          ],
+          "experiments": {
+            "typedRoutes": true
+          },
+          "extra": {
+            "router": {},
+            "eas": {
+              "projectId": "52d35a9c-4dab-4fe2-9519-1c32bba74e17"
+            }
+          },
+          "owner": "andersonbrodrigues"
         }
-      ],
+      },
       [
         "expo-splash-screen",
         {

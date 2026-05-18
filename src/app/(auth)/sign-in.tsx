@@ -28,49 +28,6 @@ export default function SignIn() {
         reset();
     };
 
-// {
-// 	"MerchantOrderId": "21241113105",
-// 	"Payment": {
-// 		"Type": "CreditCard",
-// 		"Amount": 100,
-// 		"Currency": "BRL",
-// 		"Country": "BRA",
-// 		"Provider": "Cielo",
-// 		"ServiceTaxAmount": 0,
-// 		"Installments": 1,
-// 		"Interest": "ByMerchant",
-// 		"Capture": true,
-// 		"Authenticate": false,
-// 		"Recurrent": false,
-// 		"SoftDescriptor": "123456789ABCD",
-// 		"CreditCard": {
-// 			"CardNumber": "4985810092486672",
-// 			"Holder": "TESTE",
-// 			"ExpirationDate": "02/2032",
-// 			"SecurityCode": "775",
-// 			"SaveCard": false,
-// 			"Brand": "visa"
-// 		}
-// 	}
-// }
-
-
-
-// {
-// 	"response": {
-// 		"success": true,
-// 		"MerchantOrderId": "21241113105",
-// 		"PaymentId": "93d32b80-67ff-43ec-b7b1-974e1a698370",
-// 		"Tid": "11316610415HHJCA6INE",
-// 		"AuthorizationCode": "D2S7ZR",
-// 		"ReturnCode": "00",
-// 		"ReturnMessage": "Transacao capturada com sucesso",
-// 		"Amount": 100,
-// 		"ReceivedDate": "2026-04-10 11:23:52",
-// 		"Status": 0
-// 	}
-// }
-
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
             <KeyboardAvoidingView
