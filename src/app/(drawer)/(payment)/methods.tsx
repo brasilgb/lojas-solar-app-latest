@@ -7,6 +7,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { CreditCardIcon, HandCoinsIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
+    Alert,
+    ActivityIndicator,
     Image,
     Text,
     TouchableOpacity,
@@ -23,6 +25,7 @@ const methods = () => {
     const mtoken = user?.token;
 
     const pixPaymentMethod = async () => {
+        if (loading) return;
         setLoading(true);
         try {
             const response = await appservice.post('(WS_ORDEM_PAGAMENTO)', {
@@ -39,7 +42,11 @@ const methods = () => {
                 },
             });
             const { success, message, data, token } = response.data.resposta;
-            console.log(success, 'message', message);
+
+            if (!token || !success || !data) {
+                Alert.alert('Atenção', message || 'Não foi possível iniciar o pagamento via PIX.');
+                return;
+            }
             
             router.push({
                 pathname: '/pixpayment',
@@ -48,8 +55,11 @@ const methods = () => {
                     dataOrder: JSON.stringify(data)
                  },
             });
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            Alert.alert(
+                'Erro',
+                error?.response?.data?.resposta?.message || 'Não foi possível iniciar o pagamento via PIX.',
+            );
         } finally {
             setLoading(false);
         }
@@ -85,7 +95,8 @@ const methods = () => {
 
                         <TouchableOpacity
                             onPress={pixPaymentMethod}
-                            className="flex-row items-center justify-between bg-gray-100 p-4 rounded-2xl active:opacity-70"
+                            disabled={loading}
+                            className={`flex-row items-center justify-between bg-gray-100 p-4 rounded-2xl active:opacity-70 ${loading ? 'opacity-60' : ''}`}
                         >
                             <View className="flex-row items-center gap-4 h-10">
                                 <Image
@@ -96,6 +107,7 @@ const methods = () => {
                                     PIX
                                 </Text>
                             </View>
+                            {loading && <ActivityIndicator size="small" color="#0d3b85" />}
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -108,6 +120,7 @@ const methods = () => {
                                     },
                                 })
                             }
+                            disabled={loading}
                             className="flex-row items-center justify-between bg-gray-100 p-4 rounded-2xl active:opacity-70"
                         >
                             <View className="flex-row items-center gap-4 h-10">

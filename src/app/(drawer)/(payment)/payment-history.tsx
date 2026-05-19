@@ -41,11 +41,11 @@ const PaymentHistory = () => {
             });
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            getCrediarios();
-        }, []),
-    );
+    const focusedLoad = useCallback(() => {
+        getCrediarios();
+    }, [dateIni, dateFin, user?.token]);
+
+    useFocusEffect(focusedLoad);
 
     const RenderItem = ({ item }: any) => {
         return ( 

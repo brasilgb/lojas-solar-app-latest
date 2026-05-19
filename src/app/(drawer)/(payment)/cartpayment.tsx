@@ -73,16 +73,6 @@ const CartPayment = () => {
         return cleanNumber.slice(-4).padStart(4, '*');
     };
 
-    const getErrorMessage = (error: any, fallback: string) => {
-        const apiMessage =
-            error?.response?.data?.resposta?.message ||
-            error?.response?.data?.response?.message ||
-            error?.response?.data?.message ||
-            error?.message;
-
-        return apiMessage || fallback;
-    };
-
     const onSubmit = async (values: CartPaymentFormType) => {
         setLoading(true);
         try {
@@ -119,6 +109,7 @@ const CartPayment = () => {
                     },
                 },
             ]);
+            return;
         }
         if (!success) { Alert.alert('Atenção deu erro', message, [{ text: 'Ok' }]); return; };
         await cartPaymentHandle(data);
@@ -186,6 +177,7 @@ const CartPayment = () => {
         setLoading(true);
         if (!mtoken) {
             Alert.alert("Aviso", "Sessão inválida para atualizar o pedido.");
+            setLoading(false);
             return;
         }
 
@@ -206,9 +198,12 @@ const CartPayment = () => {
             const message = payload?.message;
 
             if (!success) {
-                // Se o backend retornar success: false
-                Alert.alert("Aviso", message || "Não foi possível atualizar o status da ordem.");
-                return; // Interrompe para não redirecionar se for um erro crítico
+                setIsCriticalError(true);
+                Alert.alert(
+                    "Pagamento Confirmado",
+                    message || "Seu cartão foi cobrado com sucesso, mas houve uma falha ao atualizar o pedido no sistema. Por favor, clique em 'Confirmar Pagamento Novamente'."
+                );
+                return;
             }
 
             if (response?.data?.resposta?.success) {

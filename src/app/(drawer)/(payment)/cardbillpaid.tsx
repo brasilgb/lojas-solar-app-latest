@@ -4,9 +4,11 @@ import { CheckCircleIcon } from 'lucide-react-native';
 import { Button } from '@/components/Button';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { maskMoney } from '@/utils/mask';
 
 const CardBillPaid = () => {
     const params = useLocalSearchParams();
+    const value = String(params?.value || '0');
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
@@ -27,7 +29,7 @@ const CardBillPaid = () => {
                 <View className="w-full bg-gray-50 rounded-2xl p-5 border border-gray-100 my-8">
                     <View className="flex-row justify-between items-center mb-4">
                         <Text className="text-gray-500 text-base">Valor total</Text>
-                        <Text className="text-gray-800 text-lg font-bold">{params?.value}</Text>
+                        <Text className="text-gray-800 text-lg font-bold">R$ {maskMoney(Number(value).toFixed(2))}</Text>
                     </View>
 
                     {/* Linha divisória */}
