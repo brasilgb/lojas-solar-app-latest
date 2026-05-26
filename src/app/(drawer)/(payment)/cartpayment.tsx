@@ -60,11 +60,22 @@ const CartPayment = () => {
     const valueOrder = String(params?.totalAmount);
     const mtoken = user?.token;
 
+    const getInstallmentNumber = (parcela: string | number) =>
+        parseInt(String(parcela).slice(0, 2), 10);
+
     const selectedInstallments = (Array.isArray(order) ? order : [order])
         .filter(Boolean)
         .map((item: any) => ({
             numeroCarne: item.numeroCarne,
-            parcela: item.parcela,
+            filial: item.filial,
+            parcela: getInstallmentNumber(item.parcela),
+            vencimento: item.vencimento,
+            atraso: item.atraso,
+            vlprest: item.vlprest,
+            acrescimo: item.acrescimo,
+            total: item.total,
+            status: item.status,
+            urlBoleto: item.urlBoleto,
         }));
 
     const paymentContractPayload =
