@@ -24,6 +24,23 @@ const methods = () => {
     const order = JSON.parse(dataOrder as any);
     const mtoken = user?.token;
 
+    const selectedInstallments = (Array.isArray(order) ? order : [order])
+        .filter(Boolean)
+        .map((item: any) => ({
+            numeroCarne: item.numeroCarne,
+            parcela: item.parcela,
+        }));
+
+    const paymentInstallmentPayload =
+        selectedInstallments.length === 1
+            ? selectedInstallments[0].parcela
+            : selectedInstallments;
+
+    const paymentContractPayload =
+        selectedInstallments.length === 1
+            ? selectedInstallments[0].numeroCarne
+            : selectedInstallments.map((item: any) => item.numeroCarne);
+
     const pixPaymentMethod = async () => {
         if (loading) return;
         setLoading(true);
@@ -31,7 +48,9 @@ const methods = () => {
             const response = await appservice.post('(WS_ORDEM_PAGAMENTO)', {
                 token: `${mtoken}`,
                 valor: totalAmount,
-                parcela: order,
+                numeroCarne: paymentContractPayload,
+                parcela: paymentInstallmentPayload,
+                parcelas: selectedInstallments,
                 tipoPagamento: 4,
                 validaDados: 'S',
                 dadosCartao: {

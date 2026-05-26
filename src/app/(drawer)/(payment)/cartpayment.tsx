@@ -53,6 +53,23 @@ const CartPayment = () => {
     const valueOrder = String(params?.totalAmount);
     const mtoken = user?.token;
 
+    const selectedInstallments = (Array.isArray(order) ? order : [order])
+        .filter(Boolean)
+        .map((item: any) => ({
+            numeroCarne: item.numeroCarne,
+            parcela: item.parcela,
+        }));
+
+    const paymentInstallmentPayload =
+        selectedInstallments.length === 1
+            ? selectedInstallments[0].parcela
+            : selectedInstallments;
+
+    const paymentContractPayload =
+        selectedInstallments.length === 1
+            ? selectedInstallments[0].numeroCarne
+            : selectedInstallments.map((item: any) => item.numeroCarne);
+
     const [isCriticalError, setIsCriticalError] = useState(false);
     const [paymentData, setPaymentData] = useState<CartResponseData | null>(null);
 
@@ -89,7 +106,9 @@ const CartPayment = () => {
         const response = await appservice.post("(WS_ORDEM_PAGAMENTO)", {
             token: mtoken,
             valor: valueOrder,
-            parcela: order,
+            numeroCarne: paymentContractPayload,
+            parcela: paymentInstallmentPayload,
+            parcelas: selectedInstallments,
             tipoPagamento: 2,
             validaDados: "S",
             dadosCartao: {
