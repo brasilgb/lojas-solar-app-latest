@@ -30,6 +30,12 @@ interface CartResponseData {
     AuthorizationCode: string;
     CartNumber: string;
     ReceivedDate: string;
+    parcelasSelecionadas?: SelectedInstallment[];
+}
+
+interface SelectedInstallment {
+    numeroCarne: string | number;
+    parcela: string | number;
 }
 
 // Define a estrutura do que você envia para atualizar a ordem
@@ -40,6 +46,7 @@ interface OrderUpdatePayload {
     tipoPagamento: number;
     urlBoleto: string;
     ReceivedDate: string;
+    parcelasSelecionadas: SelectedInstallment[];
 }
 
 /**
@@ -59,11 +66,6 @@ const CartPayment = () => {
             numeroCarne: item.numeroCarne,
             parcela: item.parcela,
         }));
-
-    const paymentInstallmentPayload =
-        selectedInstallments.length === 1
-            ? selectedInstallments[0].parcela
-            : selectedInstallments;
 
     const paymentContractPayload =
         selectedInstallments.length === 1
@@ -107,7 +109,7 @@ const CartPayment = () => {
             token: mtoken,
             valor: valueOrder,
             numeroCarne: paymentContractPayload,
-            parcela: paymentInstallmentPayload,
+            parcela: selectedInstallments,
             parcelas: selectedInstallments,
             tipoPagamento: 2,
             validaDados: "S",
@@ -177,7 +179,8 @@ const CartPayment = () => {
                 PaymentId,
                 AuthorizationCode,
                 ReceivedDate,
-                CartNumber: data?.dadosCartao?.numeroCartao
+                CartNumber: data?.dadosCartao?.numeroCartao,
+                parcelasSelecionadas: selectedInstallments,
             };
 
             setPaymentData(dataToSave); // Salva para caso precise de retry manual
@@ -206,10 +209,14 @@ const CartPayment = () => {
             idTransacao: dataCart.PaymentId,
             tipoPagamento: 2,
             urlBoleto: dataCart.AuthorizationCode,
-            ReceivedDate: dataCart.ReceivedDate
+            ReceivedDate: dataCart.ReceivedDate,
+            parcelasSelecionadas: dataCart.parcelasSelecionadas || selectedInstallments,
         };
         try {
-            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
+            const parcelas = JSON.stringify(orderResponse.parcelasSelecionadas);
+            const parcela = orderResponse.parcelasSelecionadas.map((item) => item.parcela).join(',');
+            const numeroCarne = orderResponse.parcelasSelecionadas.map((item) => item.numeroCarne).join(',');
+            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}&numeroCarne=${encodeURIComponent(numeroCarne)}&parcela=${encodeURIComponent(parcela)}&parcelas=${encodeURIComponent(parcelas)}`;
             const response = await appservice.get(query);
 
             const payload = response?.data?.resposta;

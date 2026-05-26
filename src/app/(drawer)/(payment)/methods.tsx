@@ -31,11 +31,6 @@ const methods = () => {
             parcela: item.parcela,
         }));
 
-    const paymentInstallmentPayload =
-        selectedInstallments.length === 1
-            ? selectedInstallments[0].parcela
-            : selectedInstallments;
-
     const paymentContractPayload =
         selectedInstallments.length === 1
             ? selectedInstallments[0].numeroCarne
@@ -49,7 +44,7 @@ const methods = () => {
                 token: `${mtoken}`,
                 valor: totalAmount,
                 numeroCarne: paymentContractPayload,
-                parcela: paymentInstallmentPayload,
+                parcela: selectedInstallments,
                 parcelas: selectedInstallments,
                 tipoPagamento: 4,
                 validaDados: 'S',
@@ -71,7 +66,10 @@ const methods = () => {
                 pathname: '/pixpayment',
                 params: { 
                     valueOrder: totalAmount,
-                    dataOrder: JSON.stringify(data)
+                    dataOrder: JSON.stringify({
+                        ...data,
+                        parcelasSelecionadas: selectedInstallments,
+                    })
                  },
             });
         } catch (error: any) {

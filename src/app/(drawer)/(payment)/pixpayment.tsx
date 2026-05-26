@@ -13,7 +13,13 @@ import QRCode from 'react-native-qrcode-svg';
 // Define o que vem nos parâmetros da URL/Rota
 interface OrderData {
     numeroOrdem: string | number;
+    parcelasSelecionadas?: SelectedInstallment[];
     // adicione outras propriedades que existam no seu JSON
+}
+
+interface SelectedInstallment {
+    numeroCarne: string | number;
+    parcela: string | number;
 }
 
 // Define o que o backend de Pix retorna
@@ -29,6 +35,7 @@ interface OrderUpdatePayload {
     idTransacao: string;
     tipoPagamento: number;
     urlBoleto: string;
+    parcelasSelecionadas: SelectedInstallment[];
 }
 
 const PixPayment = () => {
@@ -97,10 +104,14 @@ const PixPayment = () => {
             idTransacao: dataPay.idTransacao,
             tipoPagamento: 4,
             urlBoleto: String(dataPay.urlBoleto),
+            parcelasSelecionadas: dataPix.parcelasSelecionadas || [],
         };
         try {
+            const parcelas = JSON.stringify(orderResponse.parcelasSelecionadas);
+            const parcela = orderResponse.parcelasSelecionadas.map((item) => item.parcela).join(',');
+            const numeroCarne = orderResponse.parcelasSelecionadas.map((item) => item.numeroCarne).join(',');
             const response = await appservice.get(
-                `(WS_ATUALIZA_ORDEM)?token=91362590064312210014616&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`,
+                `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}&numeroCarne=${encodeURIComponent(numeroCarne)}&parcela=${encodeURIComponent(parcela)}&parcelas=${encodeURIComponent(parcelas)}`,
             );
             const { success, message } = response.data.resposta;
             if (!success) {
