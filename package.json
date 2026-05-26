@@ -1,7 +1,7 @@
 {
   "name": "com.loja.solar",
   "main": "index.js",
-  "version": "1.5.5",
+  "version": "1.5.4",
   "scripts": {
     "start": "expo start -p 8085",
     "android": "expo run:android",
