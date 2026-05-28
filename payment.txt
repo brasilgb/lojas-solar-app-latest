@@ -10,6 +10,26 @@
 	}
 }
 
+#Atualiza a ordem com pix
+const sendOrderAtualize = async (dataPix: any, dataPay: any) => {
+        let orderResponse = {
+            numeroOrdem: dataPix.numeroOrdem,
+            statusOrdem: 12,
+            idTransacao: dataPay.idTransacao,
+            tipoPagamento: 4,
+            urlBoleto: String(dataPay.urlBoleto),
+        };
+
+        const response = await serviceapp.get(
+            `(WS_ATUALIZA_ORDEM)?token=91362590064312210014616&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`,
+        );
+        // const { success } = response.data.resposta
+        // console.log('pix pago ', success);
+        return;
+    };
+
+
+
 # Transação cartão payload
 {
 	"response": {
@@ -25,3 +45,29 @@
 		"Status": 0
 	}
 }
+
+#Atualiza a ordem com cartão
+const sendOrderAtualize = async (dataCart: any) => {
+        setLoading(true);
+        if (dataCart) {
+            let orderResponse = {
+                numeroOrdem: dataCart.data.resposta.data.Detail.OrderNumber,
+                statusOrdem:
+                    dataCart.data.resposta.data.Detail.TransactionStatus,
+                idTransacao: dataCart.data.resposta.data.Detail.IdTransaction,
+                tipoPagamento: dataCart.data.resposta.data.Detail.PaymentType,
+                urlBoleto: '',
+            };
+            await serviceapp
+                .get(
+                    `(WS_ATUALIZA_ORDEM)?token=91362590064312210014616&numeroOrdem=${orderResponse.numeroOrdem}&statusOrdem=${orderResponse.statusOrdem}&idTransacao=${orderResponse.idTransacao}&tipoPagamento=${orderResponse.tipoPagamento}&urlBoleto=${orderResponse.urlBoleto}`,
+                )
+                .then(response => {
+                    const {success} = response.data.resposta;
+                    if (success) {
+                        setLoading(false);
+                        navigation.navigate('PayCartOk');
+                    }
+                });
+        }
+    };
