@@ -1,0 +1,27 @@
+# Transaão pix payload
+{
+	"resposta": {
+		"success": true,
+		"message": "OK",
+		"token": true,
+		"copiaColaPix": "00020126860014br.gov.bcb.pix2564pix-qrcode.sicredi.com.br/qr/v2/d8fe8e9487924553b6d3f8f35fa5cc155204000053039865802BR5903PIX6006Cidade62070503***6304D958",
+		"txid": "8a49af00bd902c657f4bc70ad366fe2e",
+		"banco": 748
+	}
+}
+
+# Transação cartão payload
+{
+	"response": {
+		"success": true,
+		"MerchantOrderId": "2025111315",
+		"PaymentId": "cb099b70-acc3-4f75-9d50-4398410dbb69",
+		"Tid": "11316610414ONM3UV5TE",
+		"AuthorizationCode": "559690",
+		"ReturnCode": "00",
+		"ReturnMessage": "Transacao capturada com sucesso",
+		"Amount": 1,
+		"ReceivedDate": "2025-09-05 10:38:23",
+		"Status": 0
+	}
+}
