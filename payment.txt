@@ -1,3 +1,7 @@
+# Atualiza ordem url
+{{ _.baseurl }}(WS_ATUALIZA_ORDEM)?token=91362590064312210014616&numeroOrdem=00312057&statusOrdem=2&idTransacao=39213e37-1675-4d22-b7f9-e19c70698542&tipoPagamento=2&urlBoleto=743575
+
+
 # Transaão pix payload
 {
 	"resposta": {
