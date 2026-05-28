@@ -46,12 +46,10 @@ interface OrderUpdatePayload {
     tipoPagamento: number;
     urlBoleto: string;
     ReceivedDate: string;
-    parcelasSelecionadas: SelectedInstallment[];
 }
 
-/**
- *         MerchantOrderId, PaymentId, Authori
- */
+const approvedReturnCodes = ['00', '0', '6'];
+
 const CartPayment = () => {
     const { user, disconnect } = useAuth();
     const [loading, setLoading] = useState(false);
@@ -183,8 +181,25 @@ const CartPayment = () => {
             },
         });
 
-        const { success, ReturnCode, ReturnMessage, AuthorizationCode, PaymentId, ReceivedDate, MerchantOrderId } = paymentResponse.data.response;
-        if (success && ReturnCode === '00') {
+        const responseData = paymentResponse?.data?.response || {};
+        const payment = responseData?.Payment || {};
+        const success = responseData?.success ?? payment?.Status === 2;
+        const ReturnCode = responseData?.ReturnCode ?? payment?.ReturnCode;
+        const ReturnMessage = responseData?.ReturnMessage ?? payment?.ReturnMessage;
+        const AuthorizationCode = responseData?.AuthorizationCode ?? payment?.AuthorizationCode;
+        const PaymentId = responseData?.PaymentId ?? payment?.PaymentId;
+        const ReceivedDate = responseData?.ReceivedDate ?? payment?.ReceivedDate;
+        const MerchantOrderId = responseData?.MerchantOrderId ?? data?.numeroOrdem;
+
+        if (success && approvedReturnCodes.includes(String(ReturnCode))) {
+            if (!PaymentId) {
+                Alert.alert(
+                    "Pagamento Confirmado",
+                    "O cartão foi cobrado, mas o retorno da operadora não trouxe o ID do pagamento. Tente confirmar novamente em alguns instantes."
+                );
+                return;
+            }
+
             const dataToSave = {
                 MerchantOrderId,
                 PaymentId,
@@ -221,13 +236,9 @@ const CartPayment = () => {
             tipoPagamento: 2,
             urlBoleto: dataCart.AuthorizationCode,
             ReceivedDate: dataCart.ReceivedDate,
-            parcelasSelecionadas: dataCart.parcelasSelecionadas || selectedInstallments,
         };
         try {
-            const parcelas = JSON.stringify(orderResponse.parcelasSelecionadas);
-            const parcela = orderResponse.parcelasSelecionadas.map((item) => item.parcela).join(',');
-            const numeroCarne = orderResponse.parcelasSelecionadas.map((item) => item.numeroCarne).join(',');
-            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}&numeroCarne=${encodeURIComponent(numeroCarne)}&parcela=${encodeURIComponent(parcela)}&parcelas=${encodeURIComponent(parcelas)}`;
+            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
             const response = await appservice.get(query);
 
             const payload = response?.data?.resposta;

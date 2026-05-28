@@ -35,7 +35,6 @@ interface OrderUpdatePayload {
     idTransacao: string;
     tipoPagamento: number;
     urlBoleto: string;
-    parcelasSelecionadas: SelectedInstallment[];
 }
 
 const PixPayment = () => {
@@ -57,6 +56,11 @@ const PixPayment = () => {
                 );
                 const { success, txid, banco, copiaColaPix, message } = response.data.resposta;
                 if (success) {
+                    if (!txid) {
+                        Alert.alert("Erro ao gerar Pix", "O Pix foi gerado sem ID de transação. Tente novamente.");
+                        return;
+                    }
+
                     setPixOpertions(copiaColaPix);
                     await sendOrderAtualize(dataOrder, { idTransacao: txid, urlBoleto: banco });
                 } else {
@@ -104,14 +108,10 @@ const PixPayment = () => {
             idTransacao: dataPay.idTransacao,
             tipoPagamento: 4,
             urlBoleto: String(dataPay.urlBoleto),
-            parcelasSelecionadas: dataPix.parcelasSelecionadas || [],
         };
         try {
-            const parcelas = JSON.stringify(orderResponse.parcelasSelecionadas);
-            const parcela = orderResponse.parcelasSelecionadas.map((item) => item.parcela).join(',');
-            const numeroCarne = orderResponse.parcelasSelecionadas.map((item) => item.numeroCarne).join(',');
             const response = await appservice.get(
-                `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}&numeroCarne=${encodeURIComponent(numeroCarne)}&parcela=${encodeURIComponent(parcela)}&parcelas=${encodeURIComponent(parcelas)}`,
+                `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`,
             );
             const { success, message } = response.data.resposta;
             if (!success) {
