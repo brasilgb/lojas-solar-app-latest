@@ -136,8 +136,7 @@
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
-      "expo-font",
-      "react-native-maps"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
