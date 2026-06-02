@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 const methods = () => {
-    const { user } = useAuth();
+    const { user, disconnect } = useAuth();
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -51,6 +51,13 @@ const methods = () => {
         if (loading) return;
         setLoading(true);
         try {
+            if (!mtoken) {
+                Alert.alert('Atenção', 'Sessão inválida. Faça login novamente.', [
+                    { text: 'Ok', onPress: () => disconnect() },
+                ]);
+                return;
+            }
+
             const response = await appservice.post('(WS_ORDEM_PAGAMENTO)', {
                 token: `${mtoken}`,
                 valor: totalAmount,
@@ -68,7 +75,14 @@ const methods = () => {
             });
             const { success, message, data, token } = response.data.resposta;
 
-            if (!token || !success || !data) {
+            if (!token) {
+                Alert.alert('Atenção', message || 'Sessão expirada. Faça login novamente.', [
+                    { text: 'Ok', onPress: () => disconnect() },
+                ]);
+                return;
+            }
+
+            if (!success || !data) {
                 Alert.alert('Atenção', message || 'Não foi possível iniciar o pagamento via PIX.');
                 return;
             }
@@ -77,8 +91,10 @@ const methods = () => {
                 pathname: '/pixpayment',
                 params: { 
                     valueOrder: totalAmount,
+                    token: mtoken,
                     dataOrder: JSON.stringify({
                         ...data,
+                        numeroOrdem: data?.numeroOrdem ?? data?.OrderNumber ?? data?.Detail?.OrderNumber,
                         parcelasSelecionadas: selectedInstallments,
                     })
                  },

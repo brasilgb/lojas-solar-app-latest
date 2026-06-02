@@ -20,6 +20,10 @@ moment.locale('pt-br');
 // Define o que vem nos parâmetros da URL/Rota
 interface OrderData {
     numeroOrdem: string | number;
+    OrderNumber?: string | number;
+    Detail?: {
+        OrderNumber?: string | number;
+    };
     // adicione outras propriedades que existam no seu JSON
 }
 
@@ -49,6 +53,7 @@ interface OrderUpdatePayload {
 }
 
 const approvedReturnCodes = ['00', '0', '6'];
+const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
 
 const CartPayment = () => {
     const { user, disconnect } = useAuth();
@@ -83,6 +88,9 @@ const CartPayment = () => {
 
     const [isCriticalError, setIsCriticalError] = useState(false);
     const [paymentData, setPaymentData] = useState<CartResponseData | null>(null);
+
+    const getOrderNumber = (data: OrderData) =>
+        data.numeroOrdem ?? data.OrderNumber ?? data.Detail?.OrderNumber;
 
     const { control, handleSubmit, formState: { errors } } = useForm<CartPaymentFormType>({
         defaultValues: {
@@ -147,6 +155,15 @@ const CartPayment = () => {
     }
 
     async function cartPaymentHandle(data: any) {
+        const numeroOrdem = getOrderNumber(data);
+        if (!numeroOrdem) {
+            Alert.alert(
+                "Aviso",
+                "Nao foi possivel identificar a ordem para processar o pagamento."
+            );
+            return;
+        }
+
         const validadeOriginal = data?.dadosCartao.validadeCartao || "";
 
         let validadeFormatada = validadeOriginal;
@@ -156,7 +173,7 @@ const CartPayment = () => {
         }
 
         const paymentResponse = await servicecart.post("(PAG_CARTAO_CREDITO)", {
-            MerchantOrderId: data?.numeroOrdem,
+            MerchantOrderId: numeroOrdem,
             Payment: {
                 Type: "CreditCard",
                 Amount: Math.round(parseFloat(valueOrder) * 100),
@@ -189,7 +206,7 @@ const CartPayment = () => {
         const AuthorizationCode = responseData?.AuthorizationCode ?? payment?.AuthorizationCode;
         const PaymentId = responseData?.PaymentId ?? payment?.PaymentId;
         const ReceivedDate = responseData?.ReceivedDate ?? payment?.ReceivedDate;
-        const MerchantOrderId = responseData?.MerchantOrderId ?? data?.numeroOrdem;
+        const MerchantOrderId = responseData?.MerchantOrderId ?? numeroOrdem;
 
         if (success && approvedReturnCodes.includes(String(ReturnCode))) {
             if (!PaymentId) {
@@ -223,8 +240,8 @@ const CartPayment = () => {
     // 3. Atualizar ordem no backend
     async function sendOrderAtualize(dataCart: CartResponseData) {
         setLoading(true);
-        if (!mtoken) {
-            Alert.alert("Aviso", "Sessão inválida para atualizar o pedido.");
+        if (!dataCart.MerchantOrderId || !dataCart.PaymentId) {
+            Alert.alert("Aviso", "Faltam dados para atualizar o pedido.");
             setLoading(false);
             return;
         }
@@ -238,7 +255,7 @@ const CartPayment = () => {
             ReceivedDate: dataCart.ReceivedDate,
         };
         try {
-            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
+            const query = `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(PAYMENT_SYSTEM_TOKEN)}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`;
             const response = await appservice.get(query);
 
             const payload = response?.data?.resposta;

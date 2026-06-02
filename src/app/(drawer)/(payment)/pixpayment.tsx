@@ -13,6 +13,10 @@ import QRCode from 'react-native-qrcode-svg';
 // Define o que vem nos parâmetros da URL/Rota
 interface OrderData {
     numeroOrdem: string | number;
+    OrderNumber?: string | number;
+    Detail?: {
+        OrderNumber?: string | number;
+    };
     parcelasSelecionadas?: SelectedInstallment[];
     // adicione outras propriedades que existam no seu JSON
 }
@@ -37,24 +41,37 @@ interface OrderUpdatePayload {
     urlBoleto: string;
 }
 
+const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
+
 const PixPayment = () => {
-    const { user } = useAuth();
+    const { user, disconnect } = useAuth();
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(true);
     const [pixOperations, setPixOpertions] = useState<string>('');
 
     const dataOrder: OrderData = params.dataOrder ? JSON.parse(params.dataOrder as string) : {} as OrderData;
     const valueOrder = params.valueOrder;
-    const mtoken = user?.token;
+    const mtoken = String(params.token || user?.token || '');
+
+    const getOrderNumber = (dataPix: OrderData) =>
+        dataPix.numeroOrdem ?? dataPix.OrderNumber ?? dataPix.Detail?.OrderNumber;
 
     useEffect(() => {
         const getPayPix = async () => {
             try {
                 setLoading(true)
+                if (!mtoken) {
+                    Alert.alert('Atenção', 'Sessão inválida. Faça login novamente.', [
+                        { text: 'Ok', onPress: () => disconnect() },
+                    ]);
+                    return;
+                }
+
                 const response = await appservice.get(
                     `(WS_TRANSACAO_PIX)?token=${mtoken}&tempoPix=3600&valorPix=${valueOrder}&mensagemPix=Pagamento Pix Grupo Solar`,
                 );
                 const { success, txid, banco, copiaColaPix, message } = response.data.resposta;
+
                 if (success) {
                     if (!txid) {
                         Alert.alert("Erro ao gerar Pix", "O Pix foi gerado sem ID de transação. Tente novamente.");
@@ -74,7 +91,7 @@ const PixPayment = () => {
             }
         };
         getPayPix();
-    }, [mtoken, valueOrder]);
+    }, [disconnect, mtoken, valueOrder]);
 
     const sharingUrl = async () => {
         try {
@@ -102,8 +119,17 @@ const PixPayment = () => {
     };
 
     async function sendOrderAtualize(dataPix: OrderData, dataPay: PixResponseData) {
+        const numeroOrdem = getOrderNumber(dataPix);
+        if (!numeroOrdem || !dataPay.idTransacao) {
+            Alert.alert(
+                "Aviso",
+                "O pagamento foi gerado, mas faltam dados para registrar a ordem. Tente novamente em alguns instantes."
+            );
+            return;
+        }
+
         let orderResponse: OrderUpdatePayload = {
-            numeroOrdem: dataPix.numeroOrdem,
+            numeroOrdem,
             statusOrdem: 12,
             idTransacao: dataPay.idTransacao,
             tipoPagamento: 4,
@@ -111,11 +137,15 @@ const PixPayment = () => {
         };
         try {
             const response = await appservice.get(
-                `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(String(mtoken))}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`,
+                `(WS_ATUALIZA_ORDEM)?token=${encodeURIComponent(PAYMENT_SYSTEM_TOKEN)}&numeroOrdem=${encodeURIComponent(String(orderResponse.numeroOrdem))}&statusOrdem=${encodeURIComponent(String(orderResponse.statusOrdem))}&idTransacao=${encodeURIComponent(String(orderResponse.idTransacao))}&tipoPagamento=${encodeURIComponent(String(orderResponse.tipoPagamento))}&urlBoleto=${encodeURIComponent(String(orderResponse.urlBoleto))}`,
             );
             const { success, message } = response.data.resposta;
+
             if (!success) {
-                Alert.alert("Aviso", "O pagamento foi gerado mas houve um problema ao registrar o status da ordem");
+                Alert.alert(
+                    "Aviso",
+                    message || "O pagamento foi gerado mas houve um problema ao registrar o status da ordem"
+                );
             }
         } catch (error) {
             Alert.alert("Erro de Conexão", "Não conseguimos confirmar a criação do seu pedido com o servidor. Verifique sua internet.");
