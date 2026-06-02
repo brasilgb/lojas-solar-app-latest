@@ -107,7 +107,11 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "forceStaticLinking": [
+              "react-native-maps",
+              "React-Core"
+            ]
           },
           "android": {
             "extraMavenRepos": [
@@ -132,7 +136,8 @@
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      "react-native-maps"
     ],
     "experiments": {
       "typedRoutes": true
