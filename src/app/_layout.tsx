@@ -229,10 +229,9 @@ async function registerDevice(deviceId: string, pushToken: string) {
   try {
     const deviceos = Platform.OS;
     const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
-    console.log('fcmToken:', pushToken);
 
     await appservice.get(
-      `(WS_GRAVA_DEVICE)?deviceId=${deviceId}&pushToken=${pushToken}&deviceOs=${deviceos}&versaoApp=${versaoapp}`
+      `(WS_GRAVA_DEVICE)?deviceId=${encodeURIComponent(deviceId)}&pushToken=${encodeURIComponent(pushToken)}&deviceOs=${encodeURIComponent(deviceos)}&versaoApp=${encodeURIComponent(versaoapp || '')}`
     );
 
     console.log('Dispositivo registrado com sucesso');

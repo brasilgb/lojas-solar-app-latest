@@ -103,6 +103,8 @@
           "locationAlwaysAndWhenInUsePermission": "Permitir que o aplicativo acesse sua localização em primeiro plano para encontrar sua posição no mapa."
         }
       ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
       [
         "expo-build-properties",
         {
@@ -110,7 +112,8 @@
             "useFrameworks": "static",
             "forceStaticLinking": [
               "react-native-maps",
-              "React-Core"
+              "RNFBApp",
+              "RNFBMessaging"
             ]
           },
           "android": {

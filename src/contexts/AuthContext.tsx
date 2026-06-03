@@ -1,6 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
 import appservice from '@/services/appservice';
-import { getDeviceId } from '@/services/device';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import React, {
@@ -227,7 +226,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
 
     try {
-      const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${credentials.cpfcnpj}&senha=${credentials.senha}&deviceId=${deviceId}`)
+      const currentDeviceId = deviceId || await getPersistentUniqueId();
+      if (!deviceId) {
+        setDeviceId(currentDeviceId);
+      }
+
+      const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${encodeURIComponent(credentials.cpfcnpj)}&senha=${encodeURIComponent(credentials.senha)}&deviceId=${encodeURIComponent(currentDeviceId)}`)
       if (response.status !== 200) {
         setLoading(false);
         throw new Error('Erro ao conectar no servidor.')

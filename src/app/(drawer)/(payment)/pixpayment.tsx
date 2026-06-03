@@ -6,7 +6,7 @@ import { maskMoney } from '@/utils/mask';
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams } from 'expo-router';
 import { CopyIcon, HandCoinsIcon, Share2Icon } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, Share, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -43,6 +43,21 @@ interface OrderUpdatePayload {
 
 const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
 
+const normalizePixAmount = (value: string | string[] | number | null | undefined) => {
+    const rawValue = Array.isArray(value) ? value[0] : value;
+    const valueString = String(rawValue ?? '').trim();
+
+    if (!valueString) return '0.00';
+
+    const sanitizedValue = valueString.replace(/[^\d,.-]/g, '');
+    const normalizedValue = sanitizedValue.includes(',')
+        ? sanitizedValue.replace(/\./g, '').replace(',', '.')
+        : sanitizedValue;
+    const numericValue = Number.parseFloat(normalizedValue);
+
+    return Number.isFinite(numericValue) ? numericValue.toFixed(2) : '0.00';
+};
+
 const PixPayment = () => {
     const { user, disconnect } = useAuth();
     const params = useLocalSearchParams();
@@ -51,6 +66,7 @@ const PixPayment = () => {
 
     const dataOrder: OrderData = params.dataOrder ? JSON.parse(params.dataOrder as string) : {} as OrderData;
     const valueOrder = params.valueOrder;
+    const pixAmount = useMemo(() => normalizePixAmount(valueOrder), [valueOrder]);
     const mtoken = String(params.token || user?.token || '');
 
     const getOrderNumber = (dataPix: OrderData) =>
@@ -68,7 +84,7 @@ const PixPayment = () => {
                 }
 
                 const response = await appservice.get(
-                    `(WS_TRANSACAO_PIX)?token=${mtoken}&tempoPix=3600&valorPix=${valueOrder}&mensagemPix=Pagamento Pix Grupo Solar`,
+                    `(WS_TRANSACAO_PIX)?token=${encodeURIComponent(mtoken)}&tempoPix=3600&valorPix=${encodeURIComponent(pixAmount)}&mensagemPix=${encodeURIComponent('Pagamento Pix Grupo Solar')}`,
                 );
                 const { success, txid, banco, copiaColaPix, message } = response.data.resposta;
 
@@ -91,7 +107,7 @@ const PixPayment = () => {
             }
         };
         getPayPix();
-    }, [disconnect, mtoken, valueOrder]);
+    }, [disconnect, mtoken, pixAmount]);
 
     const sharingUrl = async () => {
         try {
@@ -172,7 +188,7 @@ const PixPayment = () => {
                         </Text>
 
                         <Text className="text-4xl font-extrabold text-solar-blue-secondary mt-1">
-                            R$ {maskMoney(String(valueOrder))}
+                            R$ {maskMoney(pixAmount)}
                         </Text>
 
                         <Text className="text-sm text-orange-500 mt-2 font-medium">
