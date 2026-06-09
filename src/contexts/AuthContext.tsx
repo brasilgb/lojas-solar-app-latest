@@ -39,6 +39,9 @@ interface AuthContextData {
 }
 
 const USER_KEY = 'user-data';
+const KEEP_LOGGED_IN_KEY = 'keepUserLoggedIn';
+const SERVER_CONNECTION_MESSAGE =
+  'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
 const AuthContext = createContext<AuthContextData>(
   {} as AuthContextData,
 );
@@ -139,12 +142,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   async function loadStorageData() {
+    setLoading(true);
     try {
-      const keepLoggedIn = await SecureStore.getItemAsync('keepUserLoggedIn');
+      const keepLoggedIn = await SecureStore.getItemAsync(KEEP_LOGGED_IN_KEY);
       if (keepLoggedIn === 'true') {
         const userJson = await SecureStore.getItemAsync(USER_KEY);
 
         if (userJson) {
+          const serverAvailable = await checkServerConnection();
+
+          if (!serverAvailable) {
+            await disconnectFromUnavailableServer();
+            return;
+          }
+
           const userParsed = JSON.parse(userJson);
           setUser(userParsed);
           setLoading(false);
@@ -163,15 +174,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (cpfcnpj: any) => {
     setLoading(true);
+    setMessage(undefined);
     try {
       const response = await appservice.get(`(WS_LOGIN_APP)?cpfcnpj=${cpfcnpj}`);
 
       if (response.status !== 200) {
         setLoading(false);
-        throw new Error('Erro ao conectar no servidor.')
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
       }
 
-      const { data, message } = response.data?.resposta;
+      const resposta = response.data?.resposta;
+
+      if (!resposta) {
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
+      }
+
+      const { data, message } = resposta;
 
       if (message !== 'OK') {
         setLoading(false);
@@ -215,7 +235,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     }
     catch (error) {
-      console.log(error)
+      console.log(error);
+      setMessage(SERVER_CONNECTION_MESSAGE);
     } finally {
       setLoading(false);
     }
@@ -224,6 +245,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkPassword = async (credentials: any) => {
 
     setLoading(true);
+    setMessage(undefined);
 
     try {
       const currentDeviceId = deviceId || await getPersistentUniqueId();
@@ -234,10 +256,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${encodeURIComponent(credentials.cpfcnpj)}&senha=${encodeURIComponent(credentials.senha)}&deviceId=${encodeURIComponent(currentDeviceId)}`)
       if (response.status !== 200) {
         setLoading(false);
-        throw new Error('Erro ao conectar no servidor.')
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
       }
 
-      const { success, message, data } = response.data?.resposta;
+      const resposta = response.data?.resposta;
+
+      if (!resposta) {
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
+      }
+
+      const { success, message, data } = resposta;
 
       if (!success) {
         setLoading(false);
@@ -265,7 +295,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      setMessage(SERVER_CONNECTION_MESSAGE);
     } finally {
       setLoading(false);
     }
@@ -338,6 +369,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const disconnect = async () => {
     await SecureStore.deleteItemAsync(USER_KEY);
+    await SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY);
     setUser(null);
     router.replace({
       pathname: '/(drawer)',
@@ -357,6 +389,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ],
       { cancelable: false },
     );
+  };
+
+  const checkServerConnection = async () => {
+    try {
+      const response = await appservice.get('(serviceapp)');
+      return response?.status === 200;
+    } catch (error) {
+      console.log('Erro ao validar conexao com servidor:', error);
+      return false;
+    }
+  };
+
+  const disconnectFromUnavailableServer = async () => {
+    await SecureStore.deleteItemAsync(USER_KEY);
+    await SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY);
+    setUser(null);
+    setLoading(false);
+    setMessage(undefined);
+    router.replace({
+      pathname: '/(drawer)',
+    });
+
+    Alert.alert('Atenção', 'Sua sessão foi encerrada porque não foi possível conectar ao servidor.');
   };
 
   return (

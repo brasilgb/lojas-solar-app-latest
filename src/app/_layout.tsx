@@ -1,5 +1,7 @@
 import '@/styles/global.css';
+import * as Application from 'expo-application';
 import { Stack } from 'expo-router';
+import * as Updates from 'expo-updates';
 import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -48,6 +50,7 @@ export default function AppRootLayout() {
   });
 
   useNotifications();
+  useOverTheAirUpdates();
 
   useEffect(() => {
     setupNotificationChannel();
@@ -56,22 +59,28 @@ export default function AppRootLayout() {
   useEffect(() => {
     const getVersionCheck = async () => {
       try {
-        const versionApp =
-          process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '') || '0';
+        const currentVersion =
+          process.env.EXPO_PUBLIC_APP_VERSION ||
+          Application.nativeApplicationVersion ||
+          '0';
 
         const response = await appservice.get('(WS_VERSAO_APP)');
-        const { android, ios } = response.data.resposta.data;
+        const remoteVersion = getRemoteAppVersion(
+          response.data?.resposta?.data,
+        );
 
-        const remoteVersion = Platform.OS === 'ios' ? ios : android;
+        if (!remoteVersion) {
+          return;
+        }
 
-        if (parseInt(remoteVersion, 10) > parseInt(versionApp, 10)) {
-          const versionNew = remoteVersion.split('').join('.');
+        if (compareAppVersions(remoteVersion, currentVersion) > 0) {
+          const versionNew = formatAppVersion(remoteVersion);
 
           setVersionData({
             route: {
               params: {
                 data: {
-                  atual: process.env.EXPO_PUBLIC_APP_VERSION,
+                  atual: currentVersion,
                   nova: versionNew,
                 },
               },
@@ -105,6 +114,113 @@ export default function AppRootLayout() {
       </SafeAreaView>
     </SafeAreaProvider>
   );
+}
+
+function compareAppVersions(remoteVersion: string | number, currentVersion: string | number) {
+  const remoteParts = normalizeAppVersion(remoteVersion);
+  const currentParts = normalizeAppVersion(currentVersion);
+  const maxLength = Math.max(remoteParts.length, currentParts.length);
+
+  for (let index = 0; index < maxLength; index += 1) {
+    const remotePart = remoteParts[index] || 0;
+    const currentPart = currentParts[index] || 0;
+
+    if (remotePart > currentPart) return 1;
+    if (remotePart < currentPart) return -1;
+  }
+
+  return 0;
+}
+
+function getRemoteAppVersion(versionData: any) {
+  if (typeof versionData === 'string' || typeof versionData === 'number') {
+    return versionData;
+  }
+
+  if (!versionData) {
+    return undefined;
+  }
+
+  const platformVersion =
+    Platform.OS === 'ios'
+      ? versionData.ios || versionData.iOS || versionData.IOS
+      : versionData.android || versionData.Android || versionData.ANDROID;
+
+  return (
+    platformVersion ||
+    versionData.version ||
+    versionData.versao ||
+    versionData.appVersion ||
+    versionData.versaoApp
+  );
+}
+
+function normalizeAppVersion(version: string | number) {
+  const versionValue = String(version).trim();
+
+  if (versionValue.includes('.')) {
+    return versionValue
+      .split('.')
+      .map(part => parseInt(part.replace(/\D/g, '') || '0', 10));
+  }
+
+  return parseCompactAppVersion(versionValue);
+}
+
+function formatAppVersion(version: string | number) {
+  const versionValue = String(version).trim();
+
+  if (versionValue.includes('.')) {
+    return versionValue;
+  }
+
+  return parseCompactAppVersion(versionValue).join('.');
+}
+
+function parseCompactAppVersion(version: string) {
+  const digits = version.replace(/\D/g, '');
+
+  if (!digits) {
+    return [0];
+  }
+
+  if (digits.length <= 3) {
+    return digits.split('').map(part => parseInt(part, 10));
+  }
+
+  return [
+    parseInt(digits.slice(0, 1), 10),
+    parseInt(digits.slice(1, 2), 10),
+    parseInt(digits.slice(2), 10),
+  ];
+}
+
+function useOverTheAirUpdates() {
+  useEffect(() => {
+    if (__DEV__ || !Updates.isEnabled) {
+      return;
+    }
+
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+
+        if (!update.isAvailable) {
+          return;
+        }
+
+        const fetchedUpdate = await Updates.fetchUpdateAsync();
+
+        if (fetchedUpdate.isNew) {
+          await Updates.reloadAsync();
+        }
+      } catch (error) {
+        console.error('Erro ao verificar atualizacao OTA:', error);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
 }
 
 function useNotifications() {

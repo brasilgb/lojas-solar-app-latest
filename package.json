@@ -7,6 +7,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "update:development": "eas update --channel development",
+    "update:preview": "eas update --channel preview",
+    "update:production": "eas update --channel production",
     "postinstall": "node scripts/patch-rn-safearea-warning.js"
   },
   "dependencies": {
@@ -36,6 +39,7 @@
     "expo-secure-store": "~15.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-updates": "~29.0.18",
     "expo-web-browser": "~15.0.11",
     "lucide-react-native": "^0.563.0",
     "moment": "^2.30.1",

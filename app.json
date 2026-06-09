@@ -3,6 +3,9 @@
     "name": "Lojas Solar",
     "slug": "comlojasolar",
     "version": "1.5.5",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "lojassolarapp",
@@ -88,6 +91,10 @@
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/52d35a9c-4dab-4fe2-9519-1c32bba74e17",
+      "fallbackToCacheTimeout": 0
     },
     "plugins": [
       [
