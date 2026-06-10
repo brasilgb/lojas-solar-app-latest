@@ -11,6 +11,14 @@ interface AssignDocsProps {
     origin: string;
     serie: string;
     link: string;
+    cliente?: string;
+    client?: string;
+    customer?: string;
+    nomeCliente?: string;
+    serviceType?: string;
+    tipoServico?: string;
+    tipo_servico?: string;
+    tipoDeServico?: string;
 }
 
 export type {AppCaroucelProps, AssignDocsProps}

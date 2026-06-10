@@ -40,6 +40,12 @@ export default function DocsAssign() {
     getAssignDocs();
   }, [user]);
 
+  const getCustomerName = (doc: AssignDocsProps) =>
+    doc.cliente || doc.client || doc.customer || doc.nomeCliente;
+
+  const getServiceType = (doc: AssignDocsProps) =>
+    doc.serviceType || doc.tipoServico || doc.tipo_servico || doc.tipoDeServico;
+
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
 
@@ -69,6 +75,37 @@ export default function DocsAssign() {
               key={idx}
               className="w-full bg-white rounded-xl border border-gray-200 p-3 mb-3"
             >
+              {(getCustomerName(doc) || getServiceType(doc)) && (
+                <View className="flex-row items-start justify-between gap-3 mb-2">
+                  {getCustomerName(doc) && (
+                    <View className="flex-1">
+                      <Text className="text-xs text-gray-500">
+                        Cliente
+                      </Text>
+                      <Text
+                        className="text-sm text-gray-900 font-semibold"
+                        numberOfLines={1}
+                      >
+                        {getCustomerName(doc)}
+                      </Text>
+                    </View>
+                  )}
+
+                  {getServiceType(doc) && (
+                    <View className="flex-1 items-end">
+                      <Text className="text-xs text-gray-500">
+                        Tipo de serviço
+                      </Text>
+                      <Text
+                        className="text-sm text-gray-900 font-semibold text-right"
+                        numberOfLines={1}
+                      >
+                        {getServiceType(doc)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
               <View className="flex-row flex-wrap justify-between gap-y-1 mb-2">
                 <Text className="text-xs text-gray-500">

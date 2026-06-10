@@ -61,6 +61,16 @@ export default function DrawerHeader({ typel, typer }: any) {
       </View>
 
       <View className="w-12 items-end">
+
+        {typer === 'home' && (
+          <TouchableOpacity
+            onPress={() => router.push('/index')}
+            className="p-2"
+          >
+            <LogOutIcon color="white" size={22} />
+          </TouchableOpacity>
+        )}
+
         {typer === 'drawer' && (
           signedIn ? (
             <TouchableOpacity
