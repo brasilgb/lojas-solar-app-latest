@@ -14,7 +14,7 @@ export default function DocsAssignLayout() {
             <Stack.Screen
                 name="docs-assign"
                 options={{
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 

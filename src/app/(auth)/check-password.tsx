@@ -1,4 +1,4 @@
-import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native'
+import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Pressable, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,8 +7,8 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn'
-import { Link, useLocalSearchParams } from 'expo-router';
-import { EyeClosedIcon, EyeIcon, KeyRoundIcon } from 'lucide-react-native';
+import { Link, router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, KeyRoundIcon } from 'lucide-react-native';
 import { Checkbox } from '@/components/Checkbox';
 import { unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
@@ -17,6 +17,7 @@ export default function SignIn() {
     const params = useLocalSearchParams()
     const { checkPassword, recoverPasswordSubmit, loading, message } = useAuth();
     const [isSecure, setIsSecure] = useState<boolean>(true);
+    const [loadingBack, setLoadingBack] = React.useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm<CheckPasswordSchema>({
         defaultValues: {
@@ -42,6 +43,14 @@ export default function SignIn() {
         await recoverPasswordSubmit(params?.cpfcnpj as string);
     }
 
+    const handleGoBack = () => {
+        setLoadingBack(true);
+        setTimeout(() => {
+            setLoadingBack(false);
+            router.replace('/');
+        }, 500);
+    }
+
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
             <KeyboardAvoidingView
@@ -65,7 +74,20 @@ export default function SignIn() {
                         </View>
 
                         <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
-
+                            <View className='absolute top-4 left-4 flex-row items-center gap-1'>
+                                <TouchableOpacity
+                                    onPress={() => handleGoBack()}
+                                    className="p-2"
+                                >
+                                    {loadingBack ?
+                                        <View className='flex-1 justify-center items-center'>
+                                            <ActivityIndicator size={'large'} color={'#1a9cd9'} />
+                                        </View>
+                                        :
+                                        <ArrowLeftIcon size={25} color={'#1a9cd9'} />
+                                    }
+                                </TouchableOpacity>
+                            </View>
                             <View className="items-center mb-6">
                                 <View className="bg-blue-100 p-3 rounded-full mb-3">
                                     <KeyRoundIcon size={28} color="#1a9cd9" />

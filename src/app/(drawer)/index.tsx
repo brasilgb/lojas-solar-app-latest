@@ -86,7 +86,7 @@ export default function Home() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
             >
-                <View className="bg-white px-4 py-4 rounded-3xl shadow-sm m-4">
+                <View className="px-4 py-2 rounded-3xl m-4">
                     <Text className="text-sm text-gray-500">
                         {signedIn ? 'Bem-vindo de volta' : 'Olá'}
                     </Text>
@@ -122,7 +122,7 @@ export default function Home() {
                         </View>
                     )}
                 </View>
-                <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm items-center">
+                <View className="mx-4 mt-4 rounded-2xl px-4 py-2 items-center">
                     <Text className="text-gray-600">Loja mais próxima</Text>
                     <Text className="font-bold text-lg text-gray-800 mt-1">
                         {returnStore && returnStore?.cidade.split('-')[0] || 'Não identificado'}

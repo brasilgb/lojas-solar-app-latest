@@ -15,7 +15,7 @@ export default function QuestionLayout() {
                 options={{
                     headerShown: true,
                     title: 'Perguntas frequentes',
-                    header: () => <DrawerHeader typel='drawer' />,
+                    header: () => <DrawerHeader typel='drawer' typer={'home'} />,
                 }}
             />
         </Stack>

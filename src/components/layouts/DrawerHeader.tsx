@@ -1,7 +1,7 @@
 import { View, Text, Image, Alert, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Button } from '@/components/Button'
-import { ArrowLeftIcon, LogInIcon, LogOutIcon, MenuIcon, UserMinus2Icon } from 'lucide-react-native'
+import { ArrowLeftIcon, HomeIcon, LogInIcon, LogOutIcon, MenuIcon, UserMinus2Icon } from 'lucide-react-native'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 import { useAuth } from '@/contexts/AuthContext'
 import { router } from 'expo-router'
@@ -67,7 +67,7 @@ export default function DrawerHeader({ typel, typer }: any) {
             onPress={() => router.push('/')}
             className="p-2"
           >
-            <LogOutIcon color="white" size={22} />
+            <HomeIcon color="white" size={22} />
           </TouchableOpacity>
         )}
 

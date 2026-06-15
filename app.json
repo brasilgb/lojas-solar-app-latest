@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lojas Solar",
     "slug": "comlojasolar",
-    "version": "1.5.5",
+    "version": "1.5.7",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -130,7 +130,7 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
-            "kotlinVersion": "2.0.21",
+            "kotlinVersion": "2.1.20",
             "usesCleartextTraffic": true
           }
         }

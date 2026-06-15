@@ -14,7 +14,7 @@ export default function AccountLayout() {
             <Stack.Screen
                 name="crediary"
                 options={{
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 

@@ -1,6 +1,5 @@
 import React, { ReactNode } from "react";
 import { View, Text } from "react-native";
-import { softCardShadow } from "@/styles/shadows";
 
 type PageHeaderProps = {
     title: string;
@@ -18,10 +17,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     rightElement,
 }) => {
     return (
-        <View className="bg-white p-4 rounded-2xl w-full" style={softCardShadow}>
+        <View
+            className=" p-4 w-full pb-1 border border-gray-200 bg-white rounded-lg"
+        >
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3 flex-1">
-
                     {icon && (
                         <View className="bg-blue-100 p-3 rounded-xl">
                             {icon}
@@ -57,6 +57,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                     </Text>
                 </>
             )}
+
         </View>
     );
 };

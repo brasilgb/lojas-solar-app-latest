@@ -8,10 +8,10 @@ import appservice from '@/services/appservice';
 import { maskCep, maskCpfCnpj, maskPhone, unMask } from '@/utils/mask';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
-import { User2Icon } from 'lucide-react-native';
+import { User2Icon, UserMinus2Icon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Account() {
     const params = useLocalSearchParams();
@@ -20,7 +20,7 @@ export default function Account() {
     const [account, setAccount] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
 
-const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
+    const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
 
     useEffect(() => {
         const getAccount = async () => {
@@ -126,6 +126,25 @@ const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
                                 subtitle="Confira seus dados abaixo"
                                 description="Preencha ou altere conforme a necessidade."
                                 icon={<User2Icon size={26} color="#1a9cd9" />}
+                                rightElement={
+                                    (
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                Alert.alert(
+                                                    'Exclusão de dados',
+                                                    'Vamos direcioná-lo para o processo de exclusão de dados.',
+                                                    [
+                                                        { text: 'Cancelar', style: 'cancel' },
+                                                        { text: 'Ok', onPress: () => router.push('/data-exclude') },
+                                                    ]
+                                                )
+                                            }
+                                            className="p-2"
+                                        >
+                                            <UserMinus2Icon color="#1a9cd9" size={26} />
+                                        </TouchableOpacity>
+                                    )
+                                }
                             />
 
                             <View className='w-full'>

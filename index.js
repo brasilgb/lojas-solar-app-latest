@@ -29,7 +29,7 @@ if (!firebase.apps.length) {
 const messagingInstance = getMessaging(getApp());
 
 setBackgroundMessageHandler(messagingInstance, async remoteMessage => {
-  console.log('Mensagem recebida em background!', remoteMessage);
+  console.log('Mensagem recebida em background!');
 
   if (remoteMessage.notification) {
     return;

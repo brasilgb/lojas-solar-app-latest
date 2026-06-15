@@ -15,7 +15,7 @@ export default function LocationLayout() {
                 options={{
                     headerShown: true,
                     title: 'Localização inicial',
-                    header: () => <DrawerHeader typel='drawer' />,
+                    header: () => <DrawerHeader typel='drawer' typer={'home'} />,
                 }}
             />
             <Stack.Screen

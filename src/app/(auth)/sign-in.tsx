@@ -1,4 +1,4 @@
-import { View, Text, Image, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, Text, Image, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,13 +7,14 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SigInSchema, sigInSchema } from '@/schemas/signIn'
-import { Link } from 'expo-router';
-import { UserRoundCheckIcon } from 'lucide-react-native';
+import { Link, router } from 'expo-router';
+import { ArrowLeftIcon, UserRoundCheckIcon } from 'lucide-react-native';
 import { maskCpfCnpj, unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
 
 export default function SignIn() {
     const { signIn, loading, message } = useAuth();
+    const [loadingBack, setLoadingBack] = React.useState(false);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<SigInSchema>({
         defaultValues: {
@@ -27,6 +28,14 @@ export default function SignIn() {
         await signIn(data.cpfcnpj);
         reset();
     };
+
+    const handleGoBack = () => {
+        setLoadingBack(true);
+        setTimeout(() => {
+            setLoadingBack(false);
+            router.replace('/');
+        }, 500);
+    }
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
@@ -54,6 +63,20 @@ export default function SignIn() {
 
                             {/* CARD */}
                             <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
+                                <View className='absolute top-4 left-4 flex-row items-center gap-1'>
+                                    <TouchableOpacity
+                                        onPress={() => handleGoBack()}
+                                        className="p-2"
+                                    >
+                                        {loadingBack ?
+                                            <View className='flex-1 justify-center items-center'>
+                                                <ActivityIndicator size={'large'} color={'#1a9cd9'} />
+                                            </View>
+                                            :
+                                            <ArrowLeftIcon size={25} color={'#1a9cd9'} />
+                                        }
+                                    </TouchableOpacity>
+                                </View>
 
                                 {/* ÍCONE */}
                                 <View className='items-center mb-4'>

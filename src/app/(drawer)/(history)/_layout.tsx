@@ -13,7 +13,7 @@ export default function HistoryLayout() {
       <Stack.Screen
         name="history"
         options={{
-          header: () => <DrawerHeader typel='drawer' />,
+          header: () => <DrawerHeader typel='drawer' typer={'home'} />,
           headerShown: true,
           title: 'History',
         }}

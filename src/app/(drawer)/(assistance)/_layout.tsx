@@ -13,7 +13,7 @@ export default function AssistanceLayout() {
       <Stack.Screen
         name="assistance"
         options={{
-          header: () => <DrawerHeader typel='drawer' />,
+          header: () => <DrawerHeader typel='drawer' typer={'home'} />,
           headerShown: true,
           title: 'Assistance',
         }}

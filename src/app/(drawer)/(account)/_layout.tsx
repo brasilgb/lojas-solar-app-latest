@@ -14,21 +14,21 @@ export default function AccountLayout() {
             <Stack.Screen
                 name="account"
                 options={{
-                    header: () => <DrawerHeader typel={'drawer'} typer={'exclude'} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
             <Stack.Screen
                 name="data-exclude"
                 options={{
-                    header: () => <DrawerHeader typel={'stack'} typer={''} />
+                    header: () => <DrawerHeader typel={'stack'} />
                 }}
             />
 
             <Stack.Screen
                 name="data-analise"
                 options={{
-                    header: () => <DrawerHeader typel={'stack'} typer={''} />
+                    header: () => <DrawerHeader typel={'stack'} />
                 }}
             />
         </Stack>

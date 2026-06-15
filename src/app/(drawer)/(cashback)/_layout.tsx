@@ -13,7 +13,7 @@ export default function CashbackLayout() {
       <Stack.Screen
         name="cashback"
         options={{
-          header: () => <DrawerHeader typel='drawer' />,
+          header: () => <DrawerHeader typel='drawer' typer={'home'} />,
           headerShown: true,
           title: 'Cashback',
         }}

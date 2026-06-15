@@ -178,7 +178,7 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <KeyRoundIcon color={color} size={size} />
                     ),
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
@@ -192,7 +192,7 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <FilePenLineIcon color={color} size={size} />
                     ),
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
@@ -205,7 +205,7 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <ShieldUserIcon color={color} size={size} />
                     ),
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
@@ -230,7 +230,7 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <PhoneCallIcon color={color} size={size} />
                     ),
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
@@ -244,7 +244,7 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color, size }) => (
                         <HandCoinsIcon color={color} size={size} />
                     ),
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 
@@ -295,7 +295,7 @@ export default function DrawerLayout() {
                 options={{
                     drawerLabel: () => null,
                     drawerItemStyle: { display: 'none' },
-                    header: () => <DrawerHeader typel={'drawer'} typer={''} />
+                    header: () => <DrawerHeader typel={'drawer'} typer={'home'} />
                 }}
             />
 

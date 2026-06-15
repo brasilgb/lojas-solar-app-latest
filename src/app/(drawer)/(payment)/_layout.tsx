@@ -32,6 +32,9 @@ const PaymentLayout = () => {
                 name="payment"
                 options={{
                     title: 'Pagamentos',
+                    header: () => (
+                        <DrawerHeader typel={'drawer'} typer={'home'} />
+                    )
                 }}
             />
 
