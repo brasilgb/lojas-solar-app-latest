@@ -21,7 +21,7 @@ interface HistoryProps {
 }
 
 export default function History() {
-  const { user, disconnect } = useAuth();
+  const { user, expiredSession } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
@@ -50,7 +50,7 @@ export default function History() {
           {
             text: 'Ok',
             onPress: () => {
-              disconnect();
+              expiredSession();
             },
           },
         ]);

@@ -1,6 +1,6 @@
 import 'expo-router/entry';
 import notifee from '@notifee/react-native';
-import firebase, { getApp } from '@react-native-firebase/app';
+import { getApp, getApps, initializeApp } from '@react-native-firebase/app';
 import {
   getMessaging,
   setBackgroundMessageHandler,
@@ -14,8 +14,8 @@ import {
 } from './src/lib/notifications';
 
 // Initialize Firebase if not already initialized
-if (!firebase.apps.length) {
-  firebase.initializeApp({
+if (getApps().length === 0) {
+  initializeApp({
     apiKey: 'AIzaSyAoS4j1-tu5uofMCbOlYhV1Oj_vwt3Ej_4',
     authDomain: 'applojassolar.firebaseapp.com',
     projectId: 'applojassolar',

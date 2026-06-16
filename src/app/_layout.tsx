@@ -1,5 +1,6 @@
 import '@/styles/global.css';
 import * as Application from 'expo-application';
+import * as SecureStore from 'expo-secure-store';
 import { Stack } from 'expo-router';
 import * as Updates from 'expo-updates';
 import React, { useEffect, useState } from 'react';
@@ -39,6 +40,8 @@ import {
 import VerifyVersion from '@/components/NewVersion';
 import { AuthProvider } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
+
+const USER_STORAGE_KEY = 'user-data';
 
 export default function AppRootLayout() {
   const [versionData, setVersionData] = useState<any>(null);
@@ -270,20 +273,15 @@ function useNotifications() {
 
         await registerDeviceForRemoteMessages(messagingInstance);
 
-        // On iOS, this gives the APNS token needed for FCM token exchange.
-        const apnsToken = await getAPNSToken(messagingInstance);
-        if (!apnsToken) {
-          console.warn('APNS token not ready yet; waiting 2 seconds before getToken()');
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-
         await setupNotificationChannel();
 
-        const fcmToken = await getToken(messagingInstance);
+        const fcmToken = await getFirebaseMessagingToken(messagingInstance);
 
         if (fcmToken) {
           const deviceId = await getPersistentUniqueId();
           await registerDevice(deviceId, fcmToken);
+        } else {
+          console.warn('FCM token nao foi gerado. Registro do device ignorado.');
         }
 
         const initialNotification = await notifee.getInitialNotification();
@@ -341,17 +339,71 @@ function useNotifications() {
   }, []);
 }
 
+async function getFirebaseMessagingToken(
+  messagingInstance: ReturnType<typeof getMessaging>
+) {
+  const maxAttempts = Platform.OS === 'ios' ? 5 : 1;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      if (Platform.OS === 'ios') {
+        const apnsToken = await getAPNSToken(messagingInstance);
+
+        if (!apnsToken) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+      }
+
+      const fcmToken = await getToken(messagingInstance);
+
+      if (fcmToken) {
+        console.log('FCM token gerado com sucesso');
+        return fcmToken;
+      }
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        console.log('Erro ao gerar FCM token:', error);
+        return undefined;
+      }
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  return undefined;
+}
+
 async function registerDevice(deviceId: string, pushToken: string) {
   try {
     const deviceos = Platform.OS;
     const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
+    const codcli = await getStoredCustomerCode();
 
     await appservice.get(
-      `(WS_GRAVA_DEVICE)?deviceId=${encodeURIComponent(deviceId)}&pushToken=${encodeURIComponent(pushToken)}&deviceOs=${encodeURIComponent(deviceos)}&versaoApp=${encodeURIComponent(versaoapp || '')}`
+      `(WS_GRAVA_DEVICE)?deviceId=${encodeURIComponent(deviceId)}&pushToken=${encodeURIComponent(pushToken)}&deviceOs=${encodeURIComponent(deviceos)}&versaoApp=${encodeURIComponent(versaoapp || '')}&codcli=${encodeURIComponent(codcli)}`
     );
 
     console.log('Dispositivo registrado com sucesso');
   } catch (error) {
     console.log('Erro ao registrar dispositivo:', error);
+  }
+}
+
+async function getStoredCustomerCode() {
+  const userJson = await SecureStore.getItemAsync(USER_STORAGE_KEY);
+
+  if (!userJson) {
+    return '0';
+  }
+
+  try {
+    const user = JSON.parse(userJson);
+    const customerCode = String(user?.codigoCliente ?? '').replace(/\D/g, '');
+
+    return customerCode || '0';
+  } catch (error) {
+    console.log('Erro ao ler codigo do cliente do storage:', error);
+    return '0';
   }
 }

@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, Text, View } from 'react-native'
 
 export default function PrivacySettings() {
-  const { disconnect, user } = useAuth();
+  const { expiredSession, user } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,7 +36,7 @@ export default function PrivacySettings() {
             {
               text: 'Ok',
               onPress: () => {
-                disconnect();
+                expiredSession();
               },
             },
           ]);

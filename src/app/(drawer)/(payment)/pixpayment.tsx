@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
 import { maskMoney } from '@/utils/mask';
 import * as Clipboard from 'expo-clipboard';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { CopyIcon, HandCoinsIcon, Share2Icon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, Share, Text, View } from 'react-native';
@@ -28,8 +28,8 @@ interface SelectedInstallment {
 
 // Define o que o backend de Pix retorna
 interface PixResponseData {
-    idTransacao: string;
-    urlBoleto: string;
+    idTransacao?: string | number;
+    urlBoleto?: string | number;
 }
 
 // Define a estrutura do que você envia para atualizar a ordem
@@ -42,6 +42,7 @@ interface OrderUpdatePayload {
 }
 
 const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
+const EMPTY_TRANSACTION_ID = '00000000-0000-0000-0000-000000000000';
 
 const normalizePixAmount = (value: string | string[] | number | null | undefined) => {
     const rawValue = Array.isArray(value) ? value[0] : value;
@@ -58,8 +59,13 @@ const normalizePixAmount = (value: string | string[] | number | null | undefined
     return Number.isFinite(numericValue) ? numericValue.toFixed(2) : '0.00';
 };
 
+const normalizeTransactionId = (txid: string | number | null | undefined) => {
+    const transactionId = String(txid ?? '').trim();
+    return transactionId || EMPTY_TRANSACTION_ID;
+};
+
 const PixPayment = () => {
-    const { user, disconnect } = useAuth();
+    const { user, expiredSession } = useAuth();
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(true);
     const [pixOperations, setPixOpertions] = useState<string>('');
@@ -78,7 +84,7 @@ const PixPayment = () => {
                 setLoading(true)
                 if (!mtoken) {
                     Alert.alert('Atenção', 'Sessão inválida. Faça login novamente.', [
-                        { text: 'Ok', onPress: () => disconnect() },
+                        { text: 'Ok', onPress: () => expiredSession() },
                     ]);
                     return;
                 }
@@ -86,18 +92,33 @@ const PixPayment = () => {
                 const response = await appservice.get(
                     `(WS_TRANSACAO_PIX)?token=${encodeURIComponent(mtoken)}&tempoPix=3600&valorPix=${encodeURIComponent(pixAmount)}&mensagemPix=${encodeURIComponent('Pagamento Pix Grupo Solar')}`,
                 );
-                const { success, txid, banco, copiaColaPix, message } = response.data.resposta;
+                const { success, txid, banco, copiaColaPix, message, token } = response.data.resposta;
 
-                if (success) {
-                    if (!txid) {
-                        Alert.alert("Erro ao gerar Pix", "O Pix foi gerado sem ID de transação. Tente novamente.");
-                        return;
-                    }
+                if (!token) {
+                    Alert.alert('Atenção', message || 'Sessão expirada. Faça login novamente.', [
+                        { text: 'Ok', onPress: () => expiredSession() },
+                    ]);
+                    return;
+                }
 
+                if (success && copiaColaPix) {
                     setPixOpertions(copiaColaPix);
                     await sendOrderAtualize(dataOrder, { idTransacao: txid, urlBoleto: banco });
                 } else {
-                    Alert.alert("Erro ao gerar Pix", message || "Tente novamente mais tarde");
+                    await sendOrderAtualize(dataOrder, { idTransacao: txid, urlBoleto: banco });
+
+                    const isBadRequest = message === 'Bad Request';
+                    const errorMessage = isBadRequest
+                        ? 'Servidor indisponível no momento. Tente daqui alguns minutos.'
+                        : message || 'Tente novamente mais tarde';
+
+                    Alert.alert(
+                        "Erro ao gerar Pix",
+                        errorMessage,
+                        isBadRequest
+                            ? [{ text: 'Ok', onPress: () => router.replace('/payment') }]
+                            : undefined,
+                    );
                 }
 
             } catch (error) {
@@ -107,7 +128,7 @@ const PixPayment = () => {
             }
         };
         getPayPix();
-    }, [disconnect, mtoken, pixAmount]);
+    }, [expiredSession, mtoken, pixAmount]);
 
     const sharingUrl = async () => {
         try {
@@ -136,10 +157,10 @@ const PixPayment = () => {
 
     async function sendOrderAtualize(dataPix: OrderData, dataPay: PixResponseData) {
         const numeroOrdem = getOrderNumber(dataPix);
-        if (!numeroOrdem || !dataPay.idTransacao) {
+        if (!numeroOrdem) {
             Alert.alert(
                 "Aviso",
-                "O pagamento foi gerado, mas faltam dados para registrar a ordem. Tente novamente em alguns instantes."
+                "Faltam dados para registrar a ordem. Tente novamente em alguns instantes."
             );
             return;
         }
@@ -147,9 +168,9 @@ const PixPayment = () => {
         let orderResponse: OrderUpdatePayload = {
             numeroOrdem,
             statusOrdem: 12,
-            idTransacao: dataPay.idTransacao,
+            idTransacao: normalizeTransactionId(dataPay.idTransacao),
             tipoPagamento: 4,
-            urlBoleto: String(dataPay.urlBoleto),
+            urlBoleto: String(dataPay.urlBoleto ?? 0),
         };
         try {
             const response = await appservice.get(

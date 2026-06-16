@@ -15,7 +15,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Crediary() {
-    const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
+    const { user, expiredSession, setInfoCustomerToExcludeData } = useAuth();
     const [message, setMessage] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -103,7 +103,7 @@ export default function Crediary() {
                         {
                             text: 'Ok',
                             onPress: () => {
-                                disconnect();
+                                expiredSession();
                             },
                         },
                     ]);

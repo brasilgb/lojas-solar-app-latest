@@ -33,7 +33,7 @@ const UPLOAD_CONFIG = [
 const LoadImages = ({ route }: any) => {
     const navigation = useNavigation<any>();
     const { user } = route?.params || {};
-    const { disconnect } = useAuth();
+    const { expiredSession } = useAuth();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedType, setSelectedType] = useState<string>('');
@@ -151,7 +151,7 @@ const LoadImages = ({ route }: any) => {
             const { success, message, token } = response.data.resposta;
 
             if (!token) {
-                Alert.alert('Atenção', message, [{ text: 'Ok', onPress: () => { disconnect(); navigation.navigate('Home'); } }]);
+                Alert.alert('Atenção', message, [{ text: 'Ok', onPress: () => expiredSession() }]);
             } else if (success) {
                 Alert.alert('Sucesso', 'Imagem enviada com sucesso');
             }

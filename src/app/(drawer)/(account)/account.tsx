@@ -15,7 +15,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, T
 
 export default function Account() {
     const params = useLocalSearchParams();
-    const { user, disconnect, setInfoCustomerToExcludeData } = useAuth();
+    const { user, expiredSession, setInfoCustomerToExcludeData } = useAuth();
     const [loading, setLoading] = useState(false);
     const [account, setAccount] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
@@ -33,7 +33,7 @@ export default function Account() {
                         {
                             text: 'Ok',
                             onPress: () => {
-                                disconnect();
+                                expiredSession();
                             },
                         },
                     ]);

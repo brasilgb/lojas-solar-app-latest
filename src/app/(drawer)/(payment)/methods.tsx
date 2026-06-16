@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 const methods = () => {
-    const { user, disconnect } = useAuth();
+    const { user, expiredSession } = useAuth();
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -53,7 +53,7 @@ const methods = () => {
         try {
             if (!mtoken) {
                 Alert.alert('Atenção', 'Sessão inválida. Faça login novamente.', [
-                    { text: 'Ok', onPress: () => disconnect() },
+                    { text: 'Ok', onPress: () => expiredSession() },
                 ]);
                 return;
             }
@@ -77,7 +77,7 @@ const methods = () => {
 
             if (!token) {
                 Alert.alert('Atenção', message || 'Sessão expirada. Faça login novamente.', [
-                    { text: 'Ok', onPress: () => disconnect() },
+                    { text: 'Ok', onPress: () => expiredSession() },
                 ]);
                 return;
             }

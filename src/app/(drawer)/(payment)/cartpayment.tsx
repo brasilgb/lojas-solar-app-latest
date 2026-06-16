@@ -56,7 +56,7 @@ const approvedReturnCodes = ['00', '0', '6'];
 const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
 
 const CartPayment = () => {
-    const { user, disconnect } = useAuth();
+    const { user, expiredSession } = useAuth();
     const [loading, setLoading] = useState(false);
     const params = useLocalSearchParams();
     const order = JSON.parse(params?.dataOrder as string);
@@ -143,7 +143,7 @@ const CartPayment = () => {
                 {
                     text: 'Ok',
                     onPress: () => {
-                        disconnect();
+                        expiredSession();
                     },
                 },
             ]);

@@ -16,7 +16,7 @@ type Protocol = {
 };
 
 const AssistanceProtocol = () => {
-  const { user, disconnect } = useAuth();
+  const { user, expiredSession } = useAuth();
   const [loading, setLoading] = useState(false);
   const [protocols, setProtocols] = useState<Protocol[]>([]);
 
@@ -35,7 +35,7 @@ const AssistanceProtocol = () => {
           {
             text: 'Ok',
             onPress: () => {
-              disconnect();
+              expiredSession();
             },
           },
         ]);
@@ -47,7 +47,7 @@ const AssistanceProtocol = () => {
           {
             text: 'Ok',
             onPress: () => {
-              disconnect();
+              expiredSession();
             },
           },
         ]);

@@ -1,22 +1,10 @@
-import { useAuth } from '@/contexts/AuthContext';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { View, Text, Platform, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Button } from './Button';
 
 const VerifyVersion = ({ route }: any) => {
   const { data } = route.params;
-  const { disconnect } = useAuth();
-  const disconnectedRef = useRef(false);
-
-  useEffect(() => {
-    if (disconnectedRef.current) {
-      return;
-    }
-
-    disconnectedRef.current = true;
-    disconnect();
-  }, [disconnect]);
 
   const handlerVersioning = () => {
     if (Platform.OS === 'android') {

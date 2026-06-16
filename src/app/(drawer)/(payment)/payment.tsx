@@ -14,7 +14,7 @@ import PaymentHistory from './payment-history';
 import { softFloatingShadow } from '@/styles/shadows';
 
 const OpenPayments = () => {
-    const { user, disconnect } = useAuth();
+    const { user, expiredSession } = useAuth();
     const [loading, setLoading] = useState<boolean>(false);
     const mtoken = user?.token;
     const [crediarios, setCrediarios] = useState<any>([]);
@@ -34,7 +34,7 @@ const OpenPayments = () => {
                         {
                             text: 'Ok',
                             onPress: () => {
-                                disconnect();
+                                expiredSession();
                             },
                         },
                     ]);

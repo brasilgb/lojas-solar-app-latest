@@ -30,6 +30,7 @@ interface AuthContextData {
   recoverPasswordSubmit: (cpfcnpj: string) => Promise<void>;
   alterPassword: (credentials: any) => Promise<void>;
   disconnect: () => Promise<void>;
+  expiredSession: () => Promise<void>;
   message: string | undefined;
   positionGlobal: any;
   setPositionGlobal: any;
@@ -376,6 +377,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }
 
+  const expiredSession = async () => {
+    setUser(null);
+    setLoading(false);
+    setMessage(undefined);
+    router.replace({
+      pathname: '/sign-in',
+    });
+  }
+
   const signOut = async () => {
     Alert.alert(
       'Atenção - Ação de Logout',
@@ -427,6 +437,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         alterPassword,
         signOut,
         disconnect,
+        expiredSession,
         message,
         setPositionGlobal,
         positionGlobal,
