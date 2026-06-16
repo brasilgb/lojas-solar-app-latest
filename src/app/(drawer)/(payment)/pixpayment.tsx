@@ -69,8 +69,18 @@ const PixPayment = () => {
     const pixAmount = useMemo(() => normalizePixAmount(valueOrder), [valueOrder]);
     const mtoken = String(params.token || user?.token || '');
 
-    const getOrderNumber = (dataPix: OrderData) =>
-        dataPix.numeroOrdem ?? dataPix.OrderNumber ?? dataPix.Detail?.OrderNumber;
+    const getOrderNumber = (dataPix: OrderData) => dataPix.numeroOrdem ?? dataPix.OrderNumber ?? dataPix.Detail?.OrderNumber;
+
+    // {
+    //     "resposta": {
+    //         "success": false,
+    //             "message": "Bad Request",
+    //                 "token": true,
+    //                     "copiaColaPix": "",
+    //                         "txid": "",
+    //                             "banco": 0
+    //     }
+    // }
 
     useEffect(() => {
         const getPayPix = async () => {
