@@ -109,7 +109,7 @@ const PixPayment = () => {
 
                     const isBadRequest = message === 'Bad Request';
                     const errorMessage = isBadRequest
-                        ? 'Servidor indisponível no momento. Tente daqui alguns minutos.'
+                        ? 'Serviço indisponível no momento. Tente novamente mais tarde.'
                         : message || 'Tente novamente mais tarde';
 
                     Alert.alert(
