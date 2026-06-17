@@ -114,15 +114,39 @@ export async function openNotificationUrl(url?: string) {
     return;
   }
 
-  try {
-    const canOpen = await Linking.canOpenURL(url);
+  const normalizedUrl = normalizeNotificationUrl(url);
 
-    if (canOpen) {
-      await Linking.openURL(url);
-    }
+  if (!normalizedUrl) {
+    return;
+  }
+
+  try {
+    await Linking.openURL(normalizedUrl);
   } catch (error) {
     console.error('Erro ao abrir URL da notificacao:', error);
   }
+}
+
+function normalizeNotificationUrl(url: string) {
+  const trimmedUrl = url.trim().replace(/\s/g, '%20');
+
+  if (!trimmedUrl) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
+
+  if (/^\/\//.test(trimmedUrl)) {
+    return `https:${trimmedUrl}`;
+  }
+
+  if (/^[\w.-]+\.[a-z]{2,}(?::\d+)?(?:[/?#]|$)/i.test(trimmedUrl)) {
+    return `https://${trimmedUrl}`;
+  }
+
+  return trimmedUrl;
 }
 
 export async function handleNotificationPress(data?: { url?: string }) {
