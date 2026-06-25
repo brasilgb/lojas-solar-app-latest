@@ -1844,8 +1844,6 @@
                     string
                     "Cadastro não habilitado para login por biometria."
                                        delimited by size
-                                       app-bio-cpfcnpj-in
-                                       delimited by spaces
                                        into   app-bio-message-resp
                     exit               paragraph.
 
