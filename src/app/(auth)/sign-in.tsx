@@ -11,10 +11,69 @@ import { Link, router } from 'expo-router';
 import { ArrowLeftIcon, UserRoundCheckIcon } from 'lucide-react-native';
 import { maskCpfCnpj, unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+
+const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
+
+type LastAuthCustomer = {
+    cpfcnpj: string;
+    nomeCliente: string;
+    codigoCliente: string;
+};
 
 export default function SignIn() {
     const { signIn, loading, message } = useAuth();
     const [loadingBack, setLoadingBack] = React.useState(false);
+    const [checkingSavedCustomer, setCheckingSavedCustomer] = React.useState(true);
+
+    React.useEffect(() => {
+        let mounted = true;
+
+        async function redirectSavedCustomerWithBiometrics() {
+            try {
+                const hasHardware = await LocalAuthentication.hasHardwareAsync();
+                const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+                if (!hasHardware || !isEnrolled) {
+                    return;
+                }
+
+                const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
+
+                if (!storedCustomer) {
+                    return;
+                }
+
+                const customer = JSON.parse(storedCustomer) as Partial<LastAuthCustomer>;
+
+                if (!customer.cpfcnpj || !customer.nomeCliente || !customer.codigoCliente) {
+                    return;
+                }
+
+                router.replace({
+                    pathname: '/check-password',
+                    params: {
+                        cpfcnpj: customer.cpfcnpj,
+                        nomeCliente: customer.nomeCliente,
+                        codigoCliente: customer.codigoCliente,
+                    },
+                });
+            } catch (error) {
+                console.log('Erro ao carregar cliente salvo para biometria:', error);
+            } finally {
+                if (mounted) {
+                    setCheckingSavedCustomer(false);
+                }
+            }
+        }
+
+        redirectSavedCustomerWithBiometrics();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<SigInSchema>({
         defaultValues: {
@@ -39,6 +98,11 @@ export default function SignIn() {
 
     return (
         <ScreenLayout backgroundColor='bg-solar-blue-primary'>
+            {checkingSavedCustomer ? (
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator color="white" size="large" />
+                </View>
+            ) : (
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -133,6 +197,7 @@ export default function SignIn() {
                     </TouchableWithoutFeedback>
                 </ScrollView>
             </KeyboardAvoidingView>
+            )}
         </ScreenLayout>
 
     )

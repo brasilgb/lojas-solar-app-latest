@@ -12,12 +12,73 @@ import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon, KeyRoundIcon } 
 import { Checkbox } from '@/components/Checkbox';
 import { unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+
+const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
+
+function getParamValue(value: string | string[] | undefined) {
+    return Array.isArray(value) ? value[0] : value;
+}
+
+function maskDocument(value: string | string[] | undefined) {
+    const digits = unMask(String(getParamValue(value) ?? '').trim());
+
+    if (digits.length <= 5) {
+        return digits;
+    }
+
+    return `${digits.slice(0, 3)}${'*'.repeat(digits.length - 5)}${digits.slice(-2)}`;
+}
 
 export default function SignIn() {
     const params = useLocalSearchParams()
     const { checkPassword, loginWithBiometrics, recoverPasswordSubmit, loading, message } = useAuth();
     const [isSecure, setIsSecure] = useState<boolean>(true);
     const [loadingBack, setLoadingBack] = React.useState(false);
+    const [biometricsAvailable, setBiometricsAvailable] = useState(false);
+
+    React.useEffect(() => {
+        let mounted = true;
+
+        async function loadBiometricsAvailability() {
+            const hasHardware = await LocalAuthentication.hasHardwareAsync();
+            const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+            if (mounted) {
+                setBiometricsAvailable(hasHardware && isEnrolled);
+            }
+        }
+
+        loadBiometricsAvailability();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    React.useEffect(() => {
+        async function saveLastAuthCustomer() {
+            const cpfcnpj = unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim());
+            const nomeCliente = getParamValue(params?.nomeCliente);
+            const codigoCliente = getParamValue(params?.codigoCliente);
+
+            if (!biometricsAvailable || !cpfcnpj || !nomeCliente || !codigoCliente) {
+                return;
+            }
+
+            await SecureStore.setItemAsync(
+                LAST_AUTH_CUSTOMER_KEY,
+                JSON.stringify({
+                    cpfcnpj,
+                    nomeCliente,
+                    codigoCliente,
+                }),
+            );
+        }
+
+        saveLastAuthCustomer();
+    }, [biometricsAvailable, params?.codigoCliente, params?.cpfcnpj, params?.nomeCliente]);
 
     const { control, handleSubmit, formState: { errors } } = useForm<CheckPasswordSchema>({
         defaultValues: {
@@ -30,24 +91,24 @@ export default function SignIn() {
     const onSubmit: SubmitHandler<CheckPasswordSchema> = async (data: CheckPasswordSchema) => {
 
         const credentials = {
-            codigoCliente: params?.codigoCliente,
-            nomeCliente: params?.nomeCliente,
-            cpfcnpj: unMask(String(params?.cpfcnpj).trim()),
+            codigoCliente: getParamValue(params?.codigoCliente),
+            nomeCliente: getParamValue(params?.nomeCliente),
+            cpfcnpj: unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim()),
             senha: data.senha,
-            connected: data.connected,
+            connected: biometricsAvailable ? true : data.connected,
         };
         await checkPassword(credentials);
     };
 
     const recoverPasswordHandle = async () => {
-        await recoverPasswordSubmit(params?.cpfcnpj as string);
+        await recoverPasswordSubmit(unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim()));
     }
 
     const handleBiometricLogin = async () => {
         await loginWithBiometrics({
-            codigoCliente: params?.codigoCliente,
-            nomeCliente: params?.nomeCliente,
-            cpfcnpj: unMask(String(params?.cpfcnpj).trim()),
+            codigoCliente: getParamValue(params?.codigoCliente),
+            nomeCliente: getParamValue(params?.nomeCliente),
+            cpfcnpj: unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim()),
         });
     }
 
@@ -106,11 +167,11 @@ export default function SignIn() {
                                 </Text>
 
                                 <Text className="text-sm text-gray-500 mt-1 text-center">
-                                    {String(params?.nomeCliente).split(" ")[0]}, digite sua senha para continuar
+                                    {String(getParamValue(params?.nomeCliente) ?? '').split(" ")[0]}, digite sua senha para continuar
                                 </Text>
 
                                 <Text className="text-xs text-gray-400 mt-1">
-                                    CPF/CNPJ: <Text className="font-medium text-gray-600">{params?.cpfcnpj}</Text>
+                                    CPF/CNPJ: <Text className="font-medium text-gray-600">{maskDocument(params?.cpfcnpj)}</Text>
                                 </Text>
                             </View>
 
@@ -153,20 +214,22 @@ export default function SignIn() {
                                 )}
                             </View>
 
-                            <View className="flex-row items-center justify-between mb-6">
-                                <Controller
-                                    control={control}
-                                    name="connected"
-                                    render={({ field: { onChange, value } }) => (
-                                        <Checkbox
-                                            checkboxClasses="w-5 h-5"
-                                            label="Continuar logado"
-                                            isSelected={value}
-                                            onValueChange={onChange}
-                                            labelClasses="text-sm text-gray-500"
-                                        />
-                                    )}
-                                />
+                            <View className={`flex-row items-center mb-6 ${biometricsAvailable ? 'justify-end' : 'justify-between'}`}>
+                                {!biometricsAvailable && (
+                                    <Controller
+                                        control={control}
+                                        name="connected"
+                                        render={({ field: { onChange, value } }) => (
+                                            <Checkbox
+                                                checkboxClasses="w-5 h-5"
+                                                label="Continuar logado"
+                                                isSelected={value}
+                                                onValueChange={onChange}
+                                                labelClasses="text-sm text-gray-500"
+                                            />
+                                        )}
+                                    />
+                                )}
 
                                 <Button
                                     variant="link"
@@ -190,16 +253,18 @@ export default function SignIn() {
                                 labelClasses="text-white font-semibold"
                             />
 
-                            <TouchableOpacity
-                                disabled={loading}
-                                onPress={handleBiometricLogin}
-                                className="mt-3 h-12 flex-row items-center justify-center rounded-lg border border-solar-blue-primary"
-                            >
-                                <FingerprintIcon size={20} color="#1a9cd9" />
-                                <Text className="ml-2 text-base font-semibold text-solar-blue-primary">
-                                    Entrar com biometria
-                                </Text>
-                            </TouchableOpacity>
+                            {biometricsAvailable && (
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    onPress={handleBiometricLogin}
+                                    className="mt-3 h-12 flex-row items-center justify-center rounded-lg border border-solar-blue-primary"
+                                >
+                                    <FingerprintIcon size={20} color="#1a9cd9" />
+                                    <Text className="ml-2 text-base font-semibold text-solar-blue-primary">
+                                        Entrar com biometria
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
 
                         </View>
                     </View>
