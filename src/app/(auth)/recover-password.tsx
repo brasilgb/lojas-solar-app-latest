@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { Link, router, useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { KeyRoundIcon } from 'lucide-react-native'
 import React from 'react'
 import { View, Text } from 'react-native'
@@ -24,12 +24,12 @@ export default function RecoverPassword() {
           </Text>
 
           <Text className="text-sm text-gray-600 text-center leading-5 mb-4">
-            Enviamos uma nova senha para seu e-mail
+            Enviamos para o seu e-mail um link para redefinir sua senha.
           </Text>
 
           <View className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
             <Text className="text-sm text-gray-600 text-center">
-              Acesse seu e-mail e entre com a sua nova senha, você poderá alterar sua senha no menu minha conta.
+              Acesse seu e-mail e clique no link. Você será direcionado ao portal de alteração de senha.
             </Text>
           </View>
 
@@ -39,7 +39,7 @@ export default function RecoverPassword() {
 
           <Button
             onPress={() => router.replace('/sign-in')}
-            label="Continuar"
+            label="Voltar para o login"
             className="w-full py-3 rounded-lg"
             labelClasses="text-white font-semibold"
           />

@@ -25,7 +25,7 @@ export default function SignIn() {
 
     const onSubmit = async (data: SigInSchema) => {
         Keyboard.dismiss();
-        await signIn(data.cpfcnpj);
+        await signIn(unMask(data.cpfcnpj));
         reset();
     };
 
@@ -104,7 +104,7 @@ export default function SignIn() {
                                                 placeholder='000.000.000-00 ou 00.000.000/0000-00'
                                                 keyboardType='numeric'
                                                 value={maskCpfCnpj(value)}
-                                                onChangeText={onChange}
+                                                onChangeText={(text) => onChange(unMask(text) ?? '')}
                                                 onBlur={onBlur}
                                                 maxLength={18}
                                                 inputClasses={`${errors.cpfcnpj || message ? '!border-solar-orange-secondary' : ''} text-gray-800 placeholder:text-gray-400`}

@@ -24,7 +24,7 @@ interface AuthContextData {
   setUser: any;
   user: User | null;
   loading: boolean;
-  signIn: (cpfcnpj: any) => Promise<void>;
+  signIn: (cpfcnpj: string) => Promise<void>;
   signOut: () => Promise<void>;
   checkPassword: (credentials: any) => Promise<void>;
   recoverPasswordSubmit: (cpfcnpj: string) => Promise<void>;
@@ -43,6 +43,11 @@ const USER_KEY = 'user-data';
 const KEEP_LOGGED_IN_KEY = 'keepUserLoggedIn';
 const SERVER_CONNECTION_MESSAGE =
   'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
+
+function normalizeCpfCnpj(value: unknown): string {
+  return String(value ?? '').replace(/\D/g, '');
+}
+
 const AuthContext = createContext<AuthContextData>(
   {} as AuthContextData,
 );
@@ -173,11 +178,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadStorageData();
   }, []);
 
-  const signIn = async (cpfcnpj: any) => {
+  const signIn = async (cpfcnpj: string) => {
     setLoading(true);
     setMessage(undefined);
     try {
-      const response = await appservice.get(`(WS_LOGIN_APP)?cpfcnpj=${cpfcnpj}`);
+      const normalizedCpfCnpj = normalizeCpfCnpj(cpfcnpj);
+      const response = await appservice.get(
+        `(WS_LOGIN_APP)?cpfcnpj=${encodeURIComponent(normalizedCpfCnpj)}`,
+      );
 
       if (response.status !== 200) {
         setLoading(false);
@@ -206,7 +214,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace({
           pathname: '/check-password',
           params: {
-            cpfcnpj: cpfcnpj as any,
+            cpfcnpj: normalizedCpfCnpj,
             nomeCliente: data.nomeCliente,
             codigoCliente: data.codigoCliente,
           },
@@ -218,7 +226,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace({
           pathname: '/not-registered',
           params: {
-            cpfcnpj: cpfcnpj as any,
+            cpfcnpj: normalizedCpfCnpj,
           },
         });
       }
@@ -228,7 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace({
           pathname: '/register-password',
           params: {
-            cpfcnpj: cpfcnpj as any,
+            cpfcnpj: normalizedCpfCnpj,
             nomeCliente: data.nomeCliente,
           },
         });
@@ -254,7 +262,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setDeviceId(currentDeviceId);
       }
 
-      const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${encodeURIComponent(credentials.cpfcnpj)}&senha=${encodeURIComponent(credentials.senha)}&deviceId=${encodeURIComponent(currentDeviceId)}`)
+      const normalizedCpfCnpj = normalizeCpfCnpj(credentials.cpfcnpj);
+      const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${encodeURIComponent(normalizedCpfCnpj)}&senha=${encodeURIComponent(credentials.senha)}&deviceId=${encodeURIComponent(currentDeviceId)}`)
       if (response.status !== 200) {
         setLoading(false);
         setMessage(SERVER_CONNECTION_MESSAGE);
@@ -283,7 +292,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       let userData = {
-        cpfcnpj: credentials.cpfcnpj,
+        cpfcnpj: normalizedCpfCnpj,
         nomeCliente: credentials.nomeCliente,
         codigoCliente: credentials.codigoCliente,
         token: data.token,
