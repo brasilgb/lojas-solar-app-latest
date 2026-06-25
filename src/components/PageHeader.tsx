@@ -18,23 +18,23 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
     return (
         <View
-            className=" p-4 w-full pb-1 border border-gray-200 bg-white rounded-lg"
+            className="w-full rounded-2xl border border-gray-100 bg-white px-4 py-4"
         >
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3 flex-1">
                     {icon && (
-                        <View className="bg-blue-100 p-3 rounded-xl">
+                        <View className="h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
                             {icon}
                         </View>
                     )}
 
-                    <View className="flex-shrink">
-                        <Text className="text-xl font-bold text-gray-900">
+                    <View className="flex-1">
+                        <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>
                             {title}
                         </Text>
 
                         {subtitle && (
-                            <Text className="text-sm text-gray-500">
+                            <Text className="mt-0.5 text-sm font-medium text-gray-500" numberOfLines={2}>
                                 {subtitle}
                             </Text>
                         )}
@@ -49,13 +49,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </View>
 
             {description && (
-                <>
-                    <View className="h-px bg-gray-200 my-3" />
-
-                    <Text className="text-sm text-gray-600">
+                <View className="mt-3 border-t border-gray-100 pt-3">
+                    <Text className="text-sm leading-5 text-gray-600">
                         {description}
                     </Text>
-                </>
+                </View>
             )}
 
         </View>

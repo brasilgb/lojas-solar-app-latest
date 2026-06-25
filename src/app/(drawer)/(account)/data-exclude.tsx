@@ -8,7 +8,7 @@ import { maskPhone } from '@/utils/mask';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { User2Icon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 
@@ -24,6 +24,14 @@ export default function DataExclude() {
     },
     resolver: zodResolver(excludeDataSchema)
   });
+
+  useEffect(() => {
+    reset({
+      motivo: '',
+      emailCliente: infoCustomerToExcludeData?.emailCliente ?? '',
+      celularCliente: maskPhone(infoCustomerToExcludeData?.celularCliente ?? ''),
+    });
+  }, [infoCustomerToExcludeData, reset]);
 
   const onSubmit: SubmitHandler<ExcludeDataSchema> = async (data: ExcludeDataSchema) => {
     try {
@@ -103,8 +111,8 @@ export default function DataExclude() {
                   render={({ field: { value, onChange, onBlur } }) => (
                     <Input
                       label={'Celular'}
-                      value={value}
-                      onChangeText={onChange}
+                      value={maskPhone(value ?? '')}
+                      onChangeText={(text) => onChange(maskPhone(text))}
                       onBlur={onBlur}
                       inputClasses={`${errors.celularCliente ? '!border-solar-orange-secondary' : ''} text-gray-800`}
                     />

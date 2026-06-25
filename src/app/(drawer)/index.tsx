@@ -14,6 +14,20 @@ import FastImage from 'react-native-fast-image';
 // Obtém largura da tela
 const width = Dimensions.get('window').width;
 
+function getAuthRequiredUrl(pathname: string, signedIn: boolean) {
+    return signedIn
+        ? pathname
+        : { pathname: '/sign-in', params: { redirectTo: pathname } };
+}
+
+function getGreeting() {
+    const hour = new Date().getHours();
+
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+}
+
 export default function Home() {
     const { user, signedIn, returnStore } = useAuth();
 
@@ -88,12 +102,11 @@ export default function Home() {
             >
                 <View className="px-4 py-2 rounded-3xl m-4">
                     <Text className="text-sm text-gray-500">
-                        {signedIn ? 'Bem-vindo de volta' : 'Olá'}
+                        {getGreeting()}, {signedIn ? 'seja bem-vindo de volta' : 'seja bem-vindo'}
                     </Text>
                     <Text className="text-lg font-bold text-gray-800">
                         {user?.nomeCliente || 'Visitante'}
                     </Text>
-                    <Text className="text-gray-700">Bem vindo ao app das lojas solar</Text>
                 </View>
 
                 <View className="relative bg-white">
@@ -149,19 +162,19 @@ export default function Home() {
                         <ButtonMenu
                             icon={<FilePenLineIcon color={'white'} size={28} />}
                             label={'Assinar Doc'}
-                            url={!signedIn ? '/sign-in' : '/docs-assign'}
+                            url={getAuthRequiredUrl('/docs-assign', signedIn)}
                         />
 
                         <ButtonMenu
                             icon={<HandCoinsIcon color={'white'} size={28} />}
                             label={'Pagamentos'}
-                            url={!signedIn ? '/sign-in' : '/payment'}
+                            url={getAuthRequiredUrl('/payment', signedIn)}
                         />
 
                         <ButtonMenu
                             icon={<BanknoteArrowDownIcon color={'white'} size={28} />}
                             label={'Cashback'}
-                            url={!signedIn ? '/sign-in' : '/cashback'}
+                            url={getAuthRequiredUrl('/cashback', signedIn)}
                         />
 
                         <ButtonMenu
@@ -173,7 +186,7 @@ export default function Home() {
                         <ButtonMenu
                             icon={<WrenchIcon color={'white'} size={28} />}
                             label={'Assistência'}
-                            url={!signedIn ? '/sign-in' : '/assistance'}
+                            url={getAuthRequiredUrl('/assistance', signedIn)}
                         />
 
                         <ButtonMenu
@@ -185,13 +198,13 @@ export default function Home() {
                         <ButtonMenu
                             icon={<HistoryIcon color={'white'} size={28} />}
                             label={'Histórico'}
-                            url={!signedIn ? '/sign-in' : '/history'}
+                            url={getAuthRequiredUrl('/history', signedIn)}
                         />
 
                         <ButtonMenu
                             icon={<UserIcon color={'white'} size={28} />}
                             label={'Conta'}
-                            url={!signedIn ? '/sign-in' : '/account'}
+                            url={getAuthRequiredUrl('/account', signedIn)}
                         />
                     </View>
                 </ScrollView>

@@ -25,7 +25,7 @@ interface AuthContextData {
   setUser: any;
   user: User | null;
   loading: boolean;
-  signIn: (cpfcnpj: string) => Promise<void>;
+  signIn: (cpfcnpj: string, redirectTo?: string) => Promise<void>;
   signOut: () => Promise<void>;
   checkPassword: (credentials: any) => Promise<void>;
   loginWithBiometrics: (credentials: any) => Promise<void>;
@@ -48,6 +48,21 @@ const SERVER_CONNECTION_MESSAGE =
 
 function normalizeCpfCnpj(value: unknown): string {
   return String(value ?? '').replace(/\D/g, '');
+}
+
+const POST_LOGIN_PATHS = [
+  '/account',
+  '/assistance',
+  '/cashback',
+  '/docs-assign',
+  '/history',
+  '/payment',
+] as const;
+
+function getPostLoginPath(redirectTo: unknown) {
+  return POST_LOGIN_PATHS.includes(redirectTo as typeof POST_LOGIN_PATHS[number])
+    ? redirectTo as typeof POST_LOGIN_PATHS[number]
+    : '/(drawer)';
 }
 
 const AuthContext = createContext<AuthContextData>(
@@ -180,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadStorageData();
   }, []);
 
-  const signIn = async (cpfcnpj: string) => {
+  const signIn = async (cpfcnpj: string, redirectTo?: string) => {
     setLoading(true);
     setMessage(undefined);
     try {
@@ -219,6 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             cpfcnpj: normalizedCpfCnpj,
             nomeCliente: data.nomeCliente,
             codigoCliente: data.codigoCliente,
+            ...(redirectTo ? { redirectTo } : {}),
           },
         });
       }
@@ -303,7 +319,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
       router.replace({
-        pathname: '/(drawer)',
+        pathname: getPostLoginPath(credentials.redirectTo),
       });
 
     } catch (error) {
@@ -378,7 +394,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
       router.replace({
-        pathname: '/(drawer)',
+        pathname: getPostLoginPath(credentials.redirectTo),
       });
 
     } catch (error) {

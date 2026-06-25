@@ -8,7 +8,7 @@ import { Button } from '@/components/Button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn'
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon, KeyRoundIcon } from 'lucide-react-native';
+import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon } from 'lucide-react-native';
 import { Checkbox } from '@/components/Checkbox';
 import { unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
@@ -28,7 +28,22 @@ function maskDocument(value: string | string[] | undefined) {
         return digits;
     }
 
-    return `${digits.slice(0, 3)}${'*'.repeat(digits.length - 5)}${digits.slice(-2)}`;
+    return `${'*'.repeat(3)}${digits.slice(3, -2)}${'*'.repeat(2)}`;
+}
+
+function getInitials(value: string | string[] | undefined) {
+    const name = String(getParamValue(value) ?? '').trim();
+    const parts = name.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 0) {
+        return '--';
+    }
+
+    return parts
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase();
 }
 
 export default function SignIn() {
@@ -96,6 +111,7 @@ export default function SignIn() {
             cpfcnpj: unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim()),
             senha: data.senha,
             connected: biometricsAvailable ? true : data.connected,
+            redirectTo: getParamValue(params?.redirectTo),
         };
         await checkPassword(credentials);
     };
@@ -109,6 +125,7 @@ export default function SignIn() {
             codigoCliente: getParamValue(params?.codigoCliente),
             nomeCliente: getParamValue(params?.nomeCliente),
             cpfcnpj: unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim()),
+            redirectTo: getParamValue(params?.redirectTo),
         });
     }
 
@@ -132,9 +149,9 @@ export default function SignIn() {
                     bounces={false}
                     keyboardShouldPersistTaps="always"
                 >
-                    <View className='flex-1 justify-center px-6'>
+                    <View className='flex-1 justify-center px-6 py-8'>
 
-                        <View className='items-center mb-10'>
+                        <View className='items-center mb-8'>
                             <Image
                                 source={require('@/assets/images/logo_lojas_solar.png')}
                                 style={{ width: 180, height: 32 }}
@@ -142,37 +159,39 @@ export default function SignIn() {
                             />
                         </View>
 
-                        <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
-                            <View className='absolute top-4 left-4 flex-row items-center gap-1'>
+                        <View className='overflow-hidden rounded-[28px] bg-white' style={softCardShadow}>
+                            <View className="p-6">
+                            <View className='absolute top-4 left-4 z-10 flex-row items-center gap-1'>
                                 <TouchableOpacity
                                     onPress={() => handleGoBack()}
-                                    className="p-2"
+                                    className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"
                                 >
                                     {loadingBack ?
                                         <View className='flex-1 justify-center items-center'>
-                                            <ActivityIndicator size={'large'} color={'#1a9cd9'} />
+                                            <ActivityIndicator size={'small'} color={'#1a9cd9'} />
                                         </View>
                                         :
-                                        <ArrowLeftIcon size={25} color={'#1a9cd9'} />
+                                        <ArrowLeftIcon size={22} color={'#1a9cd9'} />
                                     }
                                 </TouchableOpacity>
                             </View>
-                            <View className="items-center mb-6">
-                                <View className="bg-blue-100 p-3 rounded-full mb-3">
-                                    <KeyRoundIcon size={28} color="#1a9cd9" />
+
+                            <View className="mb-6 mt-10 rounded-2xl bg-blue-50 p-4 flex-row items-center">
+                                <View className="mr-3 h-14 w-14 items-center justify-center rounded-full bg-solar-blue-primary">
+                                    <Text className="text-lg font-bold text-white">
+                                        {getInitials(params?.nomeCliente)}
+                                    </Text>
                                 </View>
 
-                                <Text className="text-xl font-bold text-gray-900">
-                                    Acessar conta
-                                </Text>
+                                <View className="flex-1">
+                                    <Text className="text-base font-semibold text-gray-800" numberOfLines={1}>
+                                        {getParamValue(params?.nomeCliente)}
+                                    </Text>
 
-                                <Text className="text-sm text-gray-500 mt-1 text-center">
-                                    {String(getParamValue(params?.nomeCliente) ?? '').split(" ")[0]}, digite sua senha para continuar
-                                </Text>
-
-                                <Text className="text-xs text-gray-400 mt-1">
-                                    CPF/CNPJ: <Text className="font-medium text-gray-600">{maskDocument(params?.cpfcnpj)}</Text>
-                                </Text>
+                                    <Text className="mt-1 text-xs text-gray-400">
+                                        CPF/CNPJ: <Text className="font-medium text-gray-500">{maskDocument(params?.cpfcnpj)}</Text>
+                                    </Text>
+                                </View>
                             </View>
 
                             <View className="w-full mb-4">
@@ -249,7 +268,7 @@ export default function SignIn() {
                                         : 'Entrar'
                                 }
                                 onPress={handleSubmit(onSubmit)}
-                                className="py-3 rounded-lg"
+                                className="py-3 rounded-xl"
                                 labelClasses="text-white font-semibold"
                             />
 
@@ -257,7 +276,7 @@ export default function SignIn() {
                                 <TouchableOpacity
                                     disabled={loading}
                                     onPress={handleBiometricLogin}
-                                    className="mt-3 h-12 flex-row items-center justify-center rounded-lg border border-solar-blue-primary"
+                                    className="mt-3 h-12 flex-row items-center justify-center rounded-xl border border-solar-blue-primary bg-blue-50"
                                 >
                                     <FingerprintIcon size={20} color="#1a9cd9" />
                                     <Text className="ml-2 text-base font-semibold text-solar-blue-primary">
@@ -265,6 +284,7 @@ export default function SignIn() {
                                     </Text>
                                 </TouchableOpacity>
                             )}
+                            </View>
 
                         </View>
                     </View>

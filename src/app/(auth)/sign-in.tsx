@@ -7,8 +7,8 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SigInSchema, sigInSchema } from '@/schemas/signIn'
-import { Link, router } from 'expo-router';
-import { ArrowLeftIcon, UserRoundCheckIcon } from 'lucide-react-native';
+import { Link, router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeftIcon, LockIcon } from 'lucide-react-native';
 import { maskCpfCnpj, unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -22,8 +22,14 @@ type LastAuthCustomer = {
     codigoCliente: string;
 };
 
+function getParamValue(value: string | string[] | undefined) {
+    return Array.isArray(value) ? value[0] : value;
+}
+
 export default function SignIn() {
     const { signIn, loading, message } = useAuth();
+    const params = useLocalSearchParams();
+    const redirectTo = getParamValue(params?.redirectTo);
     const [loadingBack, setLoadingBack] = React.useState(false);
     const [checkingSavedCustomer, setCheckingSavedCustomer] = React.useState(true);
 
@@ -57,6 +63,7 @@ export default function SignIn() {
                         cpfcnpj: customer.cpfcnpj,
                         nomeCliente: customer.nomeCliente,
                         codigoCliente: customer.codigoCliente,
+                        ...(redirectTo ? { redirectTo } : {}),
                     },
                 });
             } catch (error) {
@@ -73,7 +80,7 @@ export default function SignIn() {
         return () => {
             mounted = false;
         };
-    }, []);
+    }, [redirectTo]);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<SigInSchema>({
         defaultValues: {
@@ -84,7 +91,7 @@ export default function SignIn() {
 
     const onSubmit = async (data: SigInSchema) => {
         Keyboard.dismiss();
-        await signIn(unMask(data.cpfcnpj));
+        await signIn(unMask(data.cpfcnpj), redirectTo);
         reset();
     };
 
@@ -114,10 +121,10 @@ export default function SignIn() {
                     keyboardShouldPersistTaps="always"
                 >
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <View className='flex-1 justify-center px-6'>
+                        <View className='flex-1 justify-center px-6 py-8'>
 
                             {/* LOGO */}
-                            <View className='items-center mb-10'>
+                            <View className='items-center mb-8'>
                                 <Image
                                     source={require('@/assets/images/logo_lojas_solar.png')}
                                     style={{ width: 180, height: 32 }}
@@ -126,35 +133,37 @@ export default function SignIn() {
                             </View>
 
                             {/* CARD */}
-                            <View className='bg-white rounded-3xl p-6' style={softCardShadow}>
-                                <View className='absolute top-4 left-4 flex-row items-center gap-1'>
+                            <View className='overflow-hidden rounded-[28px] bg-white' style={softCardShadow}>
+                                <View className="p-6">
+                                <View className='absolute top-4 left-4 z-10 flex-row items-center gap-1'>
                                     <TouchableOpacity
                                         onPress={() => handleGoBack()}
-                                        className="p-2"
+                                        className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"
                                     >
                                         {loadingBack ?
                                             <View className='flex-1 justify-center items-center'>
-                                                <ActivityIndicator size={'large'} color={'#1a9cd9'} />
+                                                <ActivityIndicator size={'small'} color={'#1a9cd9'} />
                                             </View>
                                             :
-                                            <ArrowLeftIcon size={25} color={'#1a9cd9'} />
+                                            <ArrowLeftIcon size={22} color={'#1a9cd9'} />
                                         }
                                     </TouchableOpacity>
                                 </View>
 
-                                {/* ÍCONE */}
-                                <View className='items-center mb-4'>
-                                    <UserRoundCheckIcon size={48} color={'#1a9cd9'} />
-                                </View>
+                                <View className="mb-6 mt-10 rounded-2xl bg-blue-50 p-4 flex-row items-center">
+                                    <View className="mr-3 h-14 w-14 items-center justify-center rounded-full bg-solar-blue-primary">
+                                        <LockIcon size={28} color="white" />
+                                    </View>
 
-                                {/* TEXTO */}
-                                <View className='items-center mb-6'>
-                                    <Text className="text-2xl font-bold text-gray-800">
-                                        Acessar conta
-                                    </Text>
-                                    <Text className="text-gray-500 text-center mt-1">
-                                        Digite seu CPF ou CNPJ para continuar
-                                    </Text>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-semibold text-gray-800">
+                                            Acessar sua conta
+                                        </Text>
+
+                                        <Text className="mt-1 text-xs text-gray-400">
+                                            Informe seu CPF/CNPJ para continuar
+                                        </Text>
+                                    </View>
                                 </View>
 
                                 {/* INPUT */}
@@ -189,8 +198,10 @@ export default function SignIn() {
                                             : 'Continuar'
                                     }
                                     onPress={handleSubmit(onSubmit)}
-                                    className="mt-2"
+                                    className="mt-3 rounded-xl py-3"
+                                    labelClasses="text-white font-semibold"
                                 />
+                                </View>
 
                             </View>
                         </View>

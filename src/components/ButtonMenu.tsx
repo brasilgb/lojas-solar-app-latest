@@ -13,7 +13,7 @@ export default function ButtonMenu({ icon, label, url }: ButtonMenuProps) {
     return (
 <Link href={url} asChild>
     <Pressable
-        className="w-[88px] h-[88px] rounded-2xl items-center justify-center px-1 py-2 bg-white/10 border border-white/20"
+        className="w-[78px] h-[78px] rounded-xl items-center justify-center px-1 py-2 bg-white/10 border border-white/20"
         style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.96 : 1 }],
             opacity: pressed ? 0.8 : 1,
@@ -25,7 +25,7 @@ export default function ButtonMenu({ icon, label, url }: ButtonMenuProps) {
 
         <Text
             numberOfLines={2}
-            className="text-white text-[11px] text-center font-medium leading-tight"
+            className="text-white text-[10px] text-center font-medium leading-tight"
         >
             {label}
         </Text>

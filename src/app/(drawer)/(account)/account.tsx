@@ -12,19 +12,22 @@ import { User2Icon, UserMinus2Icon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+
+const USER_KEY = 'user-data';
 
 export default function Account() {
     const params = useLocalSearchParams();
-    const { user, expiredSession, setInfoCustomerToExcludeData } = useAuth();
-    const [loading, setLoading] = useState(false);
+    const { user, setUser, expiredSession, setInfoCustomerToExcludeData } = useAuth();
+    const [loadingAccount, setLoadingAccount] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [account, setAccount] = useState<any>([]);
     const [message, setMessage] = useState<string | undefined>(undefined);
 
-    const userSelected = user ? user.cpfcnpj : params?.cpfcnpj;
-
     useEffect(() => {
         const getAccount = async () => {
-            setLoading(true)
+            setLoadingAccount(true)
+            setMessage(undefined)
             try {
                 const response = await appservice.get(`(WS_CARREGA_CLIENTE)?token=${user?.token}`);
                 const { data, message, success, token } = response.data?.resposta;
@@ -41,7 +44,6 @@ export default function Account() {
                 }
 
                 if (!success) {
-                    setLoading(false);
                     setMessage(message)
                     return
                 }
@@ -61,8 +63,9 @@ export default function Account() {
 
             } catch (error) {
                 console.log(error)
+                setMessage('Não foi possível carregar seus dados. Tente novamente.')
             } finally {
-                setLoading(false)
+                setLoadingAccount(false)
             }
         }
         getAccount();
@@ -84,11 +87,46 @@ export default function Account() {
     })
 
     const onSubmit: SubmitHandler<AccountSchema> = async (data: AccountSchema) => {
-        setLoading(true);
+        setSaving(true);
+        setMessage(undefined);
         try {
-            const response = await appservice.get(`(WS_ALTERA_CLIENTE)?token=${user?.token}&nomeCliente=${data.nomeCliente}&enderecoCliente=${data.enderecoCliente}&cepCliente=${data.cepCliente}&cidadeCliente=${data.cidadeCliente}&ufCliente=${data.ufCliente}&celularCliente=${unMask(data.celularCliente)}&emailCliente=${data.emailCliente}&nascimentoCliente=${data.nascimentoCliente}`);
-            const { message, success } = response.data?.resposta;
+            const query = new URLSearchParams({
+                token: String(user?.token ?? ''),
+                nomeCliente: data.nomeCliente,
+                enderecoCliente: data.enderecoCliente,
+                cepCliente: data.cepCliente,
+                cidadeCliente: data.cidadeCliente,
+                ufCliente: data.ufCliente,
+                celularCliente: unMask(data.celularCliente),
+                emailCliente: data.emailCliente,
+                nascimentoCliente: data.nascimentoCliente ?? '',
+            });
+            const response = await appservice.get(`(WS_ALTERA_CLIENTE)?${query.toString()}`);
+            const { message, success, token } = response.data?.resposta;
             if (success) {
+                const updatedAccount = {
+                    ...account,
+                    ...data,
+                    cpfcnpj: user?.cpfcnpj ?? params?.cpfcnpj,
+                    cepCliente: data.cepCliente,
+                    celularCliente: unMask(data.celularCliente),
+                };
+                const updatedUser = user
+                    ? {
+                        ...user,
+                        nomeCliente: data.nomeCliente,
+                        token: token ?? user.token,
+                    }
+                    : user;
+
+                setAccount(updatedAccount);
+                reset(updatedAccount);
+
+                if (updatedUser) {
+                    setUser(updatedUser);
+                    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updatedUser));
+                }
+
                 Alert.alert('Atenção', message, [
                     { text: 'Ok', onPress: () => router.replace('/') },
                 ]);
@@ -101,8 +139,9 @@ export default function Account() {
 
         } catch (error) {
             console.log(error)
+            setMessage('Não foi possível alterar seus dados. Tente novamente.')
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
 
     }
@@ -147,6 +186,19 @@ export default function Account() {
                                 }
                             />
 
+                            {loadingAccount ? (
+                                <View className="flex-1 w-full items-center justify-center py-16">
+                                    <ActivityIndicator size="large" color="#1a9cd9" />
+                                    <Text className="mt-3 text-sm text-gray-500">Carregando seus dados...</Text>
+                                </View>
+                            ) : (
+                            <>
+                            {message && (
+                                <View className="w-full rounded-lg bg-red-50 border border-red-200 p-3">
+                                    <Text className="text-sm text-red-600">{message}</Text>
+                                </View>
+                            )}
+
                             <View className='w-full'>
                                 <Controller
                                     control={control}
@@ -157,7 +209,8 @@ export default function Account() {
                                             value={value}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
-                                            inputClasses={`${errors.cpfcnpj ? '!border-solar-orange-secondary' : ''} text-gray-800`}
+                                            editable={false}
+                                            inputClasses={`${errors.cpfcnpj ? '!border-solar-orange-secondary' : ''} bg-gray-100 text-gray-500`}
                                         />
                                     )}
                                 />
@@ -300,11 +353,13 @@ export default function Account() {
                             </View>
                             <View className='w-full py-4'>
                                 <Button
-                                    disabled={loading}
-                                    label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
+                                    disabled={saving}
+                                    label={saving ? <ActivityIndicator color={'white'} size={'small'} /> : 'Alterar'}
                                     onPress={handleSubmit(onSubmit)}
                                 />
                             </View>
+                            </>
+                            )}
                         </View>
                     </View>
                 </ScrollView>

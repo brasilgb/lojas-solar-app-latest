@@ -1,115 +1,162 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Drawer } from 'expo-router/drawer';
-import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogInIcon, LogOut, LogOutIcon, MapPinIcon, PhoneCallIcon, ShieldUserIcon, User2Icon, UserIcon, WrenchIcon } from 'lucide-react-native';
+import { BanknoteArrowDownIcon, CircleHelpIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogInIcon, LogOutIcon, MapPinIcon, PhoneCallIcon, ShieldCheckIcon, ShieldUserIcon, UserIcon, WrenchIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { BackHandler, View, Text } from 'react-native';
-import { DrawerContent, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
+import { Pressable, View, Text } from 'react-native';
+import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import DrawerHeader from '@/components/layouts/DrawerHeader';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
-function CustomDrawerContent(props: any) {
+function getGreeting() {
+    const hour = new Date().getHours();
+
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+}
+
+function getInitials(name?: string) {
+    if (!name) return 'LS';
+
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] : '';
+
+    return `${first}${last}`.toUpperCase() || 'LS';
+}
+
+function maskCpfCnpj(document?: string) {
+    const onlyNumbers = String(document ?? '').replace(/\D/g, '');
+
+    if (!onlyNumbers) return '';
+    if (onlyNumbers.length <= 5) return onlyNumbers.replace(/\d/g, '*');
+
+    const first = onlyNumbers.slice(0, 3);
+    const last = onlyNumbers.slice(-2);
+    const hidden = '*'.repeat(Math.max(onlyNumbers.length - 5, 0));
+
+    return `${first}${hidden}${last}`;
+}
+
+function CustomDrawerContent(props: DrawerContentComponentProps) {
     const { user, signedIn, signOut } = useAuth();
-
-    useEffect(() => {
-        const onBackPress = () => {
-            return true;
-        };
-
-        const subscription = BackHandler.addEventListener(
-            'hardwareBackPress',
-            onBackPress,
-        );
-        return () => subscription.remove();
-    }, []);
-
-    const TextBoasVindas = () => {
-        return (
-            <View className='flex-col items-center justify-center'>
-                <Text className='text-white'>Faça o login e aproveite as vantagens do</Text>
-                <Text className='text-white font-semibold'>Aplicativo das Lojas Solar</Text>
-            </View>
-        )
-    };
-
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-
-        if (hour < 12) return 'Bom dia';
-        if (hour < 18) return 'Boa tarde';
-        return 'Boa noite';
-    };
 
     const HeaderUser = () => {
         const greeting = getGreeting();
+        const customerName = user?.nomeCliente?.trim();
+        const maskedDocument = maskCpfCnpj(user?.cpfcnpj);
 
         return (
-            <View className="items-center justify-center py-6 bg-solar-blue-primary">
-                <View className="mt-4 w-24 h-24 rounded-full border-4 border-solar-green-primary bg-white items-center justify-center mb-4">
-                    <UserIcon size={60} color={'#1a9cd9'} />
-                </View>
-
+            <View className="bg-solar-blue-primary px-5 pb-6 pt-7">
                 {signedIn ? (
-                    <>
-                        <Text className="text-white text-base">
-                            {greeting},
-                        </Text>
+                    <View className="flex-row items-center">
+                        <View className="h-16 w-16 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
+                            <Text className="text-xl font-bold text-solar-blue-primary">
+                                {getInitials(customerName)}
+                            </Text>
+                        </View>
 
-                        <Text className="text-white text-sm font-bold">
-                            {user?.nomeCliente}
-                        </Text>
-                    </>
+                        <View className="ml-4 flex-1">
+                            <Text className="text-white/80 text-sm">
+                                {greeting},
+                            </Text>
+                            <Text className="text-white text-base font-bold" numberOfLines={2}>
+                                {customerName || 'Cliente Solar'}
+                            </Text>
+                            {!!maskedDocument && (
+                                <Text className="mt-1 text-white/75 text-xs">
+                                    CPF/CNPJ {maskedDocument}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
                 ) : (
-                    <>
-                        <Text className="text-white text-base text-center px-6">
-                            Faça login e aproveite as vantagens do
-                        </Text>
+                    <View className="flex-row items-center">
+                        <View className="h-16 w-16 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
+                            <UserIcon size={34} color={'#1a9cd9'} />
+                        </View>
 
-                        <Text className="text-white text-lg font-semibold">
-                            Aplicativo das Lojas Solar
-                        </Text>
-                    </>
+                        <View className="ml-4 flex-1">
+                            <Text className="text-white/85 text-sm">
+                                Faça login e aproveite as vantagens do
+                            </Text>
+
+                            <Text className="text-white text-lg font-bold">
+                                Aplicativo das Lojas Solar
+                            </Text>
+                        </View>
+                    </View>
                 )}
-
             </View>
         );
     };
 
-    return (
-        <View className="flex-1">
+    const handleAccessPress = async () => {
+        props.navigation.closeDrawer();
 
+        if (signedIn) {
+            await signOut();
+            return;
+        }
+
+        router.push('/sign-in');
+    };
+
+    const handleFooterLinkPress = (href: '/questions' | '/privacy-police') => {
+        props.navigation.closeDrawer();
+        router.push(href);
+    };
+
+    return (
+        <View className="flex-1 bg-white">
             <HeaderUser />
 
-            <DrawerContent {...props}>
+            <DrawerContentScrollView
+                {...props}
+                contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }}
+            >
                 <DrawerItemList {...props} />
-            </DrawerContent>
+            </DrawerContentScrollView>
 
-            <View>
-                <View className='px-4'>
-                    <DrawerItem
-                        icon={({ color, size }) => (
-                            signedIn ? <LogOutIcon color={color} size={size} /> : <LogInIcon color={color} size={size} />
-                        )}
-                        label={signedIn ? 'Sair' : 'Login'}
-                        onPress={() =>
-                            signedIn
-                                ? signOut()
-                                : router.push('/sign-in')
-                        }
-                    />
-                </View>
-                <View className={`flex-row bg-solar-blue-primary rounded-br-[16] items-center justify-between p-5 border-t border-t-gray-200`}>
-                    <Link
-                        className="text-xs text-white"
-                        href={'/questions'}
-                    >
-                        Perguntas frequentes
-                    </Link>
-                    <Link
-                        className="text-xs text-white"
-                        href={'/privacy-police'}
-                    >
-                        Política de Privacidade
-                    </Link>
+            <View className="border-t border-gray-100 bg-white">
+                <View className="bg-solar-blue-primary px-4 py-4">
+                    <View className="flex-row">
+                        <Pressable
+                            onPress={handleAccessPress}
+                            className="mr-3 flex-1 flex-row items-center rounded-lg px-2 py-3"
+                        >
+                            {signedIn ? (
+                                <LogOutIcon color="white" size={22} />
+                            ) : (
+                                <LogInIcon color="white" size={22} />
+                            )}
+                            <Text className="ml-2 flex-1 text-base font-semibold text-white">
+                                {signedIn ? 'Sair' : 'Entrar'}
+                            </Text>
+                        </Pressable>
+
+                        <View className="flex-[1.35]">
+                            <Pressable
+                                onPress={() => handleFooterLinkPress('/questions')}
+                                className="flex-row items-center rounded-lg px-2 py-2"
+                            >
+                                <CircleHelpIcon color="white" size={16} />
+                                <Text className="ml-2 flex-1 text-xs font-medium text-white">
+                                    Perguntas frequentes
+                                </Text>
+                            </Pressable>
+
+                            <Pressable
+                                onPress={() => handleFooterLinkPress('/privacy-police')}
+                                className="flex-row items-center rounded-lg px-2 py-2"
+                            >
+                                <ShieldCheckIcon color="white" size={16} />
+                                <Text className="ml-2 flex-1 text-xs font-medium text-white">
+                                    Política de Privacidade
+                                </Text>
+                            </Pressable>
+                        </View>
+                    </View>
                 </View>
             </View>
 
