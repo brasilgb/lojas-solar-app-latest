@@ -1827,6 +1827,9 @@
                                        into   app-bio-message-resp
                     exit               paragraph.
 
+           move     zeros              to           i j.
+           move     spaces             to           ws-dados
+                                                    wk-dados.
            move     app-bio-cpfcnpj-in to           ws-dados.
            perform  limpa-numeros      thru         lnumeros-ex.
            move     spaces             to           app-bio-cpfcnpj-in.
@@ -1841,6 +1844,8 @@
                     string
                     "Cadastro não habilitado para login por biometria."
                                        delimited by size
+                                       app-bio-cpfcnpj-in
+                                       delimited by spaces
                                        into   app-bio-message-resp
                     exit               paragraph.
 
