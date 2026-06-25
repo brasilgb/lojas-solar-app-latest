@@ -8,14 +8,14 @@ import { Button } from '@/components/Button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn'
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, KeyRoundIcon } from 'lucide-react-native';
+import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon, KeyRoundIcon } from 'lucide-react-native';
 import { Checkbox } from '@/components/Checkbox';
 import { unMask } from '@/utils/mask';
 import { softCardShadow } from '@/styles/shadows';
 
 export default function SignIn() {
     const params = useLocalSearchParams()
-    const { checkPassword, recoverPasswordSubmit, loading, message } = useAuth();
+    const { checkPassword, loginWithBiometrics, recoverPasswordSubmit, loading, message } = useAuth();
     const [isSecure, setIsSecure] = useState<boolean>(true);
     const [loadingBack, setLoadingBack] = React.useState(false);
 
@@ -41,6 +41,14 @@ export default function SignIn() {
 
     const recoverPasswordHandle = async () => {
         await recoverPasswordSubmit(params?.cpfcnpj as string);
+    }
+
+    const handleBiometricLogin = async () => {
+        await loginWithBiometrics({
+            codigoCliente: params?.codigoCliente,
+            nomeCliente: params?.nomeCliente,
+            cpfcnpj: unMask(String(params?.cpfcnpj).trim()),
+        });
     }
 
     const handleGoBack = () => {
@@ -181,6 +189,17 @@ export default function SignIn() {
                                 className="py-3 rounded-lg"
                                 labelClasses="text-white font-semibold"
                             />
+
+                            <TouchableOpacity
+                                disabled={loading}
+                                onPress={handleBiometricLogin}
+                                className="mt-3 h-12 flex-row items-center justify-center rounded-lg border border-solar-blue-primary"
+                            >
+                                <FingerprintIcon size={20} color="#1a9cd9" />
+                                <Text className="ml-2 text-base font-semibold text-solar-blue-primary">
+                                    Entrar com biometria
+                                </Text>
+                            </TouchableOpacity>
 
                         </View>
                     </View>

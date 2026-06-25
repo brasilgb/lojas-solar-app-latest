@@ -37,7 +37,8 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
         "NSLocationWhenInUseUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
         "NSLocationAlwaysUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
-        "NSLocationUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia."
+        "NSLocationUsageDescription": "Sua localização é necessária para encontrar uma loja solar mais próxima de você. Se você precisa pagar contas ou fazer compras, irá agilizar seu dia.",
+        "NSFaceIDUsageDescription": "Usamos o Face ID para permitir o acesso seguro à sua conta."
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
@@ -144,6 +145,7 @@
         }
       ],
       "expo-secure-store",
+      "expo-local-authentication",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
       "expo-font"

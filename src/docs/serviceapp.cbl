@@ -325,6 +325,8 @@
            
            copy     "appsolar/login-app.cpy".
            copy     "appsolar/login-app-resp.cpy".
+           copy     "appsolar/login-biometria.cpy".
+           copy     "appsolar/login-biometria-resp.cpy".
            copy     "appsolar/verifica-senha.cpy".
            copy     "appsolar/verifica-senha-resp.cpy".
            copy     "appsolar/alterar-senha.cpy".
@@ -488,7 +490,7 @@
                  05 ok-status          pic x any length value "OK".
               03 filler identified by "message".
                  05 ok-message         pic x any length.
-           
+
            77 ed-valor                 pic zzzzz9.99.
            77 aux-versao               pic 9(03) value zeros.
            77 aux-ver-android          pic 9(03) value zeros.
@@ -1770,7 +1772,133 @@
                     
       *-----------------------------------------------------------------
        login-biometria. 
-      *login biometria daqui para baixo          
+           initialize                  ws-login-biometria-resp.
+           if       app-bio-device-in  equal        spaces
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Aparelho não informado para login por biometria."
+                                       delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           move     zeros              to           i-valida.
+           move     app-bio-cpfcnpj-in to           app-login-cpfcnpj-in.
+           perform  valida-cpfcnpj.
+           if       i-valida           equal        1
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "CPF/CNPJ Inválido, Verifique os Dados."
+                                       delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           close    s017 s717 sce002.
+           open     input              s017.
+           if       not valid-s017
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Serviço Indisponível(ab-s017-"
+                                       delimited by size
+                    extend-stat        delimited by spaces
+                    ")"                delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+           open     i-o                s717.
+           if       not valid-s717
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Serviço Indisponível(ab-s717-"
+                                       delimited by size
+                    extend-stat        delimited by spaces
+                    ")"                delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+           open     input              sce002.
+           if       not valid-sce002
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Serviço Indisponível(ab-sce002-"
+                                       delimited by size
+                    extend-stat        delimited by spaces
+                    ")"                delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           move     app-bio-cpfcnpj-in to           ws-dados.
+           perform  limpa-numeros      thru         lnumeros-ex.
+           move     spaces             to           app-bio-cpfcnpj-in.
+           move     wk-dados           to           app-bio-cpfcnpj-in.
+
+           move     spaces             to           7171cpfcnpj.
+           move     app-bio-cpfcnpj-in to           7171cpfcnpj.
+           read     s717 with no lock  key is       key01.
+           if       not valid-s717
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Cadastro não habilitado para login por biometria."
+                                       delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           move     app-bio-device-in  to           sce002-device.
+           read     sce002 with no lock.
+           if       not valid-sce002
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Aparelho não autorizado para login por biometria."
+                                       delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+           if       sce002-codcl        not equal    7171codcl
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Aparelho não autorizado para este cliente."
+                                       delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           move     7171codcl          to           0171codcl.
+           read     s017 with no lock.
+           if       not valid-s017
+                    perform            erro-estendido
+                    move "false"       to     app-bio-success-resp
+                    string
+                    "Serviço Indisponível(ac-s017-"
+                                       delimited by size
+                    extend-stat        delimited by spaces
+                    ")"                delimited by size
+                                       into   app-bio-message-resp
+                    exit               paragraph.
+
+           copy     "cdatahj".
+           move     aux-time1          to           aux-t1.
+           move     hj-dia             to           aux-t2(3:2).
+           move     hj-mes             to           aux-t2(1:2).
+           move     hj-ano             to           aux-t2(5:4).
+           move     7171codcl          to           aux-t3.
+           move     aux-hora           to           aux-t4(1:2).
+           move     hj-dia             to           aux-t4(3:2).
+           move     aux-min            to           aux-t4(5:2).
+           move     hj-mes             to           aux-t4(7:2).
+           move     hoje-data          to           7171ultace.
+           move     aux-token          to           7171token
+                                                    app-bio-token-resp.
+           rewrite  7171cadas.
+
+           move     "true"             to           app-bio-success-resp.
+           move     "OK"               to           app-bio-message-resp.
+           string   7171codcl
+                    0171digcl          into         aux-codcli.
+           move     aux-codcli         to   app-bio-codigoCliente-resp.
+           move     function trim(0172nomcl)
+                                       to   app-bio-nomeCliente-resp.
+           move     function trim(7171image)
+                                       to   app-bio-linkImagem-resp.
       *----------------------------------------------------------------- 
        atualiza-device.
            close    sce002.

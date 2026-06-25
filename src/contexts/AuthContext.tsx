@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import * as LocalAuthentication from 'expo-local-authentication';
 import appservice from '@/services/appservice';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
@@ -27,6 +28,7 @@ interface AuthContextData {
   signIn: (cpfcnpj: string) => Promise<void>;
   signOut: () => Promise<void>;
   checkPassword: (credentials: any) => Promise<void>;
+  loginWithBiometrics: (credentials: any) => Promise<void>;
   recoverPasswordSubmit: (cpfcnpj: string) => Promise<void>;
   alterPassword: (credentials: any) => Promise<void>;
   disconnect: () => Promise<void>;
@@ -312,6 +314,81 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const loginWithBiometrics = async (credentials: any) => {
+    setLoading(true);
+    setMessage(undefined);
+
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (!hasHardware || !isEnrolled) {
+        setMessage('Biometria não configurada neste aparelho.');
+        return;
+      }
+
+      const authResult = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Entrar com biometria',
+        fallbackLabel: 'Usar senha',
+        cancelLabel: 'Cancelar',
+        disableDeviceFallback: false,
+      });
+
+      if (!authResult.success) {
+        setMessage('Biometria não confirmada.');
+        return;
+      }
+
+      const currentDeviceId = deviceId || await getPersistentUniqueId();
+      if (!deviceId) {
+        setDeviceId(currentDeviceId);
+      }
+
+      const normalizedCpfCnpj = normalizeCpfCnpj(credentials.cpfcnpj);
+      const response = await appservice.get(
+        `(WS_LOGIN_BIOMETRIA_APP)?cpfcnpj=${encodeURIComponent(normalizedCpfCnpj)}&deviceId=${encodeURIComponent(currentDeviceId)}`,
+      );
+
+      if (response.status !== 200) {
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
+      }
+
+      const resposta = response.data?.resposta;
+
+      if (!resposta) {
+        setMessage(SERVER_CONNECTION_MESSAGE);
+        return;
+      }
+
+      const { success, message, data } = resposta;
+
+      if (!success) {
+        setMessage(message);
+        return;
+      }
+
+      const userData = {
+        cpfcnpj: normalizedCpfCnpj,
+        nomeCliente: data?.nomeCliente || credentials.nomeCliente,
+        codigoCliente: data?.codigoCliente || credentials.codigoCliente,
+        token: data?.token,
+      };
+
+      setUser(userData);
+      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+      router.replace({
+        pathname: '/(drawer)',
+      });
+
+    } catch (error) {
+      console.log(error);
+      setMessage(SERVER_CONNECTION_MESSAGE);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const recoverPasswordSubmit = async (cpfcnpj: string) => {
     setLoading(true)
     try {
@@ -442,6 +519,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         signIn,
         checkPassword,
+        loginWithBiometrics,
         recoverPasswordSubmit,
         alterPassword,
         signOut,
