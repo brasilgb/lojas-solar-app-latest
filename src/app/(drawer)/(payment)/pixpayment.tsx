@@ -6,7 +6,7 @@ import { maskMoney } from '@/utils/mask';
 import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CopyIcon, HandCoinsIcon, Share2Icon } from 'lucide-react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, Share, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -69,6 +69,7 @@ const PixPayment = () => {
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(true);
     const [pixOperations, setPixOpertions] = useState<string>('');
+    const pixGenerationStarted = useRef(false);
 
     const dataOrder: OrderData = params.dataOrder ? JSON.parse(params.dataOrder as string) : {} as OrderData;
     const valueOrder = params.valueOrder;
@@ -79,6 +80,9 @@ const PixPayment = () => {
         dataPix.numeroOrdem ?? dataPix.OrderNumber ?? dataPix.Detail?.OrderNumber;
 
     useEffect(() => {
+        if (pixGenerationStarted.current) return;
+        pixGenerationStarted.current = true;
+
         const getPayPix = async () => {
             try {
                 setLoading(true)
@@ -105,8 +109,6 @@ const PixPayment = () => {
                     setPixOpertions(copiaColaPix);
                     await sendOrderAtualize(dataOrder, { idTransacao: txid, urlBoleto: banco });
                 } else {
-                    await sendOrderAtualize(dataOrder, { idTransacao: txid, urlBoleto: banco });
-
                     const isBadRequest = message === 'Bad Request';
                     const errorMessage = isBadRequest
                         ? 'Serviço indisponível no momento. Tente novamente mais tarde.'

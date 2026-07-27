@@ -3,9 +3,9 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import appservice from '@/services/appservice';
 import { maskMoney } from '@/utils/mask';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { CreditCardIcon, HandCoinsIcon } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Alert,
     ActivityIndicator,
@@ -19,6 +19,14 @@ const methods = () => {
     const { user, expiredSession } = useAuth();
     const params = useLocalSearchParams();
     const [loading, setLoading] = useState<boolean>(false);
+    const pixRequestInFlight = useRef(false);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            pixRequestInFlight.current = false;
+            setLoading(false);
+        }, []),
+    );
 
     const { dataOrder, totalAmount } = params;
     const order = JSON.parse(dataOrder as any);
@@ -48,8 +56,10 @@ const methods = () => {
             : selectedInstallments.map((item: any) => item.numeroCarne);
 
     const pixPaymentMethod = async () => {
-        if (loading) return;
+        if (pixRequestInFlight.current) return;
+        pixRequestInFlight.current = true;
         setLoading(true);
+        let navigationCompleted = false;
         try {
             if (!mtoken) {
                 Alert.alert('Atenção', 'Sessão inválida. Faça login novamente.', [
@@ -99,12 +109,16 @@ const methods = () => {
                     })
                  },
             });
+            navigationCompleted = true;
         } catch (error: any) {
             Alert.alert(
                 'Erro',
                 error?.response?.data?.resposta?.message || 'Não foi possível iniciar o pagamento via PIX.',
             );
         } finally {
+            if (!navigationCompleted) {
+                pixRequestInFlight.current = false;
+            }
             setLoading(false);
         }
     };

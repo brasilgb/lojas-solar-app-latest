@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import React, {
   createContext,
+  useCallback,
   ReactNode,
   useContext,
   useEffect,
@@ -479,14 +480,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }
 
-  const expiredSession = async () => {
+  const expiredSession = useCallback(async () => {
     setUser(null);
     setLoading(false);
     setMessage(undefined);
     router.replace({
       pathname: '/sign-in',
     });
-  }
+  }, []);
 
   const signOut = async () => {
     Alert.alert(
