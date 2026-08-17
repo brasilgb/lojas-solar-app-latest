@@ -45,6 +45,7 @@ interface AuthContextData {
 
 const USER_KEY = 'user-data';
 const KEEP_LOGGED_IN_KEY = 'keepUserLoggedIn';
+const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
 const SERVER_CONNECTION_MESSAGE =
   'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
 
@@ -260,6 +261,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             nomeCliente: data.nomeCliente,
           },
         });
+      }
+      if (!data.cadastroCliente && data.cadastroSenha) {
+        // Combinação inesperada (senha cadastrada sem cadastro de cliente).
+        // Sem isso, nenhuma das 3 rotas acima navega e o usuário fica
+        // parado na tela de login sem feedback nenhum.
+        setLoading(false);
+        setMessage(SERVER_CONNECTION_MESSAGE);
       }
 
     }
@@ -480,9 +488,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const disconnect = async () => {
+  // Limpa a sessão e a preferência de "continuar logado". Sem isso, uma
+  // sessão invalidada pelo backend (token expirado) volta sozinha no
+  // próximo cold start, porque loadStorageData() ainda encontraria
+  // keepUserLoggedIn=true e o token velho salvos.
+  const clearSession = async () => {
     await SecureStore.deleteItemAsync(USER_KEY);
     await SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY);
+  };
+
+  const disconnect = async () => {
+    await clearSession();
+    // Diferente de uma sessão expirada, aqui é o usuário escolhendo sair —
+    // também limpa o cache de login biométrico rápido (nome/CPF salvos pra
+    // pular a tela de CPF), senão um aparelho compartilhado/reutilizado
+    // continua mostrando nome/CPF do cliente anterior após o logout.
+    await SecureStore.deleteItemAsync(LAST_AUTH_CUSTOMER_KEY);
     setUser(null);
     // Desassocia o device deste cliente no backend, para que um aparelho
     // compartilhado/reutilizado não continue recebendo pushes direcionados
@@ -495,6 +516,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const expiredSession = useCallback(async () => {
+    // Ao contrário de disconnect(), aqui não é uma escolha do usuário — o
+    // mesmo cliente deve voltar a usar este device em seguida, então não
+    // mexe no cache de login biométrico nem desassocia o device do push.
+    await clearSession();
     setUser(null);
     setLoading(false);
     setMessage(undefined);
@@ -529,8 +554,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const disconnectFromUnavailableServer = async () => {
-    await SecureStore.deleteItemAsync(USER_KEY);
-    await SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY);
+    await clearSession();
     setUser(null);
     setLoading(false);
     setMessage(undefined);
