@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-let BASE_URL = '';
-
-let requestCustom: any;
-let data: any;
+const PAYMENT_ENDPOINTS = [
+    '(WS_ORDEM_PAGAMENTO)',
+    '(WS_TRANSACAO_PIX)',
+    '(WS_ATUALIZA_ORDEM)',
+];
 
 const appservice = axios.create({
     withCredentials: true
@@ -12,62 +13,41 @@ const appservice = axios.create({
 appservice.interceptors.request.use(async (request) => {
 
     request.baseURL = process.env.EXPO_PUBLIC_API_URL;
-    BASE_URL = `${process.env.EXPO_PUBLIC_API_URL}`;
     // request.baseURL = "http://172.16.1.215:9090/servicecomercial/servlet/isCobol/";
-    // BASE_URL = "http://172.16.1.215:9090/servicecomercial/servlet/isCobol/";
-
-    requestCustom = request;
-    data = request.data;
     return request;
 });
 
 appservice.interceptors.response.use(
     response => response,
-    async _error => {
+    async error => {
+        const originalRequest = error.config;
+        const requestUrl = String(originalRequest?.url ?? '');
+        const isPaymentRequest = PAYMENT_ENDPOINTS.some(endpoint =>
+            requestUrl.includes(endpoint),
+        );
+
+        // Endpoints financeiros não podem ser repetidos automaticamente:
+        // o servidor pode ter concluído a gravação antes de ocorrer o erro de rede.
+        if (!originalRequest || originalRequest._sessionRetry || isPaymentRequest) {
+            return Promise.reject(error);
+        }
+
+        originalRequest._sessionRetry = true;
         console.log('Abrindo sessão com o servidor novamente');
 
         const axiosNew = axios.create({
-            baseURL: BASE_URL,
+            baseURL: process.env.EXPO_PUBLIC_API_URL,
             withCredentials: true
         });
 
-        let session = await axiosNew
-            .get('(serviceapp)')
-            .then(resp => resp)
-            .catch(_err => {
-                return {
-                    status: 404,
-                    success: false,
-                    message: 'Não foi possível conectar ao servidor 1'
-                };
-            });
-
-        if (session.status !== 200) {
-            session = {
-                status: 404,
-                success: false,
-                message: 'Não foi possível conectar ao servidor 2',
-            };
-
-            return session;
+        try {
+            await axiosNew.get('(serviceapp)');
+        } catch {
+            return Promise.reject(error);
         }
 
         console.log('Refazendo a chamada original...');
-        let originalResponse;
-        if (requestCustom.method === 'POST' || requestCustom.method === 'post') {
-            originalResponse = await appservice.post(`${requestCustom.url}`, data);
-        } else {
-            originalResponse = await appservice.get(`${requestCustom.url}`);
-        }
-        if (originalResponse.status !== 200) {
-            session = {
-                status: 404,
-                success: false,
-                message: 'Não foi possível conectar ao servidor 3'
-            };
-            return session;
-        }
-        return originalResponse;
+        return appservice.request(originalRequest);
     },
 );
 
