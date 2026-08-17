@@ -190,13 +190,13 @@ const OpenPayments = () => {
                         <View>
                             {crediario.acrescimo > 0 && (
                                 <Text className="text-xs text-red-500">
-                                    + Juros R$ {maskMoney(crediario.acrescimo)}
+                                    + Juros R$ {maskMoney(Number(crediario.acrescimo).toFixed(2))}
                                 </Text>
                             )}
                         </View>
 
                         <Text className="text-xl font-bold text-solar-blue-dark">
-                            R$ {maskMoney(crediario.total)}
+                            R$ {maskMoney(Number(crediario.total).toFixed(2))}
                         </Text>
 
                     </View>

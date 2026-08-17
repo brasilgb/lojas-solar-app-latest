@@ -352,7 +352,11 @@ export default function Crediary() {
                                     render={({ field: { value, onChange, onBlur } }) => (
                                         <Input
                                             label={'Renda'}
-                                            value={maskMoney(String(value))}
+                                            value={maskMoney(
+                                                typeof (value as unknown) === 'number'
+                                                    ? (value as unknown as number).toFixed(2)
+                                                    : String(value ?? ''),
+                                            )}
                                             onChangeText={onChange}
                                             onBlur={onBlur}
                                             inputClasses={`${errors.renda ? '!border-solar-orange-secondary' : ''} text-gray-800`}

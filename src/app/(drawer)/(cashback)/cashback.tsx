@@ -136,7 +136,7 @@ export default function Cashback() {
               }`}
           >
             {isCredito ? '+' : '-'} R${' '}
-            {maskMoney(String(item.valor))}
+            {maskMoney(Number(item.valor).toFixed(2))}
           </Text>
         </View>
       </TouchableOpacity>
@@ -152,7 +152,7 @@ export default function Cashback() {
         </Text>
 
         <Text className="text-sm font-bold text-solar-blue-primary">
-          R$ {maskMoney(String(item.valor))}
+          R$ {maskMoney(Number(item.valor).toFixed(2))}
         </Text>
       </View>
 

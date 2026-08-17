@@ -124,7 +124,7 @@ export default function History() {
           </Text>
 
           <Text className="text-xl font-bold text-solar-blue-secondary">
-            R$ {maskMoney(item.valor)}
+            R$ {maskMoney(Number(item.valor).toFixed(2))}
           </Text>
         </View>
       </TouchableOpacity>

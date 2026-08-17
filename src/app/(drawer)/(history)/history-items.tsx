@@ -39,7 +39,7 @@ export default function HistoryItems() {
                 <PageHeader
                     title="Histórico"
                     subtitle="Detalhes da compras"
-                    description={<Text>Detalhes da compra N°: <Text className='font-bold'>{params?.numero}</Text> de <Text className='font-bold'>{params?.data}</Text> com o valor total de <Text className='font-bold'>R$ {params?.valor}</Text></Text>}
+                    description={<Text>Detalhes da compra N°: <Text className='font-bold'>{params?.numero}</Text> de <Text className='font-bold'>{params?.data}</Text> com o valor total de <Text className='font-bold'>R$ {maskMoney(Number(params?.valor).toFixed(2))}</Text></Text>}
                     icon={<HistoryIcon size={26} color="#1a9cd9" />}
                 />
                 <ScrollView
@@ -77,7 +77,7 @@ export default function HistoryItems() {
                                 </Text>
 
                                 <Text className="text-lg font-bold text-solar-blue-secondary mt-2">
-                                    R$ {maskMoney(item?.total)}
+                                    R$ {maskMoney(Number(item?.total).toFixed(2))}
                                 </Text>
                             </View>
                         </View>

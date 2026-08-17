@@ -213,7 +213,7 @@ export default function HistoryCashback() {
                                         : 'text-gray-400'
                                         }`}
                                 >
-                                    R$ {maskMoney(activeOrder !== null ? String(applyCashback) : '0,00')}
+                                    R$ {maskMoney(activeOrder !== null ? Number(applyCashback).toFixed(2) : '0,00')}
                                 </Text>
                             </View>
                         </View>
