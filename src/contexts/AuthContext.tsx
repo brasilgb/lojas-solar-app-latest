@@ -13,6 +13,7 @@ import React, {
 } from 'react';
 import { Alert } from 'react-native';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
+import { registerPushDevice } from '@/lib/pushDevice';
 
 interface User {
   cpfcnpj: string;
@@ -319,6 +320,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(userData);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+      // Re-sincroniza o device com o backend agora que o codcli é conhecido
+      // (o registro feito na abertura do app pode ter ocorrido antes do
+      // login, com codcli "0"). Best-effort, não bloqueia a navegação.
+      registerPushDevice(currentDeviceId, String(userData.codigoCliente || '0'));
       router.replace({
         pathname: getPostLoginPath(credentials.redirectTo),
       });
@@ -394,6 +399,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(userData);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+      // Re-sincroniza o device com o backend agora que o codcli é conhecido
+      // (o registro feito na abertura do app pode ter ocorrido antes do
+      // login, com codcli "0"). Best-effort, não bloqueia a navegação.
+      registerPushDevice(currentDeviceId, String(userData.codigoCliente || '0'));
       router.replace({
         pathname: getPostLoginPath(credentials.redirectTo),
       });
@@ -475,6 +484,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await SecureStore.deleteItemAsync(USER_KEY);
     await SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY);
     setUser(null);
+    // Desassocia o device deste cliente no backend, para que um aparelho
+    // compartilhado/reutilizado não continue recebendo pushes direcionados
+    // ao cliente que acabou de sair.
+    const currentDeviceId = deviceId || await getPersistentUniqueId();
+    registerPushDevice(currentDeviceId, '0');
     router.replace({
       pathname: '/(drawer)',
     });
@@ -520,6 +534,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setLoading(false);
     setMessage(undefined);
+    const currentDeviceId = deviceId || await getPersistentUniqueId();
+    registerPushDevice(currentDeviceId, '0');
     router.replace({
       pathname: '/(drawer)',
     });

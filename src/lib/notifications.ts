@@ -34,7 +34,7 @@ export function parseRemoteMessage(
       : undefined;
 
   return {
-    title: notification.title ?? data.title ? 'Lojas Solar' : undefined,
+    title: notification.title ?? (typeof data.title === 'string' ? data.title : undefined),
     subtitle: typeof data.subtitle === 'string' ? data.subtitle : undefined,
     body: notification.body ?? (typeof data.body === 'string' ? data.body : ''),
     imageUrl:

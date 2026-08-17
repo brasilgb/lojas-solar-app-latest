@@ -32,12 +32,14 @@ const PaymentHistory = () => {
                 )}`,
             )
             .then(response => {
-                const { success, message, token, data } = response.data.resposta;
-                setLoading(false);
-                setCrediarios(data.historico);
+                const { data } = response.data.resposta;
+                setCrediarios(data?.historico || []);
             })
             .catch(error => {
                 console.log(error);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 

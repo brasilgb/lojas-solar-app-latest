@@ -27,6 +27,7 @@ import {
   parseRemoteMessage,
   setupNotificationChannel,
 } from '@/lib/notifications';
+import { registerPushDevice, setCachedFcmToken } from '@/lib/pushDevice';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
 import notifee, { EventType } from '@notifee/react-native';
 
@@ -278,8 +279,10 @@ function useNotifications() {
         const fcmToken = await getFirebaseMessagingToken(messagingInstance);
 
         if (fcmToken) {
+          setCachedFcmToken(fcmToken);
           const deviceId = await getPersistentUniqueId();
-          await registerDevice(deviceId, fcmToken);
+          const codcli = await getStoredCustomerCode();
+          await registerPushDevice(deviceId, codcli);
         } else {
           console.warn('FCM token nao foi gerado. Registro do device ignorado.');
         }
@@ -372,22 +375,6 @@ async function getFirebaseMessagingToken(
   }
 
   return undefined;
-}
-
-async function registerDevice(deviceId: string, pushToken: string) {
-  try {
-    const deviceos = Platform.OS;
-    const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
-    const codcli = await getStoredCustomerCode();
-
-    await appservice.get(
-      `(WS_GRAVA_DEVICE)?deviceId=${encodeURIComponent(deviceId)}&pushToken=${encodeURIComponent(pushToken)}&deviceOs=${encodeURIComponent(deviceos)}&versaoApp=${encodeURIComponent(versaoapp || '')}&codcli=${encodeURIComponent(codcli)}`
-    );
-
-    console.log('Dispositivo registrado com sucesso');
-  } catch (error) {
-    console.log('Erro ao registrar dispositivo:', error);
-  }
 }
 
 async function getStoredCustomerCode() {
