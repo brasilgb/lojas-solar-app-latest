@@ -9,7 +9,7 @@ import appservice from '@/services/appservice';
 import { AppCaroucelProps } from '@/types/app-types';
 import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HistoryIcon, MapPinIcon, PhoneCallIcon, ShoppingBasket, UserIcon, WrenchIcon } from 'lucide-react-native';
 import BouncingPin from '@/components/BouncingPin';
-import FastImage from 'react-native-fast-image';
+import { Image as ExpoImage } from 'expo-image';
 
 // Obtém largura da tela
 const width = Dimensions.get('window').width;
@@ -44,7 +44,7 @@ export default function Home() {
                     const { data } = response.data.resposta;
                     const imagesToPrefetch = data.carrocel.map((item: any) => item.carLinkImagem);
                     // Inicia o download de todas as imagens em background
-                    Promise.all(imagesToPrefetch.map((url: any) => Image.prefetch(url)))
+                    Promise.all(imagesToPrefetch.map((url: any) => ExpoImage.prefetch(url)))
                         .then(() => {
                             setDataCaroucel(data.carrocel); // Só seta o estado após o download (opcional)
                         })
@@ -65,13 +65,11 @@ export default function Home() {
                 onPress={() => console.log('Clicou no banner:')} // Aqui você pode colocar navegação
                 className="flex-1 justify-center overflow-hidden"
             >
-                <FastImage
-                    source={{
-                        uri: item.carLinkImagem,
-                        priority: FastImage.priority.high,
-                    }}
+                <ExpoImage
+                    source={{ uri: item.carLinkImagem }}
+                    priority="high"
                     style={{ width: width, height: '100%' }}
-                    resizeMode={FastImage.resizeMode.cover}
+                    contentFit="cover"
                 />
             </TouchableOpacity>
         );

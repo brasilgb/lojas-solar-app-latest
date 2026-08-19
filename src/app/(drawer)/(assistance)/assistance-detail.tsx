@@ -42,7 +42,7 @@ const AssistanceDetail = () => {
         } finally {
             setLoading(false);
         }
-    }, [user?.token, dataAssistance]);
+    }, [user?.token, dataAssistance.filial, dataAssistance.nProtocolo]);
 
     useEffect(() => {
         getDetails();
