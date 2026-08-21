@@ -17,7 +17,7 @@ export function ScreenLayout({
 
   useEffect(() => {
     if (Platform.OS === 'android') {
-      NavigationBar.setButtonStyleAsync(lightMode ? 'light' : 'dark');
+      NavigationBar.setStyle(lightMode ? 'light' : 'dark');
     }
   }, [lightMode]);
 

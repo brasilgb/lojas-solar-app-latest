@@ -10,11 +10,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "lojassolarapp",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
@@ -132,7 +127,9 @@
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
             "kotlinVersion": "2.1.20",
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
@@ -148,7 +145,9 @@
       "expo-local-authentication",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      "expo-image",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true

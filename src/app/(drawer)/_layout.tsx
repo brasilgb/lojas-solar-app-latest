@@ -3,7 +3,7 @@ import { Drawer } from 'expo-router/drawer';
 import { BanknoteArrowDownIcon, CircleHelpIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogInIcon, LogOutIcon, MapPinIcon, PhoneCallIcon, ShieldCheckIcon, ShieldUserIcon, UserIcon, WrenchIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { Pressable, View, Text } from 'react-native';
-import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItemList } from 'expo-router/drawer';
 import DrawerHeader from '@/components/layouts/DrawerHeader';
 import { router } from 'expo-router';
 
