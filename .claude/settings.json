@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('expo',{}\\).get\\('plugins',[]\\), indent=2\\)\\)\")",
+      "Bash(echo \"exit:$?\")",
+      "Bash(npx expo-doctor *)"
+    ]
+  }
+}
