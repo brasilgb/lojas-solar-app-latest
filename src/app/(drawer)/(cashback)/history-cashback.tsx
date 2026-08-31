@@ -112,7 +112,7 @@ export default function HistoryCashback() {
                         </Text>
 
                         <Text className="text-xs text-gray-400 mt-1">
-                            {moment(item.dtpedido).format('DD/MM/YYYY')} • Filial {item.filial}
+                            {moment(`${item.dtpedido}`).format('DD/MM/YYYY')} • Filial {item.filial}
                         </Text>
                     </View>
 
