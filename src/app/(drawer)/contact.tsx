@@ -1,5 +1,6 @@
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
+import * as Application from 'expo-application'
 import { PhoneCallIcon } from 'lucide-react-native'
 import React from 'react'
 import { Text, View } from 'react-native'
@@ -36,7 +37,7 @@ export default function Contact() {
           </View>
           </View>
           <Text className="text-sm font-bold pt-4 text-center pb-2">
-            v{process.env.EXPO_PUBLIC_APP_VERSION}
+            v{Application.nativeApplicationVersion}
           </Text>
         </View>
       </View>

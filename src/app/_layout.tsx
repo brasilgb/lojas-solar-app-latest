@@ -63,10 +63,7 @@ export default function AppRootLayout() {
   useEffect(() => {
     const getVersionCheck = async () => {
       try {
-        const currentVersion =
-          process.env.EXPO_PUBLIC_APP_VERSION ||
-          Application.nativeApplicationVersion ||
-          '0';
+        const currentVersion = Application.nativeApplicationVersion || '0';
 
         const response = await appservice.get('(WS_VERSAO_APP)');
         const remoteVersion = getRemoteAppVersion(

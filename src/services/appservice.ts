@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_URL = 'http://services.gruposolar.com.br:8082/servicecomercial/servlet/isCobol/';
+
 const PAYMENT_ENDPOINTS = [
     '(WS_ORDEM_PAGAMENTO)',
     '(WS_TRANSACAO_PIX)',
@@ -7,12 +9,13 @@ const PAYMENT_ENDPOINTS = [
 ];
 
 const appservice = axios.create({
-    withCredentials: true
+    withCredentials: true,
+    timeout: 20000,
 });
 
 appservice.interceptors.request.use(async (request) => {
 
-    request.baseURL = process.env.EXPO_PUBLIC_API_URL;
+    request.baseURL = API_URL;
     // request.baseURL = "http://172.16.1.215:9090/servicecomercial/servlet/isCobol/";
     return request;
 });
@@ -36,8 +39,9 @@ appservice.interceptors.response.use(
         console.log('Abrindo sessão com o servidor novamente');
 
         const axiosNew = axios.create({
-            baseURL: process.env.EXPO_PUBLIC_API_URL,
-            withCredentials: true
+            baseURL: API_URL,
+            withCredentials: true,
+            timeout: 20000,
         });
 
         try {

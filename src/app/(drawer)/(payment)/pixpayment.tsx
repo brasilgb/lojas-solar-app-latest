@@ -41,7 +41,7 @@ interface OrderUpdatePayload {
     urlBoleto: string;
 }
 
-const PAYMENT_SYSTEM_TOKEN = process.env.EXPO_PUBLIC_PAYMENT_SYSTEM_TOKEN || '91362590064312210014616';
+const PAYMENT_SYSTEM_TOKEN = '91362590064312210014616';
 const EMPTY_TRANSACTION_ID = '00000000-0000-0000-0000-000000000000';
 
 const normalizePixAmount = (value: string | string[] | number | null | undefined) => {

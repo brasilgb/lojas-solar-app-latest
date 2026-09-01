@@ -19,7 +19,7 @@ export default function Cashback() {
   const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [historicoCashback, setHisoricoCashback] = useState<any>([]);
-  const [itemsModal, setItemsModal] = useState<any>([]);
+  const [itemsModal, setItemsModal] = useState<any>(null);
   const [itensNota, setItensNota] = useState<any>([]);
 
   let dataAtual = new Date();
@@ -82,8 +82,9 @@ export default function Cashback() {
   };
 
   useEffect(() => {
+    if (!itemsModal) return;
+
     const getItensNota = async () => {
-      setLoading(true);
       await appservice
         .post('(WS_CONSULTA_NF_CASHBACK)', {
           orige: itemsModal.orige,
@@ -95,8 +96,7 @@ export default function Cashback() {
         })
         .catch(error => {
           console.log('error', error);
-        })
-        .finally(() => setLoading(false));
+        });
     };
     getItensNota();
   }, [itemsModal]);

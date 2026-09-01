@@ -1,3 +1,4 @@
+import * as Application from 'expo-application';
 import { Platform } from 'react-native';
 
 import appservice from '@/services/appservice';
@@ -45,7 +46,7 @@ export async function registerPushDevice(deviceId: string, codcli: string) {
   }
 
   try {
-    const versaoapp = process.env.EXPO_PUBLIC_APP_VERSION?.replace(/\./g, '');
+    const versaoapp = Application.nativeApplicationVersion?.replace(/\./g, '');
 
     await appservice.get(
       `(WS_GRAVA_DEVICE)?deviceId=${encodeURIComponent(deviceId)}&pushToken=${encodeURIComponent(cachedFcmToken)}&deviceOs=${encodeURIComponent(Platform.OS)}&versaoApp=${encodeURIComponent(versaoapp || '')}&codcli=${encodeURIComponent(codcli)}`
