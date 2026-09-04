@@ -4,15 +4,15 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout'
 import { PageHeader } from '@/components/PageHeader'
 import { useAuth } from '@/contexts/AuthContext'
 import appservice from '@/services/appservice'
+import { softCardShadow } from '@/styles/shadows'
 import { maskMoney } from '@/utils/mask'
 import { FlashList } from '@shopify/flash-list'
 import { router, useFocusEffect } from 'expo-router'
 import { BanknoteArrowDownIcon } from 'lucide-react-native'
 import moment from 'moment'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Dimensions, Text, TouchableOpacity, View } from 'react-native'
 import { Modalize } from 'react-native-modalize'
-import { softCardShadow } from '@/styles/shadows'
 
 export default function Cashback() {
 
@@ -21,6 +21,7 @@ export default function Cashback() {
   const [historicoCashback, setHisoricoCashback] = useState<any>([]);
   const [itemsModal, setItemsModal] = useState<any>(null);
   const [itensNota, setItensNota] = useState<any>([]);
+  const [loadingItensNota, setLoadingItensNota] = useState(false);
 
   let dataAtual = new Date();
   let dataAnterior = new Date(
@@ -91,6 +92,7 @@ export default function Cashback() {
     if (!itemsModal) return;
 
     const getItensNota = async () => {
+      setLoadingItensNota(true);
       await appservice
         .post('(WS_CONSULTA_NF_CASHBACK)', {
           orige: itemsModal.orige,
@@ -98,11 +100,18 @@ export default function Cashback() {
           numnf: itemsModal.numnf,
         })
         .then(response => {
-          setItensNota(response.data.respnfcash.data);
+          const responseData = response?.data?.respnfcash;
+          const details = Array.isArray(responseData)
+            ? responseData
+            : responseData?.data ?? response?.data?.data ?? [];
+
+          setItensNota(Array.isArray(details) ? details : []);
         })
         .catch(error => {
           console.log('error', error);
-        });
+          setItensNota([]);
+        })
+        .finally(() => setLoadingItensNota(false));
     };
     getItensNota();
   }, [itemsModal]);
@@ -115,6 +124,7 @@ export default function Cashback() {
         activeOpacity={0.7}
         onPress={() => {
           if (isCredito) {
+            setItensNota([]);
             setItemsModal(item);
             onOpen();
           }
@@ -262,6 +272,15 @@ export default function Cashback() {
             ),
             keyboardShouldPersistTaps: 'handled',
             showsVerticalScrollIndicator: false,
+            ListEmptyComponent: (
+              <View className="items-center px-4 py-8">
+                <Text className="text-sm text-gray-500">
+                  {loadingItensNota
+                    ? 'Carregando detalhes...'
+                    : 'Nenhum detalhe encontrado para esta nota.'}
+                </Text>
+              </View>
+            ),
           }}
         />
 

@@ -1,6 +1,5 @@
-import React from 'react';
-import { View, Text, Platform, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { Linking, Platform, Text, View } from 'react-native';
 import { Button } from './Button';
 
 const VerifyVersion = ({ route }: any) => {
@@ -38,7 +37,7 @@ const VerifyVersion = ({ route }: any) => {
           Nova versão disponível
         </Text>
 
-        <Text className="text-base text-solar-blue-dark text-center mt-4">
+        <Text className="text-base text-solar-blue-secondary text-center mt-4">
           Atualize o aplicativo para continuar utilizando todos os recursos com segurança.
         </Text>
 
