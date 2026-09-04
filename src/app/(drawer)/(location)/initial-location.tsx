@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Dimensions, Image } from 'react-native'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/PageHeader'
 import { MapPinIcon, MapPinnedIcon } from 'lucide-react-native'
 import { ScreenLayout } from '@/components/layouts/ScreenLayout'
@@ -42,8 +42,8 @@ export default function InitialLocation() {
 
     const mapRef = useRef<any>(0);
 
-    const initialLat = parseFloat(positionGlobal[0] || '0.0') || 0.0;
-    const initialLon = parseFloat(positionGlobal[1] || '0.0') || 0.0;
+    const initialLat = Number(positionGlobal?.[0]) || 0;
+    const initialLon = Number(positionGlobal?.[1]) || 0;
 
     const [region, setRegion] = useState({
         latitude: initialLat,
@@ -53,30 +53,53 @@ export default function InitialLocation() {
     });
 
     useEffect(() => {
+        const latitude = Number(positionGlobal?.[0]);
+        const longitude = Number(positionGlobal?.[1]);
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+            (latitude === 0 && longitude === 0)) {
+            return;
+        }
+
         const getLojasProxima = async () => {
             setLoading(true);
             try {
-                let lojas = 'WS_LOJAS_PROXIMA';
-                let latitudel = parseFloat(positionGlobal[0]);
-                let longitudel = parseFloat(positionGlobal[1]);
-                const response = await appservice.get(`(${lojas})?latitude=${latitudel}&longitude=${longitudel}`)
-                const { data } = response.data.resposta;
-                setLojasProximas(data);
+                const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${latitude}&longitude=${longitude}`)
+                const data = response?.data?.resposta?.data;
+                const stores = Array.isArray(data) ? data : data ? [data] : [];
+                setLojasProximas(stores);
+
+                const firstStore = stores[0];
+                const storeLatitude = Number(firstStore?.latitude);
+                const storeLongitude = Number(firstStore?.longitude);
+                const nextRegion = {
+                    latitude: Number.isFinite(storeLatitude) ? storeLatitude : latitude,
+                    longitude: Number.isFinite(storeLongitude) ? storeLongitude : longitude,
+                    latitudeDelta: 0.04,
+                    longitudeDelta: 0.04,
+                };
+                setRegion(nextRegion);
+                mapRef.current?.animateToRegion(nextRegion, 400);
             } catch (error) {
                 console.log(error);
+                setLojasProximas([]);
             } finally {
                 setLoading(false)
             }
         }
         getLojasProxima();
-    }, []);
+    }, [positionGlobal]);
 
     const onCaroucelItemChange = (index: number) => {
-        const { latitude, longitude } = lojasProximas[index];
+        const store = lojasProximas[index];
+        const latitude = Number(store?.latitude);
+        const longitude = Number(store?.longitude);
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
 
         const setregion = {
-            latitude: parseFloat(latitude),
-            longitude: parseFloat(longitude),
+            latitude,
+            longitude,
             latitudeDelta: 0.0043,
             longitudeDelta: 0.0034,
         };
@@ -85,18 +108,23 @@ export default function InitialLocation() {
         }
     };
 
-    const renderStore = ({ item }: any) => (
-        <StoreCard
-            item={item}
-            width={width}
-            onPress={() =>
-                router.push({
-                    pathname: '/store-selected',
-                    params: item,
-                })
-            }
-        />
-    );
+    const renderStore = ({ item }: any) => {
+        const hasValidCoordinates =
+            Number.isFinite(Number(item?.latitude)) &&
+            Number.isFinite(Number(item?.longitude));
+
+        return (
+            <StoreCard
+                item={item}
+                width={width}
+                onPress={hasValidCoordinates ? () =>
+                    router.push({
+                        pathname: '/store-selected',
+                        params: item,
+                    }) : undefined}
+            />
+        );
+    };
 
     const fetchCities = async () => {
         try {
@@ -122,8 +150,9 @@ export default function InitialLocation() {
 
         try {
             const response = await appservice.get(`(WS_LOJAS_PROXIMA)?latitude=${city.latitude}&longitude=${city.longitude}`)
-            const { data } = response.data.resposta
-            setLojasProximas(data)
+            const responseData = response?.data?.resposta?.data
+            const stores = Array.isArray(responseData) ? responseData : responseData ? [responseData] : []
+            setLojasProximas(stores)
 
             setActiveIndex(0)
 
@@ -131,8 +160,8 @@ export default function InitialLocation() {
                 carouselRef.current.scrollTo({ index: 0, animated: false })
             }
 
-            if (data && data.length > 0) {
-                const firstStore = data[0];
+            if (stores.length > 0) {
+                const firstStore = stores[0];
                 const newRegion = {
                     latitude: Number(firstStore.latitude),
                     longitude: Number(firstStore.longitude),
@@ -152,16 +181,14 @@ export default function InitialLocation() {
             }
         } catch (error) {
             console.log("Erro ao buscar lojas da nova cidade: ", error);
+            const fallbackRegion = {
+                latitude: Number(city.latitude),
+                longitude: Number(city.longitude),
+                latitudeDelta: 0.04,
+                longitudeDelta: 0.04,
+            };
+            mapRef.current?.animateToRegion(fallbackRegion, 400);
         }
-        const newRegion = {
-            latitude: Number(city.latitude),
-            longitude: Number(city.longitude),
-            latitudeDelta: 0.0043,
-            longitudeDelta: 0.0034,
-        }
-
-        mapRef.current?.animateToRegion(newRegion, 400)
-
     }
 // console.log(selectedCity)
     return (
@@ -213,7 +240,10 @@ export default function InitialLocation() {
                             style={StyleSheet.absoluteFill}
                         >
                             {lojasProximas
-                                .filter(m => m.latitude && m.longitude)
+                                .filter(m =>
+                                    Number.isFinite(Number(m.latitude)) &&
+                                    Number.isFinite(Number(m.longitude)),
+                                )
                                 .map((marker, index) => {
                                     const isActive = index === activeIndex;
                                     return (

@@ -20,7 +20,7 @@ export default function Crediary() {
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [itemSelecionado, setItemSelecionado] = useState<{ id: any; label: string } | null>(null);
-    const [crediary, setCrediary] = useState<any>([]);
+    const [crediary, setCrediary] = useState<any>({});
     const [escolaridade, setEscolaridade] = useState<any>([]);
     const [estadoCivil, setEstadoCivil] = useState<any>([]);
     const [profissao, setProfissao] = useState<any>([]);
@@ -45,8 +45,9 @@ export default function Crediary() {
         const getEscolaridade = async () => {
             try {
                 const response = await appservice.get(`(WS_ESCOLARIDADE)`);
-                const { data } = response.data.resposta;
-                const escolData = data.map((pr: any, index: number) => ({
+                const data = response?.data?.resposta?.data;
+                const items = Array.isArray(data) ? data : data ? [data] : [];
+                const escolData = items.map((pr: any, index: number) => ({
                     id: index,
                     label: pr.escolaridade
                 }));
@@ -62,8 +63,9 @@ export default function Crediary() {
         const getEstadoCivil = async () => {
             try {
                 const response = await appservice.get(`(WS_ESTADO_CIVIL)`);
-                const { data } = response.data.resposta;
-                const estCivData = data.map((pr: any, index: number) => ({
+                const data = response?.data?.resposta?.data;
+                const items = Array.isArray(data) ? data : data ? [data] : [];
+                const estCivData = items.map((pr: any, index: number) => ({
                     id: index,
                     label: pr.estadoCivil
                 }));
@@ -79,8 +81,9 @@ export default function Crediary() {
         const getProfissao = async () => {
             try {
                 const response = await appservice.get(`(WS_PROFISSAO)`);
-                const { data } = response.data.resposta;
-                const profData = data.map((pr: any, index: number) => ({
+                const data = response?.data?.resposta?.data;
+                const items = Array.isArray(data) ? data : data ? [data] : [];
+                const profData = items.map((pr: any, index: number) => ({
                     id: index,
                     label: pr.profissao
                 }));
@@ -94,10 +97,16 @@ export default function Crediary() {
 
     useEffect(() => {
         const getCrediary = async () => {
+            if (!user?.token) {
+                setLoading(false);
+                return;
+            }
+
             setLoading(true)
+            setMessage(undefined)
             try {
                 const response = await appservice.get(`(WS_CARREGA_CLIENTE)?token=${user?.token}`);
-                const { data, message, success, token } = response.data?.resposta;
+                const { data, message, success, token } = response.data?.resposta ?? {};
                 if (!token) {
                     Alert.alert('Atenção', message, [
                         {
@@ -115,17 +124,23 @@ export default function Crediary() {
                     setMessage(message)
                     return
                 }
+                if (!data || typeof data !== 'object') {
+                    setMessage('O servidor não retornou os dados do crediário.');
+                    return;
+                }
+
                 setCrediary(data);
                 reset(data)
 
             } catch (error) {
                 console.log(error)
+                setMessage('Não foi possível carregar seus dados. Tente novamente.')
             } finally {
                 setLoading(false)
             }
         }
         getCrediary();
-    }, [user])
+    }, [user?.token])
 
     const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CrediarySchema>({
         defaultValues: {
@@ -212,6 +227,21 @@ export default function Crediary() {
                                 description="Se houver dados incorretos deverão ser ajustados."
                                 icon={<HandshakeIcon size={26} color="#1a9cd9" />}
                             />
+
+                            {loading && Object.keys(crediary).length === 0 ? (
+                                <View className="w-full flex-1 items-center justify-center py-16">
+                                    <ActivityIndicator size="large" color="#1a9cd9" />
+                                    <Text className="mt-3 text-sm text-gray-500">
+                                        Carregando seus dados...
+                                    </Text>
+                                </View>
+                            ) : (
+                            <>
+                            {message && (
+                                <View className="w-full rounded-lg border border-red-200 bg-red-50 p-3">
+                                    <Text className="text-sm text-red-600">{message}</Text>
+                                </View>
+                            )}
 
                             <View className='w-full'>
                                 <Controller
@@ -372,6 +402,8 @@ export default function Crediary() {
                                     onPress={handleSubmit(onSubmit)}
                                 />
                             </View>
+                            </>
+                            )}
                         </View>
                     </View>
                 </ScrollView>

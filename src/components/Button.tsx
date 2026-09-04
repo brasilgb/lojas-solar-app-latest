@@ -64,13 +64,19 @@ function Button({
     size,
     ...props
 }: ButtonProps) {
+    const isTextLabel = typeof label === 'string' || typeof label === 'number';
+
     return (
         <TouchableOpacity
             className={cn(buttonVariants({variant, size, className}))}
             {...props}
         >
             <Text
+                adjustsFontSizeToFit={isTextLabel}
+                minimumFontScale={0.75}
+                numberOfLines={isTextLabel ? 1 : undefined}
                 className={cn(
+                    isTextLabel && 'flex-shrink',
                     buttonTextVariants({
                         variant,
                         size,

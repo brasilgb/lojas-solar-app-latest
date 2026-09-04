@@ -9,8 +9,11 @@ import { CalendarDaysIcon, HistoryIcon } from 'lucide-react-native'
 import moment from 'moment'
 import 'moment/locale/pt-br'
 import React, { useCallback, useState } from 'react'
-import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native'
 import MonthPicker from 'react-native-month-year-picker'
+import * as SecureStore from 'expo-secure-store'
+
+const HISTORY_MONTH_KEY = 'purchase-history-month';
 
 interface HistoryProps {
   numero: string;
@@ -24,27 +27,46 @@ export default function History() {
   const { user, expiredSession } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [date, setDate] = useState(new Date());
+  const [dateRestored, setDateRestored] = useState(false);
   const [show, setShow] = useState(false);
   const [historicos, setHistoricos] = useState<HistoryProps[]>([]);
   const showPicker = useCallback((value: any) => setShow(value), []);
+
+  React.useEffect(() => {
+    SecureStore.getItemAsync(HISTORY_MONTH_KEY)
+      .then(savedMonth => {
+        if (!savedMonth) return;
+        const restoredDate = moment(savedMonth, 'YYYY-MM', true);
+        if (restoredDate.isValid() && !restoredDate.isAfter(moment(), 'month')) {
+          setDate(restoredDate.toDate());
+        }
+      })
+      .finally(() => setDateRestored(true));
+  }, []);
 
   const onValueChange = useCallback((event: any, newDate: any) => {
     const selectedDate = newDate || date;
 
     showPicker(false);
     setDate(selectedDate);
+    SecureStore.setItemAsync(
+      HISTORY_MONTH_KEY,
+      moment(selectedDate).format('YYYY-MM'),
+    );
   },
     [date, showPicker],
   );
 
   const getHistoricos = useCallback(async () => {
+    if (!user?.token || !dateRestored) return;
+
     setLoading(true);
 
     try {
       const response = await appservice.get(
-        `(WS_HISTORICO_COMPRAS)?token=${user?.token}&dataInicial=${moment(date).format('YYYYMM')}01&dataFinal=${moment(date).format('YYYYMM')}31`,
+        `(WS_HISTORICO_COMPRAS)?token=${user.token}&dataInicial=${moment(date).startOf('month').format('YYYYMMDD')}&dataFinal=${moment(date).endOf('month').format('YYYYMMDD')}`,
       );
-      const { data, token, message } = response.data.resposta;
+      const { data, token, message } = response.data?.resposta ?? {};
       if (!token) {
         Alert.alert('Atenção', message, [
           {
@@ -56,14 +78,14 @@ export default function History() {
         ]);
         return;
       }
-      setHistoricos(data);
+      setHistoricos(Array.isArray(data) ? data : data ? [data] : []);
     } catch (err) {
       console.log(err);
       setHistoricos([]);
     } finally {
       setLoading(false);
     }
-  }, [user, date]);
+  }, [user?.token, date, dateRestored, expiredSession]);
 
   useFocusEffect(
     useCallback(() => {
@@ -170,7 +192,12 @@ export default function History() {
 
           <View className="flex-1 rounded-3xl px-4">
 
-            {historicos.length === 0 ? (
+            {(!dateRestored || loading) && historicos.length === 0 ? (
+              <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color="#1a9cd9" />
+                <Text className="mt-3 text-sm text-gray-500">Carregando histórico...</Text>
+              </View>
+            ) : historicos.length === 0 ? (
               <View className="flex-1 items-center justify-center px-6">
                 <CalendarDaysIcon size={48} color="#9CA3AF" />
 

@@ -5,19 +5,16 @@ import { ArrowLeftIcon, HomeIcon, LogInIcon, LogOutIcon, MenuIcon, UserMinus2Ico
 import { DrawerActions, useNavigation } from 'expo-router/react-navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { router } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function DrawerHeader({ typel, typer }: any) {
   const { signOut, signedIn } = useAuth();
 
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
 
   return (
     <View
       style={{
-        paddingTop: insets.top,
-        paddingBottom: 12,
+        paddingVertical: 10,
         paddingHorizontal: 16,
       }}
       className="bg-solar-blue-primary flex-row items-center justify-between"
@@ -64,7 +61,7 @@ export default function DrawerHeader({ typel, typer }: any) {
 
         {typer === 'home' && (
           <TouchableOpacity
-            onPress={() => router.push('/')}
+            onPress={() => router.replace('/')}
             className="p-2"
           >
             <HomeIcon color="white" size={22} />

@@ -71,7 +71,13 @@ export default function Cashback() {
       setDateFin(new Date());
       router.push({
         pathname: '/history-cashback',
-        params: historicoCashback,
+        // Route params must be scalar values. Sending the complete response here
+        // also sends `data` (an array of objects), which Expo Router cannot
+        // serialize safely when there are cashback entries.
+        params: {
+          credTotal: String(historicoCashback?.credTotal ?? 0),
+          porcent: String(historicoCashback?.porcent ?? 0),
+        },
       });
     } catch (error) {
       console.log(error);
@@ -188,9 +194,13 @@ export default function Cashback() {
             </View>
 
             <View className="bg-white p-2 rounded-xl border border-gray-200">
-              <View className="flex-row justify-between">
-                <AppDateTimePicker value={dateIni} onChange={setDateIni} />
-                <AppDateTimePicker value={dateFin} onChange={setDateFin} />
+              <View className="flex-row gap-2">
+                <View className="min-w-0 flex-1">
+                  <AppDateTimePicker value={dateIni} onChange={setDateIni} />
+                </View>
+                <View className="min-w-0 flex-1">
+                  <AppDateTimePicker value={dateFin} onChange={setDateFin} />
+                </View>
               </View>
             </View>
 
@@ -207,8 +217,9 @@ export default function Cashback() {
             </View>
           </View>
 
-          <View className="flex-1">
+          <View className="min-h-0 flex-1">
             <FlashList
+              style={{ flex: 1 }}
               data={historicoCashback?.data}
               renderItem={renderItem}
               contentContainerStyle={{ paddingBottom: 10 }}
@@ -219,7 +230,7 @@ export default function Cashback() {
             />
           </View>
 
-          <View>
+          <View className="shrink-0 pt-2 pb-1">
             <Button
               label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Solicitar Cashback'}
               onPress={handleHistoricoCachback}

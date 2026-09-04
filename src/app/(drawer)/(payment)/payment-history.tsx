@@ -98,15 +98,15 @@ const PaymentHistory = () => {
         <>
             <View className="mt-4">
 
-                <View className="flex-row gap-3">
-                    <View className="flex-1">
+                <View className="w-full flex-row gap-2">
+                    <View className="min-w-0 flex-1">
                         <Text className="text-xs text-gray-400 mb-1">
                             Data inicial
                         </Text>
                         <AppDateTimePicker value={dateIni} onChange={setDateIni} />
                     </View>
 
-                    <View className="flex-1">
+                    <View className="min-w-0 flex-1">
                         <Text className="text-xs text-gray-400 mb-1">
                             Data final
                         </Text>

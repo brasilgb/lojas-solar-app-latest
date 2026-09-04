@@ -2,7 +2,7 @@ import React from 'react'
 import { Drawer } from 'expo-router/drawer';
 import { BanknoteArrowDownIcon, CircleHelpIcon, FilePenLineIcon, HandCoinsIcon, HandshakeIcon, HistoryIcon, HomeIcon, KeyRoundIcon, LogInIcon, LogOutIcon, MapPinIcon, PhoneCallIcon, ShieldCheckIcon, ShieldUserIcon, UserIcon, WrenchIcon } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { Pressable, View, Text } from 'react-native';
+import { Pressable, View, Text, useWindowDimensions } from 'react-native';
 import { DrawerContentComponentProps, DrawerContentScrollView, DrawerItemList } from 'expo-router/drawer';
 import DrawerHeader from '@/components/layouts/DrawerHeader';
 import { router } from 'expo-router';
@@ -38,6 +38,13 @@ function maskCpfCnpj(document?: string) {
     return `${first}${hidden}${last}`;
 }
 
+const MENU_ITEM_STYLE = {
+    minHeight: 46,
+    marginHorizontal: 6,
+    marginVertical: 2,
+    borderRadius: 12,
+} as const;
+
 function CustomDrawerContent(props: DrawerContentComponentProps) {
     const { user, signedIn, signOut } = useAuth();
 
@@ -47,10 +54,10 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         const maskedDocument = maskCpfCnpj(user?.cpfcnpj);
 
         return (
-            <View className="bg-solar-blue-primary px-5 pb-6 pt-7">
+            <View className="bg-solar-blue-primary px-5 py-5">
                 {signedIn ? (
                     <View className="flex-row items-center">
-                        <View className="h-16 w-16 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
+                        <View className="h-14 w-14 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
                             <Text className="text-xl font-bold text-solar-blue-primary">
                                 {getInitials(customerName)}
                             </Text>
@@ -72,8 +79,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
                     </View>
                 ) : (
                     <View className="flex-row items-center">
-                        <View className="h-16 w-16 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
-                            <UserIcon size={34} color={'#1a9cd9'} />
+                        <View className="h-14 w-14 rounded-full border-2 border-solar-green-primary bg-white items-center justify-center">
+                            <UserIcon size={30} color={'#1a9cd9'} />
                         </View>
 
                         <View className="ml-4 flex-1">
@@ -113,7 +120,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
             <DrawerContentScrollView
                 {...props}
-                contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }}
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
             >
                 <DrawerItemList {...props} />
             </DrawerContentScrollView>
@@ -166,6 +174,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
 export default function DrawerLayout() {
     const { signedIn } = useAuth();
+    const { width } = useWindowDimensions();
 
     return (
         <Drawer
@@ -173,8 +182,19 @@ export default function DrawerLayout() {
             screenOptions={{
                 drawerHideStatusBarOnOpen: false,
                 drawerType: 'front',
+                drawerStyle: { width: Math.min(width * 0.86, 340) },
+                drawerItemStyle: MENU_ITEM_STYLE,
+                drawerLabelStyle: {
+                    flexShrink: 1,
+                    textAlign: 'left',
+                    fontSize: 14,
+                    fontWeight: '600',
+                    marginLeft: 0,
+                },
                 drawerActiveBackgroundColor: '#1a9dd9c8',
-                drawerActiveTintColor: '#ffffff'
+                drawerActiveTintColor: '#ffffff',
+                drawerInactiveTintColor: '#475569',
+                popToTopOnBlur: true,
             }}
         >
 
@@ -196,7 +216,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Minha Conta",
                     title: "Minha Conta",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <UserIcon color={color} size={size} />
                     ),
@@ -209,7 +229,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Crediário",
                     title: "Crediário",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <HandshakeIcon color={color} size={size} />
                     ),
@@ -221,7 +241,7 @@ export default function DrawerLayout() {
                 options={{
                     drawerLabel: "Alterar Senha",
                     title: "Alterar Senha",
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <KeyRoundIcon color={color} size={size} />
                     ),
@@ -235,7 +255,7 @@ export default function DrawerLayout() {
                     headerShown: false,
                     drawerLabel: "Assinar Documentos",
                     title: "Assinar Documentos",
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <FilePenLineIcon color={color} size={size} />
                     ),
@@ -248,7 +268,7 @@ export default function DrawerLayout() {
                 options={{
                     drawerLabel: "Configurações de Privacidade",
                     title: "Configurações de Privacidade",
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <ShieldUserIcon color={color} size={size} />
                     ),
@@ -287,7 +307,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Faça seu Pagamento",
                     title: "Faça seu Pagamento",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <HandCoinsIcon color={color} size={size} />
                     ),
@@ -301,7 +321,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Cashback",
                     title: "Cashback",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <BanknoteArrowDownIcon color={color} size={size} />
                     ),
@@ -315,7 +335,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Histórico de Compras",
                     title: "Histórico de Compras",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <HistoryIcon color={color} size={size} />
                     ),
@@ -329,7 +349,7 @@ export default function DrawerLayout() {
                     drawerLabel: "Protocolo de assistência",
                     title: "Protocolo de assistência",
                     headerShown: false,
-                    drawerItemStyle: { display: signedIn ? 'flex' : 'none' },
+                    drawerItemStyle: { ...MENU_ITEM_STYLE, display: signedIn ? 'flex' : 'none' },
                     drawerIcon: ({ color, size }) => (
                         <WrenchIcon color={color} size={size} />
                     ),

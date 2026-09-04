@@ -7,21 +7,25 @@ import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect } from 'expo-router';
 import { WrenchIcon } from 'lucide-react-native';
 import React, { useCallback, useRef, useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 
 type Protocol = {
   nProtocolo: string;
   produto: string;
+  dtEmissao?: string;
   [key: string]: any;
 };
 
 const AssistanceProtocol = () => {
   const { user, expiredSession } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [protocols, setProtocols] = useState<Protocol[]>([]);
 
   const getProtocols = useCallback(async () => {
-    if (!user?.token) return;
+    if (!user?.token) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -29,7 +33,7 @@ const AssistanceProtocol = () => {
         `(WS_PROTOCOLO_ASSISTENCIA)?token=${user.token}`
       );
 
-      const { data, token, message } = response.data.resposta;
+      const { data, token, message } = response.data?.resposta ?? {};
       if (!token) {
         Alert.alert('Atenção', message, [
           {
@@ -42,25 +46,14 @@ const AssistanceProtocol = () => {
         return;
       }
 
-      if (!token) {
-        Alert.alert('Atenção', message, [
-          {
-            text: 'Ok',
-            onPress: () => {
-              expiredSession();
-            },
-          },
-        ]);
-        return;
-      }
-
-      setProtocols(data || []);
+      setProtocols(Array.isArray(data) ? data : data ? [data] : []);
     } catch (error) {
       console.log(error);
+      setProtocols([]);
     } finally {
       setLoading(false);
     }
-  }, [user?.token]);
+  }, [user?.token, expiredSession]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,6 +81,9 @@ const AssistanceProtocol = () => {
           <Text className="text-gray-600">
             {item.produto}
           </Text>
+          <Text className="mt-2 text-sm text-gray-400">
+            Emissão: {item.dtEmissao || '-'}
+          </Text>
         </CardContent>
       </Card>
     </Pressable>
@@ -111,16 +107,21 @@ const AssistanceProtocol = () => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             onRefresh={getProtocols}
-            refreshing={loading}
+            refreshing={loading && protocols.length > 0}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={
-              !loading ? (
+              loading ? (
+                <View className="items-center py-12">
+                  <ActivityIndicator size="large" color="#1a9cd9" />
+                  <Text className="mt-3 text-gray-500">Carregando protocolos...</Text>
+                </View>
+              ) : (
                 <View className="items-center">
                   <Text className="text-gray-400">
                     Nenhum protocolo encontrado
                   </Text>
                 </View>
-              ) : null
+              )
             }
           />
         </View>

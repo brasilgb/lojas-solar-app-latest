@@ -57,8 +57,10 @@ export default function SignIn() {
         let mounted = true;
 
         async function loadBiometricsAvailability() {
-            const hasHardware = await LocalAuthentication.hasHardwareAsync();
-            const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+            const [hasHardware, isEnrolled] = await Promise.all([
+                LocalAuthentication.hasHardwareAsync(),
+                LocalAuthentication.isEnrolledAsync(),
+            ]);
 
             if (mounted) {
                 setBiometricsAvailable(hasHardware && isEnrolled);

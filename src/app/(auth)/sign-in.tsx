@@ -38,16 +38,18 @@ export default function SignIn() {
 
         async function redirectSavedCustomerWithBiometrics() {
             try {
-                const hasHardware = await LocalAuthentication.hasHardwareAsync();
-                const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-                if (!hasHardware || !isEnrolled) {
-                    return;
-                }
-
                 const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
 
                 if (!storedCustomer) {
+                    return;
+                }
+
+                const [hasHardware, isEnrolled] = await Promise.all([
+                    LocalAuthentication.hasHardwareAsync(),
+                    LocalAuthentication.isEnrolledAsync(),
+                ]);
+
+                if (!hasHardware || !isEnrolled) {
                     return;
                 }
 

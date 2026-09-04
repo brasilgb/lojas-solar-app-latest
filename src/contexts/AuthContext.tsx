@@ -9,6 +9,7 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { Alert } from 'react-native';
@@ -80,13 +81,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [positionGlobal, setPositionGlobal] = useState<any>([0, 0]);
   const [returnStore, setReturnStore] = useState<any>('');
   const [infoCustomerToExcludeData, setInfoCustomerToExcludeData] = useState<any>([]);
+  const deviceIdPromiseRef = useRef<Promise<string> | null>(null);
+
+  const resolveDeviceId = useCallback(async () => {
+    if (deviceId) return deviceId;
+
+    if (!deviceIdPromiseRef.current) {
+      deviceIdPromiseRef.current = getPersistentUniqueId();
+    }
+
+    const currentDeviceId = await deviceIdPromiseRef.current;
+    setDeviceId(currentDeviceId);
+    return currentDeviceId;
+  }, [deviceId]);
 
   useEffect(() => {
-    (async () => {
-      const deviceId = await getPersistentUniqueId();
-      setDeviceId(deviceId);
-    })();
-  }, []);
+    resolveDeviceId();
+  }, [resolveDeviceId]);
 
   // ... dentro do seu AuthProvider
   useEffect(() => {
@@ -285,10 +296,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setMessage(undefined);
 
     try {
-      const currentDeviceId = deviceId || await getPersistentUniqueId();
-      if (!deviceId) {
-        setDeviceId(currentDeviceId);
-      }
+      const currentDeviceId = await resolveDeviceId();
 
       const normalizedCpfCnpj = normalizeCpfCnpj(credentials.cpfcnpj);
       const response = await appservice.get(`(WS_VERIFICAR_SENHA_APP)?cpfcnpj=${encodeURIComponent(normalizedCpfCnpj)}&senha=${encodeURIComponent(credentials.senha)}&deviceId=${encodeURIComponent(currentDeviceId)}`)
@@ -313,13 +321,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return
       }
 
-      if (credentials.connected) {
-        await SecureStore.setItemAsync('keepUserLoggedIn', 'true');
-      } else {
-        await SecureStore.deleteItemAsync('keepUserLoggedIn');
-      }
-
-      let userData = {
+      const userData = {
         cpfcnpj: normalizedCpfCnpj,
         nomeCliente: credentials.nomeCliente,
         codigoCliente: credentials.codigoCliente,
@@ -327,7 +329,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setUser(userData);
-      await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+      await Promise.all([
+        credentials.connected
+          ? SecureStore.setItemAsync(KEEP_LOGGED_IN_KEY, 'true')
+          : SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY),
+        SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData)),
+      ]);
       // Re-sincroniza o device com o backend agora que o codcli é conhecido
       // (o registro feito na abertura do app pode ter ocorrido antes do
       // login, com codcli "0"). Best-effort, não bloqueia a navegação.
@@ -369,10 +376,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const currentDeviceId = deviceId || await getPersistentUniqueId();
-      if (!deviceId) {
-        setDeviceId(currentDeviceId);
-      }
+      const currentDeviceId = await resolveDeviceId();
 
       const normalizedCpfCnpj = normalizeCpfCnpj(credentials.cpfcnpj);
       const response = await appservice.get(
@@ -508,7 +512,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Desassocia o device deste cliente no backend, para que um aparelho
     // compartilhado/reutilizado não continue recebendo pushes direcionados
     // ao cliente que acabou de sair.
-    const currentDeviceId = deviceId || await getPersistentUniqueId();
+    const currentDeviceId = await resolveDeviceId();
     registerPushDevice(currentDeviceId, '0');
     router.replace({
       pathname: '/(drawer)',
@@ -558,7 +562,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setLoading(false);
     setMessage(undefined);
-    const currentDeviceId = deviceId || await getPersistentUniqueId();
+    const currentDeviceId = await resolveDeviceId();
     registerPushDevice(currentDeviceId, '0');
     router.replace({
       pathname: '/(drawer)',

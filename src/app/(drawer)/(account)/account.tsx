@@ -21,16 +21,21 @@ export default function Account() {
     const { user, setUser, expiredSession, setInfoCustomerToExcludeData } = useAuth();
     const [loadingAccount, setLoadingAccount] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [account, setAccount] = useState<any>([]);
+    const [account, setAccount] = useState<any>({});
     const [message, setMessage] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         const getAccount = async () => {
+            if (!user?.token) {
+                setLoadingAccount(false);
+                return;
+            }
+
             setLoadingAccount(true)
             setMessage(undefined)
             try {
                 const response = await appservice.get(`(WS_CARREGA_CLIENTE)?token=${user?.token}`);
-                const { data, message, success, token } = response.data?.resposta;
+                const { data, message, success, token } = response.data?.resposta ?? {};
                 if (!token) {
                     Alert.alert('Atenção', message, [
                         {
@@ -47,6 +52,11 @@ export default function Account() {
                     setMessage(message)
                     return
                 }
+                if (!data || typeof data !== 'object') {
+                    setMessage('O servidor não retornou os dados da conta.');
+                    return;
+                }
+
                 setAccount(data);
                 let infoCustomer = {
                     emailCliente: data.emailCliente,
@@ -69,7 +79,7 @@ export default function Account() {
             }
         }
         getAccount();
-    }, [])
+    }, [user?.token])
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<AccountSchema>({
         defaultValues: {

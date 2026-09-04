@@ -16,7 +16,10 @@ import MonthPicker from 'react-native-month-year-picker';
 
 export default function HistoryCashback() {
     const { user } = useAuth();
-    const params = useLocalSearchParams();
+    const params = useLocalSearchParams<{
+        credTotal?: string | string[];
+        porcent?: string | string[];
+    }>();
     const [loading, setLoading] = useState<boolean>(false);
     const [activeOrder, setActiveOrder] = useState<any>(null);
     const [cashbackSolicitado, setCashbackSolicitado] = useState<any>([]);
@@ -36,10 +39,14 @@ export default function HistoryCashback() {
                 anochave: moment(date).format('YYYY'),
             })
                 .then((response) => {
-                    setPdvCustomer(response.data.resposta.dados);
+                    const dados = response?.data?.resposta?.dados;
+                    setPdvCustomer(
+                        Array.isArray(dados) ? dados : dados ? [dados] : [],
+                    );
                 })
                 .catch((error) => {
                     console.log('error', error);
+                    setPdvCustomer([]);
                 })
                 .finally(() => setLoading(false));
         };
@@ -59,12 +66,18 @@ export default function HistoryCashback() {
         setActiveOrder(id);
         setCashbackSolicitado(item);
 
-        let maxCashbach: number = ((item?.total * Number(params?.porcent)) /
-            100) as number;
+        const porcent = Number(
+            Array.isArray(params.porcent) ? params.porcent[0] : params.porcent,
+        ) || 0;
+        const credTotal = Number(
+            Array.isArray(params.credTotal) ? params.credTotal[0] : params.credTotal,
+        ) || 0;
+        const total = Number(item?.total) || 0;
+        const maxCashbach = (total * porcent) / 100;
         const aapplyCashback =
-            Number(params?.credTotal) >= Number(maxCashbach)
+            credTotal >= maxCashbach
                 ? maxCashbach
-                : params?.credTotal;
+                : credTotal;
         setApplyCashback(aapplyCashback);
     };
 
@@ -92,7 +105,8 @@ export default function HistoryCashback() {
 
     const renderItem = ({ item, index }: any) => {
         const isSelected = activeOrder === index;
-        const isDisabled = item.pixgerado;
+        const isDisabled = item.pixgerado === true || Number(item.pixgerado) === 1;
+        const total = Number(item.total) || 0;
 
         return (
             <TouchableOpacity
@@ -117,7 +131,7 @@ export default function HistoryCashback() {
                     </View>
 
                     <Text className="text-lg font-bold text-solar-blue-secondary">
-                        R$ {maskMoney(item.total.toFixed(2))}
+                        R$ {maskMoney(total.toFixed(2))}
                     </Text>
                 </View>
 
@@ -130,7 +144,7 @@ export default function HistoryCashback() {
                             className={`text-xs ${isDisabled ? 'text-gray-500' : 'text-green-700'
                                 }`}
                         >
-                            {isDisabled ? 'Em análise' : 'Disponível'}
+                            {isDisabled ? 'Concluído' : 'Disponível'}
                         </Text>
                     </View>
 

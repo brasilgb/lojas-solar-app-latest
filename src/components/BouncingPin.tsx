@@ -43,7 +43,10 @@ const BouncingPin = () => {
     });
 
     const openMap = () => {
-        if (returnStore) {
+        const latitude = Number(returnStore?.latitude);
+        const longitude = Number(returnStore?.longitude);
+
+        if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
             const url = `https://www.google.com/maps/dir/?api=1&destination=${returnStore.latitude},${returnStore.longitude}`;
             Linking.openURL(url);
         }

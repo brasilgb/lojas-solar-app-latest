@@ -136,7 +136,9 @@ export default function Home() {
                 <View className="mx-4 mt-4 rounded-2xl px-4 py-2 items-center">
                     <Text className="text-gray-600">Loja mais próxima</Text>
                     <Text className="font-bold text-lg text-gray-800 mt-1">
-                        {returnStore && returnStore?.cidade.split('-')[0] || 'Não identificado'}
+                        {returnStore?.cidade
+                            ? String(returnStore.cidade).split('-')[0].trim()
+                            : 'Não identificado'}
                     </Text>
                     <Text className="text-gray-500 mb-3">Venha nos visitar 📍</Text>
                     <BouncingPin />

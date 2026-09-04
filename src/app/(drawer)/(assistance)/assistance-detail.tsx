@@ -6,7 +6,7 @@ import appservice from '@/services/appservice';
 import { useLocalSearchParams } from 'expo-router';
 import { WrenchIcon } from 'lucide-react-native';
 import React, { useEffect, useState, useCallback } from 'react';
-import { Text, View, ScrollView } from 'react-native';
+import { ActivityIndicator, Text, View, ScrollView } from 'react-native';
 
 type Detail = {
     Abertura?: string;
@@ -18,16 +18,19 @@ type Detail = {
 };
 
 const AssistanceDetail = () => {
-    const { user } = useAuth();
+    const { user, expiredSession } = useAuth();
     const params = useLocalSearchParams();
 
     const dataAssistance = params as any;
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [details, setDetails] = useState<Detail>({});
 
     const getDetails = useCallback(async () => {
-        if (!user?.token) return;
+        if (!user?.token) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         try {
@@ -35,14 +38,31 @@ const AssistanceDetail = () => {
                 `(WS_PROTOCOLO_DETALHE)?token=${user.token}&filial=${dataAssistance.filial}&nProtocolo=${dataAssistance.nProtocolo}`
             );
 
-            const { data } = response.data.resposta;
-            setDetails(data ?? {});
+            const { data, token, message } = response.data?.resposta ?? {};
+
+            if (!token) {
+                expiredSession();
+                return;
+            }
+
+            if (!data || typeof data !== 'object') {
+                console.log('Detalhes da assistência não retornados:', message);
+                setDetails({});
+                return;
+            }
+
+            const eventos = Array.isArray(data.eventos)
+                ? data.eventos
+                : data.eventos
+                    ? [data.eventos]
+                    : [];
+            setDetails({ ...data, eventos });
         } catch (err) {
             console.log('Erro ao buscar detalhes:', err);
         } finally {
             setLoading(false);
         }
-    }, [user?.token, dataAssistance.filial, dataAssistance.nProtocolo]);
+    }, [user?.token, dataAssistance.filial, dataAssistance.nProtocolo, expiredSession]);
 
     useEffect(() => {
         getDetails();
@@ -60,6 +80,12 @@ const AssistanceDetail = () => {
                 />
 
                 <View className='mt-4'>
+                    {loading ? (
+                        <View className="items-center justify-center py-16">
+                            <ActivityIndicator size="large" color="#1a9cd9" />
+                            <Text className="mt-3 text-gray-500">Carregando detalhes...</Text>
+                        </View>
+                    ) : (
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 20 }}
@@ -128,6 +154,7 @@ const AssistanceDetail = () => {
 
                         </Card>
                     </ScrollView>
+                    )}
                 </View>
 
             </View>
