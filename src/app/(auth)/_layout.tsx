@@ -1,6 +1,5 @@
-import React from 'react'
-import { Stack } from "expo-router";
 import DrawerHeader from '@/components/layouts/DrawerHeader';
+import { Stack } from "expo-router";
 
 export default function AuthLayout() {
     return (
@@ -16,6 +15,7 @@ export default function AuthLayout() {
                 name="check-password"
                 options={{
                     headerShown: false,
+                    animation: 'slide_from_right',
                 }}
             />
 

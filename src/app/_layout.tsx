@@ -1,41 +1,40 @@
 import '@/styles/global.css';
 import * as Application from 'expo-application';
-import * as SecureStore from 'expo-secure-store';
 import { Stack } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import * as Updates from 'expo-updates';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { getApp, getApps } from '@react-native-firebase/app';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import {
-  AuthorizationStatus,
-  getAPNSToken,
-  getMessaging,
-  getInitialNotification as getMessagingInitialNotification,
-  getToken,
-  onMessage,
-  onNotificationOpenedApp,
-  registerDeviceForRemoteMessages,
-  requestPermission as requestMessagingPermission,
+    AuthorizationStatus,
+    getAPNSToken,
+    getMessaging,
+    getInitialNotification as getMessagingInitialNotification,
+    getToken,
+    onMessage,
+    onNotificationOpenedApp,
+    requestPermission as requestMessagingPermission,
 } from '@react-native-firebase/messaging';
 
 import {
-  displayNotification,
-  handleNotificationPress,
-  parseRemoteMessage,
-  setupNotificationChannel,
+    displayNotification,
+    handleNotificationPress,
+    parseRemoteMessage,
+    setupNotificationChannel,
 } from '@/lib/notifications';
 import { registerPushDevice, setCachedFcmToken } from '@/lib/pushDevice';
 import { getPersistentUniqueId } from '@/utils/deviceStorage';
 import notifee, { EventType } from '@notifee/react-native';
 
 import {
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-  useFonts,
+    Roboto_400Regular,
+    Roboto_500Medium,
+    Roboto_700Bold,
+    useFonts,
 } from '@expo-google-fonts/roboto';
 
 import VerifyVersion from '@/components/NewVersion';
@@ -268,8 +267,6 @@ function useNotifications() {
         }
 
         await notifee.requestPermission();
-
-        await registerDeviceForRemoteMessages(messagingInstance);
 
         await setupNotificationChannel();
 

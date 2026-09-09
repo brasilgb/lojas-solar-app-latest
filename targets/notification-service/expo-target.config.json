@@ -1,0 +1,5 @@
+{
+  "type": "notification-service",
+  "name": "ClubeSolarNotificationService",
+  "deploymentTarget": "16.4"
+}

@@ -1,12 +1,10 @@
-import DateTimePicker, {
-    DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
+import { softCardShadow } from '@/styles/shadows';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { CalendarDaysIcon } from 'lucide-react-native';
 import moment from 'moment';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Platform, Pressable, Text, View } from 'react-native';
 import { Button } from './Button';
-import { softCardShadow } from '@/styles/shadows';
 
 interface AppDateTimePickerProps {
     value: Date;
@@ -15,22 +13,20 @@ interface AppDateTimePickerProps {
 
 const AppDateTimePicker = ({
     value,
-    onChange: onValueChange,
+    onChange: onDateChange,
 }: AppDateTimePickerProps) => {
     const [mode, setMode] = useState<'date' | 'time'>('date');
     const [show, setShow] = useState(false);
     const [selectedDate, setSelectedDate] = useState(value);
 
-    const onChange = (event: DateTimePickerEvent, date?: Date) => {
+    const handleValueChange = (_event: unknown, date: Date) => {
         if (Platform.OS === 'ios') {
-            if (date) setSelectedDate(date);
+            setSelectedDate(date);
             return;
         }
 
         setShow(false);
-        if (event.type === 'set' && date) {
-            onValueChange(date);
-        }
+        onDateChange(date);
     };
 
     const showMode = (currentMode: 'date' | 'time') => {
@@ -73,7 +69,8 @@ const AppDateTimePicker = ({
                     maximumDate={new Date()}
                     mode={mode}
                     is24Hour={true}
-                    onChange={onChange}
+                    onValueChange={handleValueChange}
+                    onDismiss={() => setShow(false)}
                     locale="pt"
                 />
             )}
@@ -102,7 +99,7 @@ const AppDateTimePicker = ({
                                 is24Hour
                                 themeVariant="light"
                                 textColor="#374151"
-                                onChange={onChange}
+                                onValueChange={handleValueChange}
                                 locale="pt-BR"
                             />
 
@@ -112,7 +109,7 @@ const AppDateTimePicker = ({
                                 </Pressable>
                                 <Pressable
                                     onPress={() => {
-                                        onValueChange(selectedDate);
+                                        onDateChange(selectedDate);
                                         setShow(false);
                                     }}
                                 >

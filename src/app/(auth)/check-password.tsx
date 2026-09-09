@@ -1,19 +1,19 @@
-import { View, Text, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Pressable, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
-import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { useAuth } from '@/contexts/AuthContext';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn'
-import { Link, router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon } from 'lucide-react-native';
 import { Checkbox } from '@/components/Checkbox';
-import { unMask } from '@/utils/mask';
+import { Input } from '@/components/Input';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { useAuth } from '@/contexts/AuthContext';
+import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn';
 import { softCardShadow } from '@/styles/shadows';
+import { unMask } from '@/utils/mask';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, FingerprintIcon } from 'lucide-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
 
@@ -52,6 +52,15 @@ export default function SignIn() {
     const [isSecure, setIsSecure] = useState<boolean>(true);
     const [loadingBack, setLoadingBack] = React.useState(false);
     const [biometricsAvailable, setBiometricsAvailable] = useState(false);
+    const passwordInputRef = useRef<TextInput>(null);
+
+    useEffect(() => {
+        // Aguarda a transição de navegação terminar antes de focar o campo,
+        // evitando abrir o teclado no meio da animação da tela.
+        const focusTimer = setTimeout(() => passwordInputRef.current?.focus(), 300);
+
+        return () => clearTimeout(focusTimer);
+    }, []);
 
     React.useEffect(() => {
         let mounted = true;
@@ -204,7 +213,7 @@ export default function SignIn() {
                                         name="senha"
                                         render={({ field: { value, onChange, onBlur } }) => (
                                             <Input
-                                                autoFocus
+                                                ref={passwordInputRef}
                                                 secureTextEntry={isSecure}
                                                 placeholder="Sua senha"
                                                 value={value}

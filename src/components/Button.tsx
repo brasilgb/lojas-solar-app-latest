@@ -1,5 +1,5 @@
 import {type VariantProps, cva} from 'class-variance-authority';
-import {Text, TouchableOpacity} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {cn} from '@/lib/utils';
 
@@ -71,21 +71,30 @@ function Button({
             className={cn(buttonVariants({variant, size, className}))}
             {...props}
         >
-            <Text
-                adjustsFontSizeToFit={isTextLabel}
-                minimumFontScale={0.75}
-                numberOfLines={isTextLabel ? 1 : undefined}
-                className={cn(
-                    isTextLabel && 'flex-shrink',
-                    buttonTextVariants({
-                        variant,
-                        size,
-                        className: labelClasses,
-                    }),
-                )}
-            >
-                {label}
-            </Text>
+            {isTextLabel ? (
+                <Text
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                    numberOfLines={1}
+                    className={cn(
+                        'flex-shrink',
+                        buttonTextVariants({variant, size, className: labelClasses}),
+                    )}
+                >
+                    {label}
+                </Text>
+            ) : (
+                // `Text` doesn't center a non-text child (e.g. an icon), so give it its own
+                // flex box instead of relying on `buttonTextVariants`' text-alignment classes.
+                <View
+                    className={cn(
+                        'items-center justify-center',
+                        buttonTextVariants({variant, size, className: labelClasses}),
+                    )}
+                >
+                    {label}
+                </View>
+            )}
         </TouchableOpacity>
     );
 }

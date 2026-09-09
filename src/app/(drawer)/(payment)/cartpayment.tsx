@@ -88,6 +88,10 @@ const CartPayment = () => {
 
     const [isCriticalError, setIsCriticalError] = useState(false);
     const [paymentData, setPaymentData] = useState<CartResponseData | null>(null);
+    // Diferente de `isCriticalError` (cobrança confirmada, falta atualizar a ordem): aqui não
+    // sabemos se a cobrança na Cielo chegou a acontecer, então não há nada local para reenviar —
+    // só travamos o formulário para não arriscar uma cobrança em duplicidade.
+    const [paymentStatusUnknown, setPaymentStatusUnknown] = useState(false);
 
     const getOrderNumber = (data: OrderData) =>
         data.numeroOrdem ?? data.OrderNumber ?? data.Detail?.OrderNumber;
@@ -164,7 +168,7 @@ const CartPayment = () => {
             return;
         }
 
-        const validadeOriginal = data?.dadosCartao.validadeCartao || "";
+        const validadeOriginal = data?.dadosCartao?.validadeCartao || "";
 
         let validadeFormatada = validadeOriginal;
         if (validadeOriginal.includes('/') && validadeOriginal.length <= 5) {
@@ -172,31 +176,53 @@ const CartPayment = () => {
             validadeFormatada = `${mes}/20${ano}`;
         }
 
-        const paymentResponse = await servicecart.post("(PAG_CARTAO_CREDITO)", {
-            MerchantOrderId: numeroOrdem,
-            Payment: {
-                Type: "CreditCard",
-                Amount: Math.round(parseFloat(valueOrder) * 100),
-                Currency: "BRL",
-                Country: "BRA",
-                Provider: "Cielo",
-                ServiceTaxAmount: 0,
-                Installments: 1,
-                Interest: "ByMerchant",
-                Capture: true,
-                Authenticate: false,
-                Recurrent: false,
-                SoftDescriptor: "123456789ABCD",
-                CreditCard: {
-                    CardNumber: unMask(data?.dadosCartao?.numeroCartao),
-                    Holder: data?.dadosCartao.nomeCartao,
-                    ExpirationDate: validadeFormatada,
-                    SecurityCode: data?.dadosCartao.cvvCartao,
-                    SaveCard: false,
-                    Brand: getCardBrandName(String(data?.dadosCartao?.numeroCartao)),
+        let paymentResponse;
+        try {
+            paymentResponse = await servicecart.post("(PAG_CARTAO_CREDITO)", {
+                MerchantOrderId: numeroOrdem,
+                Payment: {
+                    Type: "CreditCard",
+                    Amount: Math.round(parseFloat(valueOrder) * 100),
+                    Currency: "BRL",
+                    Country: "BRA",
+                    Provider: "Cielo",
+                    ServiceTaxAmount: 0,
+                    Installments: 1,
+                    Interest: "ByMerchant",
+                    Capture: true,
+                    Authenticate: false,
+                    Recurrent: false,
+                    SoftDescriptor: "123456789ABCD",
+                    CreditCard: {
+                        CardNumber: unMask(data?.dadosCartao?.numeroCartao),
+                        Holder: data?.dadosCartao?.nomeCartao,
+                        ExpirationDate: validadeFormatada,
+                        SecurityCode: data?.dadosCartao?.cvvCartao,
+                        SaveCard: false,
+                        Brand: getCardBrandName(String(data?.dadosCartao?.numeroCartao)),
+                    },
                 },
-            },
-        });
+            });
+        } catch (error: any) {
+            if (error?.isSessionPreflightError) {
+                // Falhou só a abertura de sessão, antes de qualquer tentativa de cobrança:
+                // é seguro deixar o cliente tentar de novo.
+                Alert.alert(
+                    "Atenção",
+                    "Não foi possível conectar ao serviço de pagamento. Verifique sua internet e tente novamente."
+                );
+                return;
+            }
+            // Erro de rede/timeout na chamada da Cielo: não dá para saber se a cobrança foi
+            // efetivada do lado da operadora antes da falha. Travamos o formulário para não
+            // arriscar reenviar e gerar uma cobrança em duplicidade.
+            setPaymentStatusUnknown(true);
+            Alert.alert(
+                "Atenção",
+                "Não foi possível confirmar se o cartão foi cobrado devido a uma falha de conexão. Não tente pagar novamente antes de verificar sua fatura ou entrar em contato com o suporte."
+            );
+            return;
+        }
 
         const responseData = paymentResponse?.data?.response || {};
         const payment = responseData?.Payment || {};
@@ -443,6 +469,15 @@ const CartPayment = () => {
                                 onPress={() => paymentData && sendOrderAtualize(paymentData)}
                                 className="w-full bg-orange-500"
                             />
+                        ) : paymentStatusUnknown ? (
+                            // Não sabemos se a cobrança aconteceu: sem dado local para reenviar,
+                            // então só bloqueamos o formulário em vez de oferecer um botão de ação.
+                            <Button
+                                label="Pagamento indisponível"
+                                variant="destructive"
+                                disabled
+                                className="w-full bg-orange-500"
+                            />
                         ) : (
                             <Button
                                 label={loading ? <ActivityIndicator size="small" color="#bccf00" /> : "Continuar pagamento"}
@@ -458,6 +493,13 @@ const CartPayment = () => {
                             <Text className="text-center text-xs text-red-600 mt-2 font-bold">
                                 Atenção: O valor já foi debitado do seu cartão.
                                 Não saia desta tela até confirmar.
+                            </Text>
+                        )}
+
+                        {paymentStatusUnknown && (
+                            <Text className="text-center text-xs text-red-600 mt-2 font-bold">
+                                Não foi possível confirmar se o pagamento foi realizado. Verifique a fatura do seu
+                                cartão antes de tentar novamente e, se necessário, entre em contato com o suporte.
                             </Text>
                         )}
                     </View>

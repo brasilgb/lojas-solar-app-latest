@@ -1,18 +1,18 @@
-import { View, Text, Image, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { ScreenLayout } from '@/components/layouts/ScreenLayout'
-import { useAuth } from '@/contexts/AuthContext';
-import { Controller, useForm } from 'react-hook-form';
-import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SigInSchema, sigInSchema } from '@/schemas/signIn'
-import { Link, router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeftIcon, LockIcon } from 'lucide-react-native';
-import { maskCpfCnpj, unMask } from '@/utils/mask';
+import { Input } from '@/components/Input';
+import { ScreenLayout } from '@/components/layouts/ScreenLayout';
+import { useAuth } from '@/contexts/AuthContext';
+import { SigInSchema, sigInSchema } from '@/schemas/signIn';
 import { softCardShadow } from '@/styles/shadows';
+import { maskCpfCnpj, unMask } from '@/utils/mask';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { ArrowLeftIcon, LockIcon } from 'lucide-react-native';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
 
@@ -84,7 +84,7 @@ export default function SignIn() {
         };
     }, [redirectTo]);
 
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<SigInSchema>({
+    const { control, handleSubmit, formState: { errors } } = useForm<SigInSchema>({
         defaultValues: {
             cpfcnpj: '',
         },
@@ -94,7 +94,6 @@ export default function SignIn() {
     const onSubmit = async (data: SigInSchema) => {
         Keyboard.dismiss();
         await signIn(unMask(data.cpfcnpj), redirectTo);
-        reset();
     };
 
     const handleGoBack = () => {

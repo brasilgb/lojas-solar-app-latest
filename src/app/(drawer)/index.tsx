@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { useFocusEffect } from 'expo-router';
 
 import ButtonMenu from '@/components/ButtonMenu';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { openNotificationUrl } from '@/lib/notifications';
 import appservice from '@/services/appservice';
 import { AppCaroucelProps } from '@/types/app-types';
 import { BanknoteArrowDownIcon, FilePenLineIcon, HandCoinsIcon, HistoryIcon, MapPinIcon, PhoneCallIcon, ShoppingBasket, UserIcon, WrenchIcon } from 'lucide-react-native';
@@ -36,33 +38,35 @@ export default function Home() {
     const [dataCaroucel, setDataCaroucel] = useState<AppCaroucelProps[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
 
-    useEffect(() => {
-        async function getCarrocel() {
-            await appservice
-                .get(`(WS_CARROCEL_PROMOCAO)`)
-                .then((response: any) => {
-                    const { data } = response.data.resposta;
-                    const imagesToPrefetch = data.carrocel.map((item: any) => item.carLinkImagem);
-                    // Inicia o download de todas as imagens em background
-                    Promise.all(imagesToPrefetch.map((url: any) => ExpoImage.prefetch(url)))
-                        .then(() => {
-                            setDataCaroucel(data.carrocel); // Só seta o estado após o download (opcional)
-                        })
-                        .catch(() => setDataCaroucel(data.carrocel)); // Ou seta de qualquer forma se falhar
+    useFocusEffect(
+        useCallback(() => {
+            async function getCarrocel() {
+                await appservice
+                    .get(`(WS_CARROCEL_PROMOCAO)`)
+                    .then((response: any) => {
+                        const { data } = response.data.resposta;
+                        const imagesToPrefetch = data.carrocel.map((item: any) => item.carLinkImagem);
+                        // Inicia o download de todas as imagens em background
+                        Promise.all(imagesToPrefetch.map((url: any) => ExpoImage.prefetch(url)))
+                            .then(() => {
+                                setDataCaroucel(data.carrocel); // Só seta o estado após o download (opcional)
+                            })
+                            .catch(() => setDataCaroucel(data.carrocel)); // Ou seta de qualquer forma se falhar
 
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-        }
-        getCarrocel();
-    }, []);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+            }
+            getCarrocel();
+        }, []),
+    );
 
     const renderItem = ({ item }: { item: AppCaroucelProps }) => {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => console.log('Clicou no banner:')} // Aqui você pode colocar navegação
+                onPress={() => openNotificationUrl(item.carLink)}
                 className="flex-1 justify-center overflow-hidden"
             >
                 <ExpoImage

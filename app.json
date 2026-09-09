@@ -14,6 +14,7 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "bundleIdentifier": "com.loja.solar",
+      "appleTeamId": "JM6Q68NP87",
       "config": {
         "googleMapsApiKey": "AIzaSyA8m2VnsHjhhYsFSRdYGwW3h_119sQOCbc",
         "usesNonExemptEncryption": false
@@ -93,6 +94,8 @@
       "fallbackToCacheTimeout": 0
     },
     "plugins": [
+      "./plugins/withDisableUserScriptSandboxing.js",
+      "@bacons/apple-targets",
       [
         "expo-image-picker",
         {

@@ -1,11 +1,12 @@
-import { Linking } from 'react-native';
 import notifee, {
-  AndroidImportance,
-  AndroidStyle,
-  AndroidVisibility,
-  EventType,
+    AndroidImportance,
+    AndroidStyle,
+    AndroidVisibility,
+    EventType,
 } from '@notifee/react-native';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { File, Paths } from 'expo-file-system';
+import { Linking, Platform } from 'react-native';
 
 export interface NotificationPayload {
   title?: string;
@@ -67,6 +68,10 @@ export async function displayNotification(payload: NotificationPayload) {
         ? messageId
         : `local-${Date.now()}`;
 
+    const iosImageUrl = Platform.OS === 'ios' && imageUrl
+      ? await downloadNotificationImage(imageUrl, notificationId)
+      : undefined;
+
     await notifee.displayNotification({
       id: notificationId,
       title: title || 'Nova mensagem',
@@ -74,6 +79,7 @@ export async function displayNotification(payload: NotificationPayload) {
       body,
       data: {
         url: url ?? '',
+        imageUrl: imageUrl ?? '',
         messageId: notificationId,
       },
       android: {
@@ -95,7 +101,7 @@ export async function displayNotification(payload: NotificationPayload) {
           },
       },
       ios: {
-        attachments: imageUrl ? [{ url: imageUrl }] : [],
+        attachments: iosImageUrl ? [{ url: iosImageUrl }] : [],
         foregroundPresentationOptions: {
           badge: true,
           sound: true,
@@ -106,6 +112,22 @@ export async function displayNotification(payload: NotificationPayload) {
     });
   } catch (error) {
     console.error('Erro ao exibir notificacao:', error);
+  }
+}
+
+async function downloadNotificationImage(imageUrl: string, notificationId: string) {
+  if (!/^https?:\/\//i.test(imageUrl)) {
+    return undefined;
+  }
+
+  try {
+    const extension = imageUrl.split('?')[0].split('.').pop()?.replace(/[^a-z0-9]/gi, '') || 'jpg';
+    const file = new File(Paths.cache, `notification-${notificationId}.${extension}`);
+    const downloadedFile = await File.downloadFileAsync(imageUrl, file, { idempotent: true });
+    return downloadedFile.uri;
+  } catch (error) {
+    console.error('Erro ao baixar imagem da notificacao:', error);
+    return undefined;
   }
 }
 
@@ -161,9 +183,6 @@ export async function handleNotifeeBackgroundEvent({
   detail: { notification?: { data?: { url?: string } } };
 }) {
   if (type === EventType.PRESS) {
-    console.log(
-      'Notificacao pressionada em background:',
-      detail.notification?.data
-    );
+    await openNotificationUrl(detail.notification?.data?.url);
   }
 }

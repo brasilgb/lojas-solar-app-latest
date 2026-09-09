@@ -10,18 +10,14 @@ import { FlashList } from '@shopify/flash-list'
 import { router, useFocusEffect } from 'expo-router'
 import { BanknoteArrowDownIcon } from 'lucide-react-native'
 import moment from 'moment'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, Dimensions, Text, TouchableOpacity, View } from 'react-native'
-import { Modalize } from 'react-native-modalize'
+import { useCallback, useState } from 'react'
+import { Text, View } from 'react-native'
 
 export default function Cashback() {
 
   const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [historicoCashback, setHisoricoCashback] = useState<any>([]);
-  const [itemsModal, setItemsModal] = useState<any>(null);
-  const [itensNota, setItensNota] = useState<any>([]);
-  const [loadingItensNota, setLoadingItensNota] = useState(false);
 
   let dataAtual = new Date();
   let dataAnterior = new Date(
@@ -31,16 +27,6 @@ export default function Cashback() {
   );
   const [dateIni, setDateIni] = useState(dataAnterior);
   const [dateFin, setDateFin] = useState(dataAtual);
-
-  const modalizeRef = useRef<Modalize>(null);
-
-  const onOpen = () => {
-    modalizeRef.current?.open();
-  };
-
-  const onClose = () => {
-    modalizeRef.current?.close();
-  };
 
   const getHistoricoCashback = async () => {
     setLoading(true);
@@ -88,49 +74,11 @@ export default function Cashback() {
 
   };
 
-  useEffect(() => {
-    if (!itemsModal) return;
-
-    const getItensNota = async () => {
-      setLoadingItensNota(true);
-      await appservice
-        .post('(WS_CONSULTA_NF_CASHBACK)', {
-          orige: itemsModal.orige,
-          serie: itemsModal.serie,
-          numnf: itemsModal.numnf,
-        })
-        .then(response => {
-          const responseData = response?.data?.respnfcash;
-          const details = Array.isArray(responseData)
-            ? responseData
-            : responseData?.data ?? response?.data?.data ?? [];
-
-          setItensNota(Array.isArray(details) ? details : []);
-        })
-        .catch(error => {
-          console.log('error', error);
-          setItensNota([]);
-        })
-        .finally(() => setLoadingItensNota(false));
-    };
-    getItensNota();
-  }, [itemsModal]);
-
   const renderItem = ({ item }: any) => {
     const isCredito = item.debcre === 'C';
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => {
-          if (isCredito) {
-            setItensNota([]);
-            setItemsModal(item);
-            onOpen();
-          }
-        }}
-        className="bg-white p-4 rounded-2xl border border-gray-200 mb-2"
-      >
+      <View className="bg-white p-4 rounded-2xl border border-gray-200 mb-2">
         <View className="flex-row justify-between items-center">
 
           {/* LADO ESQUERDO */}
@@ -155,28 +103,9 @@ export default function Cashback() {
             {maskMoney(Number(item.valor).toFixed(2))}
           </Text>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
-
-  const RenderItemsNota = ({ item }: any) => (
-    <View className="bg-gray-100 rounded-xl p-3 mb-2 mx-4">
-
-      <View className="flex-row justify-between mb-1">
-        <Text className="text-sm font-medium text-gray-700">
-          Item {item.item}
-        </Text>
-
-        <Text className="text-sm font-bold text-solar-blue-primary">
-          R$ {maskMoney(Number(item.valor).toFixed(2))}
-        </Text>
-      </View>
-
-      <Text className="text-xs text-gray-500">
-        {item.desite}
-      </Text>
-    </View>
-  );
 
   return (
     <ScreenLayout backgroundColor='bg-solar-blue-primary'>
@@ -242,47 +171,12 @@ export default function Cashback() {
 
           <View className="shrink-0 pt-2 pb-1">
             <Button
-              label={loading ? <ActivityIndicator color={'white'} size={'small'} /> : 'Solicitar Cashback'}
+              label="Solicitar Cashback"
               onPress={handleHistoricoCachback}
               disabled={!historicoCashback?.data?.length}
             />
           </View>
         </View>
-
-        <Modalize
-          modalHeight={Dimensions.get('window').height - 200}
-          modalTopOffset={80}
-          ref={modalizeRef}
-          HeaderComponent={
-            <View className="items-center py-4 border-b border-gray-200">
-              <Text className="text-lg font-semibold text-gray-700">
-                Nota Fiscal
-              </Text>
-
-              <Text className="text-2xl font-bold text-solar-blue-primary mt-1">
-                {itemsModal?.numnf}
-              </Text>
-            </View>
-          }
-          flatListProps={{
-            data: itensNota,
-            keyExtractor: (item: any, index: any) => `${item}-${index}`,
-            renderItem: ({ item, index }: { item: any; index: number }) => (
-              <RenderItemsNota item={item} index={index} />
-            ),
-            keyboardShouldPersistTaps: 'handled',
-            showsVerticalScrollIndicator: false,
-            ListEmptyComponent: (
-              <View className="items-center px-4 py-8">
-                <Text className="text-sm text-gray-500">
-                  {loadingItensNota
-                    ? 'Carregando detalhes...'
-                    : 'Nenhum detalhe encontrado para esta nota.'}
-                </Text>
-              </View>
-            ),
-          }}
-        />
 
       </View>
     </ScreenLayout>
