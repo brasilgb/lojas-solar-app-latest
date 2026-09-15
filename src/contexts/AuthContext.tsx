@@ -334,6 +334,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ? SecureStore.setItemAsync(KEEP_LOGGED_IN_KEY, 'true')
           : SecureStore.deleteItemAsync(KEEP_LOGGED_IN_KEY),
         SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData)),
+        // Só marca este aparelho como "habilitado para biometria deste cliente"
+        // depois de uma senha validada com sucesso pelo backend — é o mesmo
+        // momento em que o servidor vincula o device a este codcli (atualiza-device
+        // em verificar-senha). Sem isso, a tela de senha oferecia biometria pra
+        // qualquer cliente que digitasse o CPF, mesmo em aparelho compartilhado
+        // vinculado a outro cliente, resultando em "Aparelho não autorizado para
+        // este cliente" ao tocar em Entrar com biometria.
+        credentials.connected
+          ? SecureStore.setItemAsync(
+              LAST_AUTH_CUSTOMER_KEY,
+              JSON.stringify({
+                cpfcnpj: normalizedCpfCnpj,
+                nomeCliente: credentials.nomeCliente,
+                codigoCliente: credentials.codigoCliente,
+              }),
+            )
+          : SecureStore.deleteItemAsync(LAST_AUTH_CUSTOMER_KEY),
       ]);
       // Re-sincroniza o device com o backend agora que o codcli é conhecido
       // (o registro feito na abertura do app pode ter ocorrido antes do

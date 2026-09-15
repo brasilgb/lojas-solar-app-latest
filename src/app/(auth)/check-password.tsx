@@ -71,8 +71,24 @@ export default function SignIn() {
                 LocalAuthentication.isEnrolledAsync(),
             ]);
 
+            if (!hasHardware || !isEnrolled) {
+                if (mounted) setBiometricsAvailable(false);
+                return;
+            }
+
+            // Hardware sozinho não basta: o login por biometria só funciona no
+            // backend se este aparelho específico já foi vinculado a este cliente
+            // (via um login por senha bem-sucedido). Sem essa checagem, o botão
+            // "Entrar com biometria" aparecia pra qualquer cliente que digitasse o
+            // CPF — inclusive em aparelho compartilhado/reutilizado vinculado a
+            // outro cliente — e ao tocar caía direto em "Aparelho não autorizado
+            // para este cliente", mesmo o login por senha funcionando normalmente.
+            const cpfcnpj = unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim());
+            const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
+            const lastAuthCpfCnpj = storedCustomer ? JSON.parse(storedCustomer)?.cpfcnpj : undefined;
+
             if (mounted) {
-                setBiometricsAvailable(hasHardware && isEnrolled);
+                setBiometricsAvailable(!!cpfcnpj && cpfcnpj === lastAuthCpfCnpj);
             }
         }
 
@@ -81,30 +97,7 @@ export default function SignIn() {
         return () => {
             mounted = false;
         };
-    }, []);
-
-    React.useEffect(() => {
-        async function saveLastAuthCustomer() {
-            const cpfcnpj = unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim());
-            const nomeCliente = getParamValue(params?.nomeCliente);
-            const codigoCliente = getParamValue(params?.codigoCliente);
-
-            if (!biometricsAvailable || !cpfcnpj || !nomeCliente || !codigoCliente) {
-                return;
-            }
-
-            await SecureStore.setItemAsync(
-                LAST_AUTH_CUSTOMER_KEY,
-                JSON.stringify({
-                    cpfcnpj,
-                    nomeCliente,
-                    codigoCliente,
-                }),
-            );
-        }
-
-        saveLastAuthCustomer();
-    }, [biometricsAvailable, params?.codigoCliente, params?.cpfcnpj, params?.nomeCliente]);
+    }, [params?.cpfcnpj]);
 
     const { control, handleSubmit, formState: { errors } } = useForm<CheckPasswordSchema>({
         defaultValues: {
