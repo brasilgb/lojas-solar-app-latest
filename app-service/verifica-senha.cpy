@@ -8,9 +8,3 @@
              05 app-ver-senha-senha-in              pic x(10).
            03 identified by "deviceId".
              05 app-ver-senha-device-in             pic x any length.
-             
-              
-                    
-                    
-                    
-                                                
