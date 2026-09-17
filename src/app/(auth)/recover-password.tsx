@@ -5,8 +5,13 @@ import { KeyRoundIcon } from 'lucide-react-native'
 import React from 'react'
 import { View, Text } from 'react-native'
 
+function getParamValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
 export default function RecoverPassword() {
   const params = useLocalSearchParams()
+  const email = getParamValue(params?.email)
 
   return (
     <ScreenLayout backgroundColor='bg-white'>
@@ -24,18 +29,20 @@ export default function RecoverPassword() {
           </Text>
 
           <Text className="text-sm text-gray-600 text-center leading-5 mb-4">
-            Enviamos para o seu e-mail um link para redefinir sua senha.
+            Enviamos para o seu e-mail uma nova senha temporária.
           </Text>
 
           <View className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
             <Text className="text-sm text-gray-600 text-center">
-              Acesse seu e-mail e clique no link. Você será direcionado ao portal de alteração de senha.
+              Acesse seu e-mail e copie a senha temporária recebida. Depois, entre no app com ela e acesse "Alterar senha" para escolher uma nova senha.
             </Text>
           </View>
 
-          <Text className="text-sm text-gray-500 text-center mb-6">
-            Seu e-mail: {params?.email}
-          </Text>
+          {!!email && (
+            <Text className="text-sm text-gray-500 text-center mb-6">
+              E-mail: {email}
+            </Text>
+          )}
 
           <Button
             onPress={() => router.replace('/sign-in')}
