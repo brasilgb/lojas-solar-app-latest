@@ -27,9 +27,13 @@ function getParamValue(value: string | string[] | undefined) {
 }
 
 export default function SignIn() {
-    const { signIn, loading, message } = useAuth();
+    const { signIn, loading, message, recoverPasswordSubmit } = useAuth();
     const params = useLocalSearchParams();
     const redirectTo = getParamValue(params?.redirectTo);
+    // Setado pelo botão de voltar da tela de senha, quando o usuário quer
+    // entrar com um CPF diferente do último autenticado por biometria neste
+    // aparelho — nesse caso não redireciona sozinho pra tela de senha.
+    const switchUser = getParamValue(params?.switchUser) === '1';
     const [loadingBack, setLoadingBack] = React.useState(false);
     const [checkingSavedCustomer, setCheckingSavedCustomer] = React.useState(true);
 
@@ -38,6 +42,10 @@ export default function SignIn() {
 
         async function redirectSavedCustomerWithBiometrics() {
             try {
+                if (switchUser) {
+                    return;
+                }
+
                 const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
 
                 if (!storedCustomer) {
@@ -82,9 +90,9 @@ export default function SignIn() {
         return () => {
             mounted = false;
         };
-    }, [redirectTo]);
+    }, [redirectTo, switchUser]);
 
-    const { control, handleSubmit, formState: { errors } } = useForm<SigInSchema>({
+    const { control, handleSubmit, getValues, trigger, formState: { errors } } = useForm<SigInSchema>({
         defaultValues: {
             cpfcnpj: '',
         },
@@ -94,6 +102,17 @@ export default function SignIn() {
     const onSubmit = async (data: SigInSchema) => {
         Keyboard.dismiss();
         await signIn(unMask(data.cpfcnpj), redirectTo);
+    };
+
+    const recoverPasswordHandle = async () => {
+        const isValid = await trigger('cpfcnpj');
+
+        if (!isValid) {
+            return;
+        }
+
+        Keyboard.dismiss();
+        await recoverPasswordSubmit(unMask(getValues('cpfcnpj')));
     };
 
     const handleGoBack = () => {
@@ -188,6 +207,16 @@ export default function SignIn() {
 
                                     {message && <Text className='text-red-500'>{message}</Text>}
                                     {errors.cpfcnpj && <Text className='text-red-500'>{errors.cpfcnpj.message}</Text>}
+
+                                    <View className='items-end mt-2'>
+                                        <Button
+                                            variant="link"
+                                            label="Esqueci minha senha"
+                                            className="p-0"
+                                            labelClasses="text-sm text-gray-500"
+                                            onPress={recoverPasswordHandle}
+                                        />
+                                    </View>
                                 </View>
 
                                 {/* BOTÃO */}

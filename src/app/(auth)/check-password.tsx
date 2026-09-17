@@ -137,7 +137,16 @@ export default function SignIn() {
         setLoadingBack(true);
         setTimeout(() => {
             setLoadingBack(false);
-            router.replace('/');
+            // Volta pra tela de CPF (não pra Home), pra permitir entrar com outro
+            // usuário. switchUser avisa a tela de CPF pra não redirecionar de
+            // volta pra cá sozinha usando o cliente salvo pra biometria.
+            router.replace({
+                pathname: '/sign-in',
+                params: {
+                    switchUser: '1',
+                    ...(getParamValue(params?.redirectTo) ? { redirectTo: getParamValue(params?.redirectTo) } : {}),
+                },
+            });
         }, 500);
     }
 
