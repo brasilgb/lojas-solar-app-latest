@@ -3,8 +3,10 @@ import { Checkbox } from '@/components/Checkbox';
 import { Input } from '@/components/Input';
 import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { registerPushDevice } from '@/lib/pushDevice';
 import { CheckPasswordSchema, checkPasswordSchema } from '@/schemas/signIn';
 import { softCardShadow } from '@/styles/shadows';
+import { getPersistentUniqueId } from '@/utils/deviceStorage';
 import { unMask } from '@/utils/mask';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -133,6 +135,24 @@ export default function SignIn() {
         });
     }
 
+    const handleLogoutBiometrics = async () => {
+        // Esquece a biometria deste cliente neste aparelho: apaga o cache local
+        // (o botão de biometria some) e desassocia o device do cliente no
+        // backend, igual ao disconnect() do logout normal — sem mexer em
+        // sessão/token, já que o usuário nem chegou a entrar ainda aqui.
+        setBiometricsAvailable(false);
+        await SecureStore.deleteItemAsync(LAST_AUTH_CUSTOMER_KEY);
+        const currentDeviceId = await getPersistentUniqueId();
+        registerPushDevice(currentDeviceId, '0');
+        router.replace({
+            pathname: '/sign-in',
+            params: {
+                switchUser: '1',
+                ...(getParamValue(params?.redirectTo) ? { redirectTo: getParamValue(params?.redirectTo) } : {}),
+            },
+        });
+    }
+
     const handleGoBack = () => {
         setLoadingBack(true);
         setTimeout(() => {
@@ -243,6 +263,16 @@ export default function SignIn() {
                                     <Text className="text-red-500 text-sm mt-1">
                                         {errors.senha.message}
                                     </Text>
+                                )}
+
+                                {biometricsAvailable && (
+                                    <Button
+                                        variant="link"
+                                        label="Sair"
+                                        className="self-start p-0 mt-2"
+                                        labelClasses="text-sm text-gray-500"
+                                        onPress={handleLogoutBiometrics}
+                                    />
                                 )}
                             </View>
 
