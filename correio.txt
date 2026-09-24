@@ -8,3 +8,10 @@ eas build --platform android --message "App Lojas Solar V1.5.7"
 }
 
 01880272032  123456
+
+{
+	"respesto": {
+		"success": false,
+		"message": "Pedido possui nota fiscal."
+	}
+}
