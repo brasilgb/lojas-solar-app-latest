@@ -6,8 +6,13 @@ import { ScreenLayout } from '@/components/layouts/ScreenLayout';
 import { PageHeader } from '@/components/PageHeader';
 import { BanknoteArrowDownIcon } from 'lucide-react-native';
 
+function getParamValue(value: string | string[] | undefined) {
+    return Array.isArray(value) ? value[0] : value;
+}
+
 export default function CashbackRequested() {
     const params = useLocalSearchParams();
+    const isEstorno = getParamValue(params?.mode) === 'estorno';
 
     return (
         <ScreenLayout backgroundColor="bg-solar-blue-primary">
@@ -15,7 +20,7 @@ export default function CashbackRequested() {
 
                 <PageHeader
                     title="Cashback"
-                    subtitle="Solicitação realizada"
+                    subtitle={isEstorno ? 'Estorno realizado' : 'Solicitação realizada'}
                     description=""
                     icon={<BanknoteArrowDownIcon size={26} color="#1a9cd9" />}
                 />
@@ -27,7 +32,9 @@ export default function CashbackRequested() {
                     </View>
 
                     <Text className="text-xl font-semibold text-gray-800 text-center">
-                        Cashback solicitado com sucesso
+                        {isEstorno
+                            ? 'Estorno de cashback solicitado com sucesso'
+                            : 'Cashback solicitado com sucesso'}
                     </Text>
 
                     <Text className="text-sm text-gray-500 text-center mt-2 px-6">
@@ -44,9 +51,11 @@ export default function CashbackRequested() {
                         </Text>
                     </View>
 
-                    <Text className="text-sm text-gray-500 text-center mt-6 px-6">
-                        Dirija-se ao caixa para concluir a validação do cashback
-                    </Text>
+                    {!isEstorno && (
+                        <Text className="text-sm text-gray-500 text-center mt-6 px-6">
+                            Dirija-se ao caixa para concluir a validação do cashback
+                        </Text>
+                    )}
                 </View>
 
                 <Button
