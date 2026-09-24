@@ -1,1 +1,8 @@
 eas build --platform android --message "App Lojas Solar V1.5.7"
+(WS_ESTORNA_CASHBACK)
+{
+		"datped"       : "20260904",
+	  "filped"       : "8",
+		"numped"       : "1046950",
+		"codcli"       : "3127302"
+}
