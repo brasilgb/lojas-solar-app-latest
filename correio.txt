@@ -6,3 +6,5 @@ eas build --platform android --message "App Lojas Solar V1.5.7"
 		"numped"       : "1046950",
 		"codcli"       : "3127302"
 }
+
+01880272032  123456
