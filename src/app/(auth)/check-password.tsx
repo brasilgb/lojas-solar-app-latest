@@ -18,7 +18,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
-const KEEP_LOGGED_IN_KEY = 'keepUserLoggedIn';
 
 function getParamValue(value: string | string[] | undefined) {
     return Array.isArray(value) ? value[0] : value;
@@ -87,16 +86,15 @@ export default function SignIn() {
             // outro cliente — e ao tocar caía direto em "Aparelho não autorizado
             // para este cliente", mesmo o login por senha funcionando normalmente.
             const cpfcnpj = unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim());
-            const [storedCustomer, keepLoggedIn] = await Promise.all([
-                SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY),
-                SecureStore.getItemAsync(KEEP_LOGGED_IN_KEY),
-            ]);
+            const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
             const lastAuthCpfCnpj = storedCustomer ? JSON.parse(storedCustomer)?.cpfcnpj : undefined;
 
+            // Não exigimos aqui o "keepUserLoggedIn": ele é limpo quando a sessão
+            // expira (expiredSession), mas o last-auth-customer é mantido de
+            // propósito nesse caso — justamente pra biometria continuar disponível
+            // quando o usuário precisa reautenticar. Ver AuthContext.expiredSession.
             if (mounted) {
-                setBiometricsAvailable(
-                    !!cpfcnpj && cpfcnpj === lastAuthCpfCnpj && keepLoggedIn === 'true',
-                );
+                setBiometricsAvailable(!!cpfcnpj && cpfcnpj === lastAuthCpfCnpj);
             }
         }
 
