@@ -520,11 +520,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const disconnect = async () => {
     await clearSession();
-    // Diferente de uma sessão expirada, aqui é o usuário escolhendo sair —
-    // também limpa o cache de login biométrico rápido (nome/CPF salvos pra
-    // pular a tela de CPF), senão um aparelho compartilhado/reutilizado
-    // continua mostrando nome/CPF do cliente anterior após o logout.
-    await SecureStore.deleteItemAsync(LAST_AUTH_CUSTOMER_KEY);
+    // Ao contrário do que fazíamos antes, o logout normal NÃO desvincula
+    // a biometria deste aparelho — senão a biometria só sobrava pro caso
+    // raro de sessão expirada (sair sempre pedia CPF+senha de novo, tornando
+    // a biometria praticamente inútil). Quem quiser desvincular um aparelho
+    // compartilhado/reutilizado usa o link "Sair" da própria tela de senha
+    // (handleLogoutBiometrics em check-password.tsx), que é a ação dedicada
+    // pra isso.
     setUser(null);
     // Desassocia o device deste cliente no backend, para que um aparelho
     // compartilhado/reutilizado não continue recebendo pushes direcionados
