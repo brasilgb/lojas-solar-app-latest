@@ -18,6 +18,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const LAST_AUTH_CUSTOMER_KEY = 'last-auth-customer';
+const KEEP_LOGGED_IN_KEY = 'keepUserLoggedIn';
 
 function getParamValue(value: string | string[] | undefined) {
     return Array.isArray(value) ? value[0] : value;
@@ -86,11 +87,16 @@ export default function SignIn() {
             // outro cliente — e ao tocar caía direto em "Aparelho não autorizado
             // para este cliente", mesmo o login por senha funcionando normalmente.
             const cpfcnpj = unMask(String(getParamValue(params?.cpfcnpj) ?? '').trim());
-            const storedCustomer = await SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY);
+            const [storedCustomer, keepLoggedIn] = await Promise.all([
+                SecureStore.getItemAsync(LAST_AUTH_CUSTOMER_KEY),
+                SecureStore.getItemAsync(KEEP_LOGGED_IN_KEY),
+            ]);
             const lastAuthCpfCnpj = storedCustomer ? JSON.parse(storedCustomer)?.cpfcnpj : undefined;
 
             if (mounted) {
-                setBiometricsAvailable(!!cpfcnpj && cpfcnpj === lastAuthCpfCnpj);
+                setBiometricsAvailable(
+                    !!cpfcnpj && cpfcnpj === lastAuthCpfCnpj && keepLoggedIn === 'true',
+                );
             }
         }
 
@@ -264,20 +270,18 @@ export default function SignIn() {
                                         {errors.senha.message}
                                     </Text>
                                 )}
+                            </View>
 
-                                {biometricsAvailable && (
+                            <View className="flex-row items-center justify-between mb-6">
+                                {biometricsAvailable ? (
                                     <Button
                                         variant="link"
                                         label="Sair"
-                                        className="self-start p-0 mt-2"
+                                        className="p-0"
                                         labelClasses="text-sm text-gray-500"
                                         onPress={handleLogoutBiometrics}
                                     />
-                                )}
-                            </View>
-
-                            <View className={`flex-row items-center mb-6 ${biometricsAvailable ? 'justify-end' : 'justify-between'}`}>
-                                {!biometricsAvailable && (
+                                ) : (
                                     <Controller
                                         control={control}
                                         name="connected"
